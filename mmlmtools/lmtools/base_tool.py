@@ -41,7 +41,7 @@ class BaseTool(BaseToolModule):
         """
 
     def apply(self, inputs, **kwargs):
-        converted_inputs = self.convert_inputs(inputs)
-        outputs = self.inference(converted_inputs)
-        results = self.convert_outputs(outputs)
+        converted_inputs = self.convert_inputs(inputs, **kwargs)
+        outputs = self.inference(converted_inputs, **kwargs)
+        results = self.convert_outputs(outputs, **kwargs)
         return results
