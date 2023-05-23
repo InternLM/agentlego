@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdet.apis import DetInferencer
+from mmpretrain import ImageCaptionInferencer
 
 from .base_tool import BaseTool
 
 
-class DetTool(BaseTool):
+class ImageCaptionTool(BaseTool):
 
     def __init__(self,
                  model: str = None,
@@ -16,21 +16,7 @@ class DetTool(BaseTool):
         super().__init__(model, checkpoint, input_type, output_type, remote,
                          **kwargs)
 
-        init_args = {
-            'model': 'rtmdet-s',
-            'weights': None,
-            'device': 'cuda: 0',
-            'palette': 'none'
-        }
-
-        self.call_args = {
-            'out_dir': 'outputs',
-            'pred_score_thr': 0.3,
-            'batch_size': 1,
-            'no_save_vis': False,
-            'no_save_pred': False,
-        }
-        self.inferencer = DetInferencer(**init_args)
+        self.inferencer = ImageCaptionInferencer('blip-base_3rdparty_caption')
 
     def convert_inputs(self, inputs, **kwargs):
         return inputs

@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from abc import abstractmethod
+
 from .base import BaseToolModule
 
 
@@ -18,11 +20,26 @@ class BaseTool(BaseToolModule):
         self.output_type = output_type
         self.remote = remote
 
+    @abstractmethod
     def convert_inputs(self, inputs, **kwargs):
-        return inputs
+        """"""
 
+    @abstractmethod
     def convert_outputs(self, outputs, **kwargs):
+        """"""
+
+    @abstractmethod
+    def inference(self, inputs, **kwargs):
+        """if self.remote:
+
+        raise NotImplementedError
+        else:
+            outputs = self.inferencer(inputs)
         return outputs
+        """
 
     def apply(self, inputs, **kwargs):
-        return inputs
+        converted_inputs = self.convert_inputs(inputs)
+        outputs = self.inference(converted_inputs)
+        results = self.convert_outputs(outputs)
+        return results
