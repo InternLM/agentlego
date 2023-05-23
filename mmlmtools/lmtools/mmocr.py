@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmpretrain.api import ImageCaptionInferencer
+from mmocr.apis import MMOCRInferencer
 
 from .base_tool import BaseTool
 
 
-class ImageCaptionTool(BaseTool):
+class OCRTool(BaseTool):
 
     def __init__(self,
-                 model: str = 'blip-base_3rdparty_caption',
+                 model: str = 'svtr-small',
                  checkpoint: str = None,
                  input_style: str = 'image_path',
                  output_style: str = 'text',
@@ -17,11 +17,12 @@ class ImageCaptionTool(BaseTool):
         super().__init__(model, checkpoint, input_style, output_style, remote,
                          **kwargs)
 
-        self.inferencer = ImageCaptionInferencer(model, device=device)
+        self.inferencer = MMOCRInferencer(
+            det='dbnetpp', rec=model, device=device)
 
     def inference(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:
-            outputs = self.inferencer(inputs)[0]['pred_caption']
+            outputs = self.inferencer(inputs, **kwargs)
         return outputs
