@@ -22,13 +22,13 @@ class BaseTool(BaseToolModule):
         self.remote = remote
         self.device = device
 
-    @abstractmethod
     def convert_inputs(self, inputs, **kwargs):
         """"""
+        return inputs
 
-    @abstractmethod
     def convert_outputs(self, outputs, **kwargs):
         """"""
+        return outputs
 
     @abstractmethod
     def inference(self, inputs, **kwargs):

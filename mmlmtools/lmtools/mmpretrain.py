@@ -19,18 +19,6 @@ class ImageCaptionTool(BaseTool):
 
         self.inferencer = ImageCaptionInferencer(model, device=device)
 
-    def convert_inputs(self, inputs, **kwargs):
-        if self.input_style == 'image_path':
-            return inputs
-        else:
-            raise NotImplementedError
-
-    def convert_outputs(self, outputs, **kwargs):
-        if self.output_style == 'text':
-            return outputs
-        else:
-            raise NotImplementedError
-
     def inference(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError

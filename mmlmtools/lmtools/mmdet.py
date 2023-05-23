@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdet.apis import DetInferencer
+from mmdet import DetInferencer
 
 from .base_tool import BaseTool
 
@@ -32,12 +32,6 @@ class DetTool(BaseTool):
             'no_save_pred': False,
         }
         self.inferencer = DetInferencer(model=model, device=device)
-
-    def convert_inputs(self, inputs, **kwargs):
-        return inputs
-
-    def convert_outputs(self, outputs, **kwargs):
-        return outputs
 
     def inference(self, inputs, **kwargs):
         if self.remote:
