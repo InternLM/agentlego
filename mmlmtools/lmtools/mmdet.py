@@ -9,19 +9,20 @@ class DetTool(BaseTool):
     def __init__(self,
                  model: str = None,
                  checkpoint: str = None,
-                 input_type: str = None,
-                 output_type: str = None,
+                 input_style: str = None,
+                 output_style: str = None,
                  remote: bool = False,
+                 device: str = 'cuda',
                  **kwargs):
-        super().__init__(model, checkpoint, input_type, output_type, remote,
+        super().__init__(model, checkpoint, input_style, output_style, remote,
                          **kwargs)
 
-        init_args = {
-            'model': 'rtmdet-s',
-            'weights': None,
-            'device': 'cuda: 0',
-            'palette': 'none'
-        }
+        # init_args = {
+        #     'model': 'rtmdet-s',
+        #     'weights': None,
+        #     'device': 'cuda:0',
+        #     'palette': 'none'
+        # }
 
         self.call_args = {
             'out_dir': 'outputs',
@@ -30,7 +31,7 @@ class DetTool(BaseTool):
             'no_save_vis': False,
             'no_save_pred': False,
         }
-        self.inferencer = DetInferencer(**init_args)
+        self.inferencer = DetInferencer(model=model, device=device)
 
     def convert_inputs(self, inputs, **kwargs):
         return inputs

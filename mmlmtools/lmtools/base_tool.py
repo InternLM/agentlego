@@ -10,15 +10,17 @@ class BaseTool(BaseToolModule):
     def __init__(self,
                  model: str = None,
                  checkpoint: str = None,
-                 input_type: str = None,
-                 output_type: str = None,
+                 input_style: str = None,
+                 output_style: str = None,
                  remote: bool = False,
+                 device: str = 'cpu',
                  **kwargs):
         self.model = model
         self.checkpoint = checkpoint
-        self.input_type = input_type
-        self.output_type = output_type
+        self.input_style = input_style
+        self.output_style = output_style
         self.remote = remote
+        self.device = device
 
     @abstractmethod
     def convert_inputs(self, inputs, **kwargs):
