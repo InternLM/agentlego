@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmagic.api import MMagicInferencer
+from mmagic.apis import MMagicInferencer
 
 from .base_tool import BaseTool
 
