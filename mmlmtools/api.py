@@ -16,7 +16,14 @@ from .utils import Mode, ToolMeta, _get_required_repos
 
 DEFAULT_TOOLS = {}
 
-# Loaded from OpenMMLab metafiles
+# Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
+
+# {'object detection': {
+#      'rtmdet_m_8xb32-300e_coco': ToolMeta(...),
+#      'rtmdet_l_8xb32-300e_coco': ToolMeta(...)},
+#  'image classification': {
+#      'MobileNet V2': ToolMeta(...),
+#      ...}}
 MMTOOLS = defaultdict(dict)
 
 # mapping between task name and Tool object.
@@ -209,3 +216,9 @@ def collect_tools():
                     tool_type=TASK2TOOL[task],
                     model=model_name,
                     description=description)
+                if 'Alias' in model:
+                    for alias in model['Alias']:
+                        MMTOOLS[task][alias] = ToolMeta(
+                            tool_type=TASK2TOOL[task],
+                            model=model_name,
+                            description=description)

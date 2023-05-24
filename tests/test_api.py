@@ -81,6 +81,8 @@ def test_collect_tools():
     with patch('mmlmtools.api.TASK2TOOL', mocked_task2tool):
         collect_tools()
         assert 'object detection' in MMTOOLS
+        assert 'rtmdet_l_8xb32-300e_coco' in MMTOOLS['object detection']
+        assert 'rtmdet-l' in MMTOOLS['object detection']
 
 
 def test_register_custom_tools():
