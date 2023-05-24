@@ -5,7 +5,6 @@ import pytest
 
 from mmlmtools.api import (MMTOOLS, Mode, ToolMeta, collect_tools, load_tool,
                            register_custom_tool)
-from mmlmtools.lmtools.base_tool import BaseTool
 from mmlmtools.utils import get_required_repos
 
 REPOS = get_required_repos()
@@ -77,7 +76,7 @@ def test_load_tool():
     skip_test(), reason='Only test when all related repos is installed')
 def test_collect_tools():
     mocked_task2tool = MagicMock()
-    mocked_task2tool.__getitem__ = lambda *args, **kwarg: BaseTool
+    mocked_task2tool.__getitem__ = lambda *args, **kwarg: MagicMock
     mocked_task2tool.__contains__ = lambda *args, **kwarg: True
     with patch('mmlmtools.api.TASK2TOOL', mocked_task2tool):
         collect_tools()
