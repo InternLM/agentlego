@@ -31,7 +31,7 @@ def test_load_tool():
 
     patched_tools = {'object detection': {'ssd': ToolMeta(MagicMock(), 'ssd')}}
     with patch('mmlmtools.api.DEFAULT_TOOLS', patched_default_tools), \
-         patch('mmlmtools.api.TOOLS', patched_tools):
+         patch('mmlmtools.api.MMTOOLS', patched_tools):
         # Catch exception
         with pytest.raises(ValueError, match='available tools are'):
             load_tool('unknown')

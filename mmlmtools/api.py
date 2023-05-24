@@ -153,6 +153,7 @@ def register_custom_tool(*, tool, description, force=False):
 def collect_tools():
     """Initialize MMTOOLS."""
     global MMTOOLS
+    MMTOOLS.clear()
     repos = get_required_repos()
     """Collect tools from metafile"""
 
