@@ -19,6 +19,7 @@ DEFAULT_TOOLS = {}
 # Loaded from OpenMMLab metafiles
 MMTOOLS = defaultdict(dict)
 
+# mapping between task name and Tool object.
 TASK2TOOL = {}
 
 CACHED_TOOLS = {}
