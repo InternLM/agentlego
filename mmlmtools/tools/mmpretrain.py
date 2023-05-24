@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmpretrain.api import ImageCaptionInferencer
+from mmpretrain.apis import ImageCaptionInferencer
 
 from .base_tool import BaseTool
 
@@ -19,7 +19,7 @@ class ImageCaptionTool(BaseTool):
 
         self.inferencer = ImageCaptionInferencer(model, device=device)
 
-    def inference(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:

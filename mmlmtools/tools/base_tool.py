@@ -31,7 +31,7 @@ class BaseTool(BaseToolModule):
         return outputs
 
     @abstractmethod
-    def inference(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         """if self.remote:
 
         raise NotImplementedError
@@ -40,7 +40,7 @@ class BaseTool(BaseToolModule):
         return outputs
         """
 
-    def apply(self, inputs, **kwargs):
+    def __call__(self, inputs, **kwargs):
         converted_inputs = self.convert_inputs(inputs, **kwargs)
         outputs = self.inference(converted_inputs, **kwargs)
         results = self.convert_outputs(outputs, **kwargs)
