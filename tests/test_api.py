@@ -5,9 +5,9 @@ import pytest
 
 from mmlmtools.api import (MMTOOLS, Mode, ToolMeta, collect_tools, load_tool,
                            register_custom_tool)
-from mmlmtools.utils import get_required_repos
+from mmlmtools.utils import _get_required_repos
 
-REPOS = get_required_repos()
+REPOS = _get_required_repos()
 
 
 def skip_test():

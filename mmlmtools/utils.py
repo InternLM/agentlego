@@ -29,7 +29,7 @@ class ToolMeta:
     description: Optional[str] = None
 
 
-def get_required_repos() -> List[str]:
+def _get_required_repos() -> List[str]:
 
     def parse_require_file(fpath):
         with open(fpath) as f:

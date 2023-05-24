@@ -12,7 +12,7 @@ from modelindex.models.Model import Model
 from modelindex.models.ModelIndex import BaseModelIndex, ModelIndex
 from rich.progress import track
 
-from .utils import Mode, ToolMeta, get_required_repos
+from .utils import Mode, ToolMeta, _get_required_repos
 
 DEFAULT_TOOLS = {}
 
@@ -154,7 +154,7 @@ def collect_tools():
     """Initialize MMTOOLS."""
     global MMTOOLS
     MMTOOLS.clear()
-    repos = get_required_repos()
+    repos = _get_required_repos()
     """Collect tools from metafile"""
 
     def _model_index_to_dict(item):
