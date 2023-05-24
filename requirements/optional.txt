@@ -1,1 +1,4 @@
 mmdet>=3.0.0
+mmocr>=1.0.0
+mmagic
+mmpretrain
