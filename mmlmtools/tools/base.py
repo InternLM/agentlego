@@ -14,5 +14,5 @@ class BaseToolModule(metaclass=ABCMeta):
     #     pass
 
     @abstractmethod
-    def __call__(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         """"""

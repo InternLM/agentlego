@@ -19,7 +19,7 @@ class ImageCaptionTool(BaseTool):
 
         self.inferencer = ImageCaptionInferencer(model, device=device)
 
-    def apply(self, inputs, **kwargs):
+    def inference(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:

@@ -33,7 +33,7 @@ class DetTool(BaseTool):
         }
         self.inferencer = DetInferencer(model=model, device=device)
 
-    def apply(self, inputs, **kwargs):
+    def inference(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:
