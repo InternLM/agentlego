@@ -24,5 +24,14 @@ class OCRTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            outputs = self.inferencer(inputs, **kwargs)
+            ocr_results = self.inferencer(
+                inputs, show=False, **kwargs)['predictions']
+            outputs = []
+            for x in ocr_results:
+                outputs += x['rec_texts']
         return outputs
+
+    def convert_outputs(self, outputs, **kwargs):
+        if self.output_style == 'text':
+            outputs = ', '.join(outputs)
+            return outputs
