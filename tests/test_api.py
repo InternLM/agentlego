@@ -57,7 +57,7 @@ def test_load_tool():
         # 1. Test load tool from DEFAULT_TOOLS
         det_tool, meta = load_tool('object detection')
         assert meta.description == 'yolov5_tiny'
-        assert meta.tool_name == 'object detection 1'
+        assert meta.tool_name == 'object detection'
 
         det_tool, meta = load_tool('object detection', mode='balance')
         assert meta.description == 'yolov5_s'

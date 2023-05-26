@@ -39,7 +39,7 @@ REPOS = [
 ]
 
 
-def load_tool(tool: str,
+def load_tool(tool_name: str,
               *,
               model: Optional[str] = None,
               mode: Union[str, Mode, None] = None,
@@ -47,8 +47,8 @@ def load_tool(tool: str,
     """Load a configurable callable tool for different task.
 
     Args:
-        tool (str): tool name for specific task. You can find more description
-            about supported tools in `Capability Matrix`_
+        tool_name (str): tool name for specific task. You can find more
+            description about supported tools in `Capability Matrix`_
         model (str, optional): model name defined in OpenMMLab metafile. If it
             is not specified, recommended tool will be loaded according to the
             ``tool``. You can find more description about supported model in
@@ -89,58 +89,61 @@ def load_tool(tool: str,
 
     .. _Capability Matrix: TODO
     """
-    if tool not in DEFAULT_TOOLS:
+    if tool_name not in DEFAULT_TOOLS:
         # Using ValueError to show error msg cross lines.
-        raise ValueError(f'{tool} is not supported now, the available '
+        raise ValueError(f'{tool_name} is not supported now, the available '
                          'tools are:\n' + '\n'.join(map(repr, MMTOOLS.keys())))
     if isinstance(mode, Mode):
         mode = mode.name
 
     tool_meta: dict
     if model is None:
-        tool_metas = DEFAULT_TOOLS[tool]
+        tool_metas = DEFAULT_TOOLS[tool_name]
         if 'description' not in tool_metas:
             if mode is None:
                 tool_meta = list(tool_metas.values())[0]
             else:
                 if mode not in tool_metas:
                     raise ValueError(
-                        f'{mode} is not available for {tool}, the available '
-                        'modes are:\n' +
+                        f'{mode} is not available for {tool_name}, '
+                        'the available modes are:\n' +
                         '\n'.join(map(repr, tool_metas.keys())))
                 tool_meta = tool_metas[mode]
         else:
             if mode is not None:
                 raise ValueError(
-                    f'mode should not be configured for tool {tool}')
+                    f'mode should not be configured for tool {tool_name}')
             else:
                 tool_meta = tool_metas
     else:
         if mode is not None:
             raise ValueError(
                 'mode should not be configured when model is specified')
-        tool_metas = MMTOOLS[tool]
+        tool_metas = MMTOOLS[tool_name]
         if model not in tool_metas:
-            raise ValueError(f'{model} is not a correct model name,'
-                             f'the available model names for {tool} are\n' +
-                             '\n'.join(map(repr, tool_metas.keys())))
+            raise ValueError(
+                f'{model} is not a correct model name,'
+                f'the available model names for {tool_name} are\n' +
+                '\n'.join(map(repr, tool_metas.keys())))
         tool_meta = tool_metas[model]
         kwargs['model'] = model
 
-    tool_id = dumps((tool, model, mode, kwargs))
-    tool_type = TASK2TOOL[tool]
-    if tool_id in CACHED_TOOLS[tool]:
-        return CACHED_TOOLS[tool][tool_id]
+    tool_id = dumps((tool_name, model, mode, kwargs))
+    tool_type = TASK2TOOL[tool_name]
+    if tool_id in CACHED_TOOLS[tool_name]:
+        return CACHED_TOOLS[tool_name][tool_id]
     else:
         if inspect.isclass(tool_type):
             tool_obj = tool_type(**kwargs)
         else:
             # function tool
             tool_obj = tool_type
-        if len(CACHED_TOOLS[tool]) != 0:
-            tool = f'{tool} {len(CACHED_TOOLS[tool])}'
-        tool_meta = ToolMeta(tool, tool_meta.get('description'))
-        CACHED_TOOLS[tool][tool_id] = tool_obj, tool_meta
+        if len(CACHED_TOOLS[tool_name]) != 0:
+            _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
+        else:
+            _tool_name = tool_name
+        tool_meta = ToolMeta(_tool_name, tool_meta.get('description'))
+        CACHED_TOOLS[tool_name][tool_id] = tool_obj, tool_meta
     return tool_obj, tool_meta
 
 
