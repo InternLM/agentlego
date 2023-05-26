@@ -1523,7 +1523,7 @@ class ConversationBot:
         self.models['ImageCaptionTool'] = ImageCaptionTool(device='cuda')
         self.models['OCRTool'] = OCRTool(device='cuda')
         self.models['Text2BoxTool'] = Text2BoxTool(device='cuda')
-        self.models['Text2ImageTool'] = Text2ImageTool(device='cuda')
+        self.models['Text2ImageTool'] = Text2ImageTool(device='cpu')
 
         # tool_dict = {
         #     'ImageCaptionTool': {
