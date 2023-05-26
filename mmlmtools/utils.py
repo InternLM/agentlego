@@ -20,6 +20,5 @@ class ToolMeta:
             Defaults to None.
         description (str, optional): Description for tool. Defaults to None
     """
-    tool_type: callable
-    model: Optional[str] = None
+    tool_name: str
     description: Optional[str] = None

@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mmlmtools.api import (MMTOOLS, REPOS, Mode, ToolMeta, collect_tools,
-                           load_tool, register_custom_tool)
+from mmlmtools.api import (MMTOOLS, REPOS, Mode, collect_tools, load_tool,
+                           register_custom_tool)
 
 
 def skip_test():
@@ -18,16 +18,22 @@ def skip_test():
 def test_load_tool():
     patched_default_tools = {
         'object detection': {
-            'efficiency': ToolMeta(MagicMock(), 'yolov5_tiny'),
-            'balance': ToolMeta(MagicMock(), 'yolov5_s'),
-            'performance': ToolMeta(MagicMock(), 'yolov5_l')
+            'efficiency': dict(description='yolov5_tiny'),
+            'balance': dict(description='yolov5_s'),
+            'performance': dict(description='yolov5_l')
         },
-        'image classification': ToolMeta(MagicMock(), 'resnet')
+        'image classification': dict(description='resnet')
     }
 
-    patched_tools = {'object detection': {'ssd': ToolMeta(MagicMock(), 'ssd')}}
+    patched_task2tool = {
+        'object detection': MagicMock(),
+        'image classification': MagicMock(),
+    }
+
+    patched_tools = {'object detection': {'ssd': dict(description='ssd')}}
     with patch('mmlmtools.api.DEFAULT_TOOLS', patched_default_tools), \
-         patch('mmlmtools.api.MMTOOLS', patched_tools):
+         patch('mmlmtools.api.MMTOOLS', patched_tools), \
+         patch('mmlmtools.api.TASK2TOOL', patched_task2tool):
         # Catch exception
         with pytest.raises(ValueError, match='available tools are'):
             load_tool('unknown')
@@ -35,26 +41,28 @@ def test_load_tool():
         with pytest.raises(ValueError, match='available modes are'):
             load_tool('object detection', mode='unknown')
 
-        with pytest.raises(ValueError, match='mode should not be configured'):
+        with pytest.raises(ValueError, match='mode should not be configured '):
             load_tool('image classification', mode='efficiency')
 
         with pytest.raises(ValueError, match='available model names'):
             load_tool('object detection', model='unknown')
 
+        with pytest.raises(ValueError, match='unknown is not available for'):
+            load_tool('object detection', mode='unknown')
+
         with pytest.raises(
                 ValueError, match='mode should not be configured when model'):
-            load_tool(
-                'image classification', model='resnet', mode='efficiency')
+            load_tool('object detection', model='resnet', mode='efficiency')
 
         # 1. Test load tool from DEFAULT_TOOLS
         det_tool, meta = load_tool('object detection')
-        assert meta.model == 'yolov5_tiny'
+        assert meta.description == 'yolov5_tiny'
 
         det_tool, meta = load_tool('object detection', mode='balance')
-        assert meta.model == 'yolov5_s'
+        assert meta.description == 'yolov5_s'
 
         det_tool, meta = load_tool('object detection', mode=Mode.performance)
-        assert meta.model == 'yolov5_l'
+        assert meta.description == 'yolov5_l'
 
         # return cached tool
         cached_tool, meta = load_tool(
@@ -62,11 +70,11 @@ def test_load_tool():
         assert cached_tool is det_tool
 
         cls_tool, meta = load_tool('image classification')
-        assert meta.model == 'resnet'
+        assert meta.description == 'resnet'
 
         # 2. Test load tool from TOOLS
         det_tool, meta = load_tool('object detection', model='ssd')
-        assert meta.model == 'ssd'
+        assert meta.description == 'ssd'
 
 
 @pytest.mark.skipif(
@@ -85,13 +93,20 @@ def test_collect_tools():
 def test_register_custom_tools():
     patched_default_tools = {
         'object detection': {
-            'efficiency': ToolMeta(MagicMock(), 'yolov5_tiny'),
-            'balance': ToolMeta(MagicMock(), 'yolov5_s'),
-            'performance': ToolMeta(MagicMock(), 'yolov5_l')
+            'efficiency': dict(description='yolov5_tiny'),
+            'balance': dict(description='yolov5_s'),
+            'performance': dict(description='yolov5_l')
         },
-        'image classification': ToolMeta(MagicMock(), 'resnet')
+        'image classification': dict(description='resnet')
     }
-    with patch('mmlmtools.api.DEFAULT_TOOLS', patched_default_tools):
+
+    patched_task2tool = {
+        'object detection': MagicMock(),
+        'image classification': MagicMock(),
+    }
+
+    with patch('mmlmtools.api.DEFAULT_TOOLS', patched_default_tools), \
+         patch('mmlmtools.api.TASK2TOOL', patched_task2tool):
 
         @register_custom_tool(
             tool='code executor', description='python code executor')

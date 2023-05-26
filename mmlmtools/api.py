@@ -19,17 +19,17 @@ DEFAULT_TOOLS = {}
 # Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
 
 # {'object detection': {
-#      'rtmdet_m_8xb32-300e_coco': ToolMeta(...),
-#      'rtmdet_l_8xb32-300e_coco': ToolMeta(...)},
+#      'rtmdet_m_8xb32-300e_coco': dict(...),
+#      'rtmdet_l_8xb32-300e_coco': dict(...)},
 #  'image classification': {
-#      'MobileNet V2': ToolMeta(...),
+#      'MobileNet V2': dict(...),
 #      ...}}
 MMTOOLS = defaultdict(dict)
 
 # mapping between task name and Tool object.
 TASK2TOOL = {}
 
-CACHED_TOOLS = {}
+CACHED_TOOLS = defaultdict(dict)
 
 REPOS = [
     'mmdet',
@@ -96,10 +96,10 @@ def load_tool(tool: str,
     if isinstance(mode, Mode):
         mode = mode.name
 
-    tool_meta: ToolMeta
+    tool_meta: dict
     if model is None:
         tool_metas = DEFAULT_TOOLS[tool]
-        if isinstance(tool_metas, dict):
+        if 'description' not in tool_metas:
             if mode is None:
                 tool_meta = list(tool_metas.values())[0]
             else:
@@ -125,17 +125,23 @@ def load_tool(tool: str,
                              f'the available model names for {tool} are\n' +
                              '\n'.join(map(repr, tool_metas.keys())))
         tool_meta = tool_metas[model]
-    tool_type = tool_meta.tool_type
-    tool_id = dumps((tool_meta.model, kwargs))
-    if tool_id in CACHED_TOOLS:
-        tool = CACHED_TOOLS[tool_id]
+        kwargs['model'] = model
+
+    tool_id = dumps((tool, model, mode, kwargs))
+    tool_type = TASK2TOOL[tool]
+    if tool_id in CACHED_TOOLS[tool]:
+        return CACHED_TOOLS[tool][tool_id]
     else:
-        if inspect.isclass(tool):
-            tool = tool_type(tool_meta.model, **kwargs)
+        if inspect.isclass(tool_type):
+            tool_obj = tool_type(**kwargs)
         else:
             # function tool
-            tool = tool_type
-    return tool, tool_meta
+            tool_obj = tool_type
+        if len(CACHED_TOOLS[tool]) != 0:
+            tool = f'{tool} {len(CACHED_TOOLS[tool])}'
+        tool_meta = ToolMeta(tool, tool_meta.get('description'))
+        CACHED_TOOLS[tool][tool_id] = tool_obj, tool_meta
+    return tool_obj, tool_meta
 
 
 def register_custom_tool(*, tool, description, force=False):
@@ -149,8 +155,8 @@ def register_custom_tool(*, tool, description, force=False):
 
     def wrapper(func):
         if tool not in DEFAULT_TOOLS:
-            DEFAULT_TOOLS[tool] = ToolMeta(
-                tool_type=func, description=description)
+            DEFAULT_TOOLS[tool] = dict(tool_name=tool, description=description)
+            TASK2TOOL[tool] = func
         else:
             if not force:
                 raise KeyError(
@@ -158,8 +164,9 @@ def register_custom_tool(*, tool, description, force=False):
                     f'{tool}. If you want to overwrite the old tool, please '
                     'set `force=True`')
             else:
-                DEFAULT_TOOLS[tool] = ToolMeta(
-                    tool_type=func, description=description)
+                DEFAULT_TOOLS[tool] = dict(
+                    tool_name=func, description=description)
+                TASK2TOOL[tool] = func
         return func
 
     return wrapper
@@ -218,13 +225,9 @@ def collect_tools():
                     continue
                 description = model.get('Description',
                                         f'{task} tool: {collection_name}')
-                MMTOOLS[task][model_name] = ToolMeta(
-                    tool_type=TASK2TOOL[task],
-                    model=model_name,
-                    description=description)
+                MMTOOLS[task][model_name] = dict(
+                    tool_name=task, description=description)
                 if 'Alias' in model:
                     for alias in model['Alias']:
-                        MMTOOLS[task][alias] = ToolMeta(
-                            tool_type=TASK2TOOL[task],
-                            model=model_name,
-                            description=description)
+                        MMTOOLS[task][alias] = dict(
+                            tool_name=task, description=description)
