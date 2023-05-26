@@ -17,11 +17,13 @@ class Text2ImageTool(BaseTool):
         super().__init__(model, checkpoint, input_style, output_style, remote,
                          **kwargs)
 
-        self.image_path = './output/sd_res.png'
+        self.a_prompt = 'best quality, extremely detailed'
+        self.image_path = './image/sd_res.png'
         self.inferencer = MMagicInferencer(
             model_name=model, device=device, **kwargs)
 
     def inference(self, inputs, **kwargs):
+        inputs += self.a_prompt
         if self.remote:
             raise NotImplementedError
         else:
