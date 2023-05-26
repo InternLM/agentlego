@@ -50,5 +50,5 @@ cd ..
 4. 启动
 
 ```bash
-python visual_chatgpt.py --load ImageCaptioning_cpu
+python visual_chatgpt.py
 ```
