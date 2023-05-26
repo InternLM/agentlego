@@ -3,11 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mmlmtools.api import (MMTOOLS, Mode, ToolMeta, collect_tools, load_tool,
-                           register_custom_tool)
-from mmlmtools.utils import _get_required_repos
-
-REPOS = _get_required_repos()
+from mmlmtools.api import (MMTOOLS, REPOS, Mode, ToolMeta, collect_tools,
+                           load_tool, register_custom_tool)
 
 
 def skip_test():

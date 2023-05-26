@@ -12,7 +12,7 @@ from modelindex.models.Model import Model
 from modelindex.models.ModelIndex import BaseModelIndex, ModelIndex
 from rich.progress import track
 
-from .utils import Mode, ToolMeta, _get_required_repos
+from .utils import Mode, ToolMeta
 
 DEFAULT_TOOLS = {}
 
@@ -30,6 +30,13 @@ MMTOOLS = defaultdict(dict)
 TASK2TOOL = {}
 
 CACHED_TOOLS = {}
+
+REPOS = [
+    'mmdet',
+    'mmagic',
+    'mmpretrain',
+    'mmocr',
+]
 
 
 def load_tool(tool: str,
@@ -162,7 +169,6 @@ def collect_tools():
     """Initialize MMTOOLS."""
     global MMTOOLS
     MMTOOLS.clear()
-    repos = _get_required_repos()
     """Collect tools from metafile"""
 
     def _model_index_to_dict(item):
@@ -179,7 +185,7 @@ def collect_tools():
         else:
             return item
 
-    for repo in repos:
+    for repo in REPOS:
         spec = find_spec(repo)
         if spec is None:
             warnings.warn(f'Local tools from {repo} will not be loaded')
