@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmengine import Registry
 from mmpretrain.apis import ImageCaptionInferencer
 
 from .base_tool import BaseTool
@@ -23,5 +24,6 @@ class ImageCaptionTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            outputs = self.inferencer(inputs)[0]['pred_caption']
+            with Registry('scope').switch_scope_and_registry('mmpretrain'):
+                outputs = self.inferencer(inputs)[0]['pred_caption']
         return outputs

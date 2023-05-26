@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmengine import Registry
 from mmocr.apis import MMOCRInferencer
 
 from .base_tool import BaseTool
@@ -24,8 +25,9 @@ class OCRTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            ocr_results = self.inferencer(
-                inputs, show=False, **kwargs)['predictions']
+            with Registry('scope').switch_scope_and_registry('mmocr'):
+                ocr_results = self.inferencer(
+                    inputs, show=False, **kwargs)['predictions']
             outputs = []
             for x in ocr_results:
                 outputs += x['rec_texts']

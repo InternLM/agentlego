@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmagic.apis import MMagicInferencer
+from mmengine import Registry
 
 from .base_tool import BaseTool
 
@@ -27,16 +28,13 @@ class Text2ImageTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            inputs = self.inferencer.preprocess(text=inputs)
-            outputs = self.inferencer(inputs)
-        return outputs
+            with Registry('scope').switch_scope_and_registry('mmagic'):
+                self.inferencer.infer(
+                    text=inputs, result_out_dir=self.image_path)
+        return self.image_path
 
     def convert_outputs(self, outputs, **kwargs):
         if self.output_style == 'image_path':
-            self.inferencer.visualize(
-                preds=outputs, result_out_dir=self.image_path)
-            return self.image_path
-        elif self.output_style == 'image':
             return outputs
         else:
             raise NotImplementedError

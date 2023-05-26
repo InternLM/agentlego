@@ -5,6 +5,7 @@ from functools import partial
 import mmcv
 from mmdet.apis import DetInferencer, inference_detector
 from mmdet.registry import VISUALIZERS
+from mmengine import Registry
 
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -43,19 +44,20 @@ class Text2BoxTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            results = self.inferencer(imgs=image_path, text_prompt=text)
-            output_path = get_new_image_name(
-                image_path, func_name='detect-something')
-            img = mmcv.imread(image_path)
-            img = mmcv.imconvert(img, 'bgr', 'rgb')
-            self.visualizer.add_datasample(
-                'results',
-                img,
-                data_sample=results,
-                draw_gt=False,
-                show=False,
-                wait_time=0,
-                out_file=output_path,
-                pred_score_thr=0.5)
+            with Registry('scope').switch_scope_and_registry('mmdet'):
+                results = self.inferencer(imgs=image_path, text_prompt=text)
+                output_path = get_new_image_name(
+                    image_path, func_name='detect-something')
+                img = mmcv.imread(image_path)
+                img = mmcv.imconvert(img, 'bgr', 'rgb')
+                self.visualizer.add_datasample(
+                    'results',
+                    img,
+                    data_sample=results,
+                    draw_gt=False,
+                    show=False,
+                    wait_time=0,
+                    out_file=output_path,
+                    pred_score_thr=0.5)
 
         return output_path
