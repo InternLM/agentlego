@@ -16,18 +16,20 @@ def skip_test():
 
 # TODO Remove patch
 def test_load_tool():
+    det_tool_type = MagicMock()
+    cls_tool_type = MagicMock()
     patched_default_tools = {
         'object detection': {
-            'efficiency': dict(description='yolov5_tiny'),
-            'balance': dict(description='yolov5_s'),
-            'performance': dict(description='yolov5_l')
+            'efficiency': dict(model='yolov5_tiny', description='yolov5_tiny'),
+            'balance': dict(model='yolov5_s', description='yolov5_s'),
+            'performance': dict(model='yolov5_l', description='yolov5_l')
         },
-        'image classification': dict(description='resnet')
+        'image classification': dict(model='resnet', description='resnet')
     }
 
     patched_task2tool = {
-        'object detection': MagicMock(),
-        'image classification': MagicMock(),
+        'object detection': det_tool_type,
+        'image classification': cls_tool_type,
     }
 
     patched_tools = {'object detection': {'ssd': dict(description='ssd')}}
@@ -58,14 +60,17 @@ def test_load_tool():
         det_tool, meta = load_tool('object detection')
         assert meta.description == 'yolov5_tiny'
         assert meta.tool_name == 'object detection'
+        det_tool_type.assert_called_with(model='yolov5_tiny')
 
         det_tool, meta = load_tool('object detection', mode='balance')
         assert meta.description == 'yolov5_s'
         assert meta.tool_name == 'object detection 2'
+        det_tool_type.assert_called_with(model='yolov5_s')
 
         det_tool, meta = load_tool('object detection', mode=Mode.performance)
         assert meta.description == 'yolov5_l'
         assert meta.tool_name == 'object detection 3'
+        det_tool_type.assert_called_with(model='yolov5_l')
 
         # return cached tool
         cached_tool, meta = load_tool(
@@ -74,6 +79,7 @@ def test_load_tool():
 
         cls_tool, meta = load_tool('image classification')
         assert meta.description == 'resnet'
+        cls_tool_type.assert_called_with(model='resnet')
 
         # 2. Test load tool from TOOLS
         det_tool, meta = load_tool('object detection', model='ssd')

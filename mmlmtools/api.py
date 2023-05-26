@@ -115,6 +115,9 @@ def load_tool(tool_name: str,
                     f'mode should not be configured for tool {tool_name}')
             else:
                 tool_meta = tool_metas
+        model = tool_meta.get('model')
+        if model is not None:
+            kwargs.update(model=model)
     else:
         if mode is not None:
             raise ValueError(
@@ -133,11 +136,11 @@ def load_tool(tool_name: str,
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
-        if inspect.isclass(tool_type):
-            tool_obj = tool_type(**kwargs)
-        else:
+        if inspect.isfunction(tool_type):
             # function tool
             tool_obj = tool_type
+        else:
+            tool_obj = tool_type(**kwargs)
         if len(CACHED_TOOLS[tool_name]) != 0:
             _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
         else:
@@ -158,7 +161,7 @@ def register_custom_tool(*, tool, description, force=False):
 
     def wrapper(func):
         if tool not in DEFAULT_TOOLS:
-            DEFAULT_TOOLS[tool] = dict(tool_name=tool, description=description)
+            DEFAULT_TOOLS[tool] = dict(description=description)
             TASK2TOOL[tool] = func
         else:
             if not force:
@@ -167,8 +170,7 @@ def register_custom_tool(*, tool, description, force=False):
                     f'{tool}. If you want to overwrite the old tool, please '
                     'set `force=True`')
             else:
-                DEFAULT_TOOLS[tool] = dict(
-                    tool_name=func, description=description)
+                DEFAULT_TOOLS[tool] = dict(description=description)
                 TASK2TOOL[tool] = func
         return func
 
@@ -228,9 +230,7 @@ def collect_tools():
                     continue
                 description = model.get('Description',
                                         f'{task} tool: {collection_name}')
-                MMTOOLS[task][model_name] = dict(
-                    tool_name=task, description=description)
+                MMTOOLS[task][model_name] = dict(description=description)
                 if 'Alias' in model:
                     for alias in model['Alias']:
-                        MMTOOLS[task][alias] = dict(
-                            tool_name=task, description=description)
+                        MMTOOLS[task][alias] = dict(description=description)
