@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mmlmtools.api import (MMTOOLS, REPOS, Mode, collect_tools, load_tool,
-                           register_custom_tool)
+from mmlmtools.api import (MMTOOLS, REPOS, Mode, collect_tools, custom_tool,
+                           load_tool)
 
 
 def skip_test():
@@ -117,8 +117,7 @@ def test_register_custom_tools():
     with patch('mmlmtools.api.DEFAULT_TOOLS', patched_default_tools), \
          patch('mmlmtools.api.TASK2TOOL', patched_task2tool):
 
-        @register_custom_tool(
-            tool='code executor', description='python code executor')
+        @custom_tool(tool='code executor', description='python code executor')
         def python_code_exec1(inputs):
             return eval(inputs)
 
@@ -130,12 +129,12 @@ def test_register_custom_tools():
         # tool with duplicated name
         with pytest.raises(KeyError):
 
-            @register_custom_tool(
+            @custom_tool(
                 tool='code executor', description='python code executor')
             def python_code_exec2(inputs):
                 return eval(inputs)
 
-        @register_custom_tool(
+        @custom_tool(
             tool='code executor',
             description='python code executor',
             force=True)

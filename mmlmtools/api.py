@@ -150,11 +150,17 @@ def load_tool(tool_name: str,
     return tool_obj, tool_meta
 
 
-def register_custom_tool(*, tool, description, force=False):
+def custom_tool(*, tool, description, force=False):
     """Register custom tool.
 
+    Args:
+        tool (str): The name of tool.
+        description (str): The description of the tool.
+        force (bool): Whether to overwrite the exists tool with the same name.
+            Defaults to False.
+
     Examples:
-        >>> @register_custom_tool(tool="python code executor, description="execute python code")
+        >>> @custom_tool(tool="python code executor, description="execute python code")
         >>> def python_code_executor(inputs:)
         >>>     ...
     """  # noqa: E501
