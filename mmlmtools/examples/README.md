@@ -45,7 +45,7 @@ pip install -e .
 cd ..
 ```
 
-3. 用本目录下的 `visual_chatgpt.py` 覆盖官方 TaskMatrix 下的同名文件，记得取消一下全文注释
+3. 用本目录下的 `visual_chatgpt.py` 覆盖官方 TaskMatrix 下的同名文件
 
 4. 启动
 
