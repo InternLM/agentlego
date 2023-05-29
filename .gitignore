@@ -109,3 +109,6 @@ venv.bak/
 # Pytorch
 *.pth
 *.DS_Store
+
+# custom
+.vscode
