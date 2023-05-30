@@ -62,6 +62,10 @@ REPOS = [
 ]
 
 
+def list_tool():
+    return DEFAULT_TOOLS.keys()
+
+
 def load_tool(tool_name: str,
               *,
               model: Optional[str] = None,
