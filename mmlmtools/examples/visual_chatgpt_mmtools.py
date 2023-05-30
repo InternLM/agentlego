@@ -10,7 +10,6 @@ import uuid
 
 import cv2
 import gradio as gr
-
 # Grounding DINO
 import groundingdino.datasets.transforms as T
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ from diffusers import (ControlNetModel, EulerAncestralDiscreteScheduler,
                        StableDiffusionControlNetPipeline,
                        StableDiffusionInpaintPipeline,
                        StableDiffusionInstructPix2PixPipeline,
-                       StableDiffusionPipeline, UniPCMultistepScheduler,)
+                       StableDiffusionPipeline, UniPCMultistepScheduler)
 from groundingdino.models import build_model
 from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
@@ -32,13 +31,12 @@ from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-
 # segment anything
 from segment_anything import SamAutomaticMaskGenerator, SamPredictor, build_sam
 from transformers import (AutoImageProcessor, BlipForConditionalGeneration,
                           BlipForQuestionAnswering, BlipProcessor,
                           CLIPSegForImageSegmentation, CLIPSegProcessor,
-                          UperNetForSemanticSegmentation, pipeline,)
+                          UperNetForSemanticSegmentation, pipeline)
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -47,6 +45,7 @@ Visual ChatGPT is able to process and understand large amounts of text and image
 Human may provide new figures to Visual ChatGPT with a description. The description helps Visual ChatGPT to understand this image, but Visual ChatGPT should use tools to finish following tasks, rather than directly imagine from the description.
 
 Overall, Visual ChatGPT is a powerful visual dialogue assistant tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics.
+
 
 TOOLS:
 ------
@@ -108,6 +107,7 @@ Observation: the result of the action
 
 当你不再需要继续调用工具，而是对观察结果进行总结回复时，你必须使用如下格式：
 
+
 ```
 Thought: Do I need to use a tool? No
 {ai_prefix}: [your response here]
@@ -130,12 +130,14 @@ Thought: Do I need to use a tool? {agent_scratchpad}
 
 os.makedirs('image', exist_ok=True)
 
+
 def seed_everything(seed):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     return seed
+
 
 def prompts(name, description):
 
@@ -145,6 +147,7 @@ def prompts(name, description):
         return func
 
     return decorator
+
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     new_size = new_image.size
@@ -208,6 +211,7 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     gaussian_img = Image.fromarray(easy_img)
     return gaussian_img
 
+
 def cut_dialogue_history(history_memory, keep_last_n_words=500):
     if history_memory is None or len(history_memory) == 0:
         return history_memory
@@ -223,6 +227,7 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
         paragraphs = paragraphs[1:]
     return '\n' + '\n'.join(paragraphs)
 
+
 def get_new_image_name(org_img_name, func_name='update'):
     head_tail = os.path.split(org_img_name)
     head = head_tail[0]
@@ -237,6 +242,7 @@ def get_new_image_name(org_img_name, func_name='update'):
     recent_prev_file_name = name_split[0]
     new_file_name = f'{this_new_uuid}_{func_name}_{recent_prev_file_name}_{most_org_file_name}.png'
     return os.path.join(head, new_file_name)
+
 
 class InstructPix2Pix:
 
@@ -277,6 +283,7 @@ class InstructPix2Pix:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Text2Image:
 
     def __init__(self, device):
@@ -307,6 +314,7 @@ class Text2Image:
         )
         return image_filename
 
+
 class ImageCaptioning:
 
     def __init__(self, device):
@@ -336,6 +344,7 @@ class ImageCaptioning:
         )
         return captions
 
+
 class Image2Canny:
 
     def __init__(self, device):
@@ -363,6 +372,7 @@ class Image2Canny:
             f'\nProcessed Image2Canny, Input Image: {inputs}, Output Text: {updated_image_path}'
         )
         return updated_image_path
+
 
 class CannyText2Image:
 
@@ -415,6 +425,7 @@ class CannyText2Image:
             f'Output Text: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Line:
 
     def __init__(self, device):
@@ -438,6 +449,7 @@ class Image2Line:
             f'\nProcessed Image2Line, Input Image: {inputs}, Output Line: {updated_image_path}'
         )
         return updated_image_path
+
 
 class LineText2Image:
 
@@ -491,6 +503,7 @@ class LineText2Image:
             f'Output Text: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Hed:
 
     def __init__(self, device):
@@ -515,6 +528,7 @@ class Image2Hed:
             f'\nProcessed Image2Hed, Input Image: {inputs}, Output Hed: {updated_image_path}'
         )
         return updated_image_path
+
 
 class HedText2Image:
 
@@ -568,6 +582,7 @@ class HedText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Scribble:
 
     def __init__(self, device):
@@ -590,6 +605,7 @@ class Image2Scribble:
             f'\nProcessed Image2Scribble, Input Image: {inputs}, Output Scribble: {updated_image_path}'
         )
         return updated_image_path
+
 
 class ScribbleText2Image:
 
@@ -641,6 +657,7 @@ class ScribbleText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Pose:
 
     def __init__(self, device):
@@ -664,6 +681,7 @@ class Image2Pose:
             f'\nProcessed Image2Pose, Input Image: {inputs}, Output Pose: {updated_image_path}'
         )
         return updated_image_path
+
 
 class PoseText2Image:
 
@@ -719,6 +737,7 @@ class PoseText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class SegText2Image:
 
     def __init__(self, device):
@@ -770,6 +789,7 @@ class SegText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Depth:
 
     def __init__(self, device):
@@ -796,6 +816,7 @@ class Image2Depth:
             f'\nProcessed Image2Depth, Input Image: {inputs}, Output Depth: {updated_image_path}'
         )
         return updated_image_path
+
 
 class DepthText2Image:
 
@@ -848,6 +869,7 @@ class DepthText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Image2Normal:
 
     def __init__(self, device):
@@ -886,6 +908,7 @@ class Image2Normal:
             f'\nProcessed Image2Normal, Input Image: {inputs}, Output Depth: {updated_image_path}'
         )
         return updated_image_path
+
 
 class NormalText2Image:
 
@@ -938,6 +961,7 @@ class NormalText2Image:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class VisualQuestionAnswering:
 
     def __init__(self, device):
@@ -970,6 +994,7 @@ class VisualQuestionAnswering:
             f'\nProcessed VisualQuestionAnswering, Input Image: {image_path}, Input Question: {question}, '
             f'Output Answer: {answer}')
         return answer
+
 
 class Segmenting:
 
@@ -1092,6 +1117,7 @@ class Segmenting:
         plt.savefig(
             updated_image_path, bbox_inches='tight', dpi=300, pad_inches=0.0)
         return updated_image_path
+
 
 class Text2Box:
 
@@ -1248,6 +1274,7 @@ class Text2Box:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class Inpainting:
 
     def __init__(self, device):
@@ -1275,6 +1302,7 @@ class Inpainting:
             width=width,
             num_inference_steps=num_inference_steps).images[0]
         return update_image
+
 
 class InfinityOutPainting:
     template_model = True  # Add this line to show this is a template model.
@@ -1398,6 +1426,7 @@ class InfinityOutPainting:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class ObjectSegmenting:
     template_model = True  # Add this line to show this is a template model.
 
@@ -1428,6 +1457,7 @@ class ObjectSegmenting:
             f'\nProcessed ObejectSegmenting, Input Image: {image_path}, Object to be Segment {det_prompt}, '
             f'Output Image: {updated_image_path}')
         return updated_image_path
+
 
 class ImageEditing:
     template_model = True
@@ -1504,82 +1534,27 @@ class ImageEditing:
             f'Output Image: {updated_image_path}')
         return updated_image_path
 
+
 class ConversationBot:
 
     def __init__(self, load_dict):
         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
         print(f'Initializing VisualChatGPT, load_dict={load_dict}')
-        # if 'ImageCaptioning' not in load_dict:
-        #     raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
-        from mmlmtools.tools.mmagic import Text2ImageTool
-        from mmlmtools.tools.mmdet import Text2BoxTool
-        from mmlmtools.tools.mmocr import OCRTool
-        from mmlmtools.tools.mmpretrain import ImageCaptionTool
-        self.models = {}
-        # Load Basic Foundation Models
-        # for class_name, device in load_dict.items():
-        #     self.models[class_name] = globals()[class_name](device=device)
-        # self.models['ImageCaptionTool'] = globals()['ImageCaptionTool'](device='cuda')
-        self.models['ImageCaptionTool'] = ImageCaptionTool(device='cuda')
-        self.models['OCRTool'] = OCRTool(device='cuda')
-        self.models['Text2BoxTool'] = Text2BoxTool(device='cuda')
-        self.models['Text2ImageTool'] = Text2ImageTool(device='cpu')
 
-        # tool_dict = {
-        #     'ImageCaptionTool': {
-        #         'name': 'Got Photo Description',
-        #         'description': "useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. "
-        #     },
-        #     'OCRTool':{
-        #         'name': 'Got Text from Photo',
-        #         'description': "useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. "
-        #     }
-        # }
-        tool_dict = [{
-            'name':
-            'Got Photo Description',
-            'description':
-            'useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. '
-        }, {
-            'name':
-            'Got Text from Photo',
-            'description':
-            'useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. '
-        }, {
-            'name':
-            'Detect the Give Object',
-            'description':
-            'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'
-        }, {
-            'name':
-            'Generate Image From User Input Text',
-            'description':
-            'useful when you want to generate an image from a user input text and save it to a file. '
-            'like: generate an image of an object or something, or generate an image that includes some objects. '
-            'The input to this tool should be a string, representing the text used to generate image. '
-        }]
-        # Load Template Foundation Models
-        # for class_name, module in globals().items():
-        #     if getattr(module, 'template_model', False):
-        #         template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
-        #         loaded_names = set([type(e).__name__ for e in self.models.values()])
-        #         if template_required_names.issubset(loaded_names):
-        #             self.models[class_name] = globals()[class_name](
-        #                 **{name: self.models[name] for name in template_required_names})
+        self.tools = []
+
+        from mmlmtools import get_tool_list, load_tool
+        for tool_name in get_tool_list():
+            mmtool, toolmeta = load_tool(tool_name, device='cpu')
+            self.models[tool_name] = mmtool
+            self.tools.append(
+                Tool(
+                    name=toolmeta.tool_name,
+                    description=toolmeta.description,
+                    func=mmtool.apply))
 
         print(f'All the Available Functions: {self.models}')
 
-        self.tools = []
-        for idx, instance in enumerate(self.models.values()):
-            for e in dir(instance):
-                if e.startswith('apply'):
-                    func = getattr(instance, e)
-                    # self.tools.append(Tool(name=func.name, description=func.description, func=func))
-                    self.tools.append(
-                        Tool(
-                            name=tool_dict[idx]['name'],
-                            description=tool_dict[idx]['description'],
-                            func=func))
         self.llm = OpenAI(temperature=0)
         self.memory = ConversationBufferMemory(
             memory_key='chat_history', output_key='output')
@@ -1638,7 +1613,6 @@ class ConversationBot:
         img.save(image_filename, 'PNG')
         print(
             f'Resize image form {width}x{height} to {width_new}x{height_new}')
-        # description = self.models['ImageCaptioning'].inference(image_filename)
         description = self.models['ImageCaptionTool'].inference(image_filename)
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
@@ -1654,6 +1628,7 @@ class ConversationBot:
             f'\nProcessed run_image, Input image: {image_filename}\nCurrent state: {state}\n'
             f'Current Memory: {self.agent.memory.buffer}')
         return state, state, f'{txt} {image_filename} '
+
 
 if __name__ == '__main__':
     if not os.path.exists('checkpoints'):

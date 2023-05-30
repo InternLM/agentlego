@@ -12,9 +12,35 @@ from modelindex.models.Model import Model
 from modelindex.models.ModelIndex import BaseModelIndex, ModelIndex
 from rich.progress import track
 
-from .utils import Mode, ToolMeta
+from .toolmeta import Mode, ToolMeta
+from .tools import *
 
-DEFAULT_TOOLS = {}
+DEFAULT_TOOLS = {
+    'ImageCaptionTool':
+    dict(
+        model='blip-base_3rdparty_caption',
+        description=
+        'useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. '  # noqa
+    ),
+    'Text2BoxTool':
+    dict(
+        model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+        description=
+        'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'  # noqa
+    ),
+    'Text2ImageTool':
+    dict(
+        model='stable_diffusion',
+        description=
+        'useful when you want to generate an image from a user input text and save it to a file. like: generate an image of an object or something, or generate an image that includes some objects. The input to this tool should be a string, representing the text used to generate image. '  # noqa
+    ),
+    'OCRTool':
+    dict(
+        model='svtr-small',
+        description=
+        'useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. '  # noqa
+    )
+}
 
 # Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
 
@@ -25,9 +51,6 @@ DEFAULT_TOOLS = {}
 #      'MobileNet V2': dict(...),
 #      ...}}
 MMTOOLS = defaultdict(dict)
-
-# mapping between task name and Tool object.
-TASK2TOOL = {}
 
 CACHED_TOOLS = defaultdict(dict)
 
@@ -43,6 +66,7 @@ def load_tool(tool_name: str,
               *,
               model: Optional[str] = None,
               mode: Union[str, Mode, None] = None,
+              device: Optional[str] = 'cpu',
               **kwargs) -> Tuple[callable, ToolMeta]:
     """Load a configurable callable tool for different task.
 
@@ -62,6 +86,7 @@ def load_tool(tool_name: str,
             - "balance": Load a tool that strikes a balance between the two
 
             mode could also be a ``Mode`` object. Defaults to None.
+        device (str): device to load the model. Defaults to `cpu`.
         **kwargs: key-word arguments to build the specific tools.
             These arguments are related ``tool``. You can find the arguments
             of the specific tool type according to the given tool in the
@@ -132,7 +157,7 @@ def load_tool(tool_name: str,
         kwargs['model'] = model
 
     tool_id = dumps((tool_name, model, mode, kwargs))
-    tool_type = TASK2TOOL[tool_name]
+    tool_type = globals()[tool_name]
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
@@ -140,12 +165,13 @@ def load_tool(tool_name: str,
             # function tool
             tool_obj = tool_type
         else:
-            tool_obj = tool_type(**kwargs)
+            tool_obj = tool_type(device=device, **kwargs)
         if len(CACHED_TOOLS[tool_name]) != 0:
             _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
         else:
             _tool_name = tool_name
-        tool_meta = ToolMeta(_tool_name, tool_meta.get('description'))
+        tool_meta = ToolMeta(_tool_name, tool_meta.get('description'),
+                             tool_meta.get('model'))
         CACHED_TOOLS[tool_name][tool_id] = tool_obj, tool_meta
     return tool_obj, tool_meta
 
@@ -168,7 +194,6 @@ def custom_tool(*, tool, description, force=False):
     def wrapper(func):
         if tool not in DEFAULT_TOOLS:
             DEFAULT_TOOLS[tool] = dict(description=description)
-            TASK2TOOL[tool] = func
         else:
             if not force:
                 raise KeyError(
@@ -177,7 +202,6 @@ def custom_tool(*, tool, description, force=False):
                     'set `force=True`')
             else:
                 DEFAULT_TOOLS[tool] = dict(description=description)
-                TASK2TOOL[tool] = func
         return func
 
     return wrapper
@@ -232,8 +256,6 @@ def collect_tools():
             model_name = model['Name'].lower()
             for result in model['Results']:
                 task = result['Task'].lower()
-                if task not in TASK2TOOL:
-                    continue
                 description = model.get('Description',
                                         f'{task} tool: {collection_name}')
                 MMTOOLS[task][model_name] = dict(description=description)

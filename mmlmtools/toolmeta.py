@@ -22,3 +22,4 @@ class ToolMeta:
     """
     tool_name: str
     description: Optional[str] = None
+    model: Optional[str] = None

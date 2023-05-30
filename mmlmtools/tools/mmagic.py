@@ -23,7 +23,7 @@ class Text2ImageTool(BaseTool):
         self.inferencer = MMagicInferencer(
             model_name=model, device=device, **kwargs)
 
-    def inference(self, inputs, **kwargs):
+    def infer(self, inputs, **kwargs):
         inputs += self.a_prompt
         if self.remote:
             raise NotImplementedError
