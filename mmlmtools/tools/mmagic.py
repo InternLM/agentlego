@@ -2,6 +2,7 @@
 from mmagic.apis import MMagicInferencer
 from mmengine import Registry
 
+from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
@@ -19,7 +20,6 @@ class Text2ImageTool(BaseTool):
                          **kwargs)
 
         self.a_prompt = 'best quality, extremely detailed'
-        self.image_path = './image/sd_res.png'
         self.inferencer = MMagicInferencer(
             model_name=model, device=device, **kwargs)
 
@@ -28,10 +28,12 @@ class Text2ImageTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
+            image_path = get_new_image_name(
+                './image/sd_res.png', func_name='generate-image')
             with Registry('scope').switch_scope_and_registry('mmagic'):
                 self.inferencer.infer(
-                    text=inputs, result_out_dir=self.image_path)
-        return self.image_path
+                    text=inputs, result_out_dir=image_path)
+        return image_path
 
     def convert_outputs(self, outputs, **kwargs):
         if self.output_style == 'image_path':
