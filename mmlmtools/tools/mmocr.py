@@ -21,7 +21,7 @@ class OCRTool(BaseTool):
         self.inferencer = MMOCRInferencer(
             det='dbnetpp', rec=model, device=device)
 
-    def inference(self, inputs, **kwargs):
+    def infer(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:

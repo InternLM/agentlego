@@ -39,7 +39,7 @@ class Text2BoxTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def inference(self, inputs, **kwargs):
+    def infer(self, inputs, **kwargs):
         image_path, text = inputs
         if self.remote:
             raise NotImplementedError
