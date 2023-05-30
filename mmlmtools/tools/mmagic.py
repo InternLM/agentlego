@@ -29,7 +29,7 @@ class Text2ImageTool(BaseTool):
             raise NotImplementedError
         else:
             image_path = get_new_image_name(
-                './image/sd_res.png', func_name='generate-image')
+                'image/sd-res.png', func_name='generate-image')
             with Registry('scope').switch_scope_and_registry('mmagic'):
                 self.inferencer.infer(
                     text=inputs, result_out_dir=image_path)
