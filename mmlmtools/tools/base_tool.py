@@ -45,9 +45,3 @@ class BaseTool(BaseToolModule):
         outputs = self.infer(converted_inputs, **kwargs)
         results = self.convert_outputs(outputs, **kwargs)
         return results
-
-    def inference(self, inputs, **kwargs):
-        return self.apply(inputs, **kwargs)
-
-    def __call__(self, inputs, **kwargs):
-        return self.apply(inputs, **kwargs)

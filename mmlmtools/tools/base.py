@@ -16,3 +16,9 @@ class BaseToolModule(metaclass=ABCMeta):
     @abstractmethod
     def apply(self, inputs, **kwargs):
         """"""
+
+    def inference(self, inputs, **kwargs):
+        return self.apply(inputs, **kwargs)
+
+    def __call__(self, inputs, **kwargs):
+        return self.apply(inputs, **kwargs)
