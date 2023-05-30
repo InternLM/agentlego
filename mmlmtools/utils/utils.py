@@ -4,6 +4,15 @@ import uuid
 
 
 def get_new_image_name(org_img_name, func_name='update'):
+    """create a temporary path for the image.
+
+    Args:
+        org_img_name (str): Original image path
+        func_name (str, optional): Descriptions. Defaults to 'update'.
+
+    Returns:
+        new_image_path (str): The new image path
+    """
     head_tail = os.path.split(org_img_name)
     head = head_tail[0]
     tail = head_tail[1]
@@ -18,4 +27,5 @@ def get_new_image_name(org_img_name, func_name='update'):
     new_file_name = '_'.join(
         [this_new_uuid, func_name, recent_prev_file_name, most_org_file_name])
     new_file_name += '.png'
-    return os.path.join(head, new_file_name)
+    new_image_path = os.path.join(head, new_file_name)
+    return new_image_path

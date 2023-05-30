@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import shutil
+
 from mmengine import Registry
 from mmpose.apis import MMPoseInferencer
 
@@ -26,11 +28,12 @@ class HumanBodyPoseTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            image_path = get_new_image_name(
-                'image/pose-res.png', func_name='estimate-pose')
             with Registry('scope').switch_scope_and_registry('mmpose'):
-                self.inferencer.infer(
-                    inputs, vis_out_dir=image_path)
+                next(self.inferencer(inputs, vis_out_dir='image/pose-res/'))
+            src_path = 'image/pose-res/' + inputs.split('/')[-1]
+            image_path = get_new_image_name(
+                'image/' + inputs.split('/')[-1], func_name='pose-estimation')
+            shutil.move(src_path, image_path)
         return image_path
 
     def convert_outputs(self, outputs, **kwargs):
