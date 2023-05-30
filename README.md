@@ -9,6 +9,7 @@ self.tools = []
 self.models = {}
 
 mmtools = list_tool()  # get the list of mmtools
+# dict_keys(['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool'])
 
 for tool_name in mmtools:
     # obtain tool instance and toolmeta via `load_tool()`
@@ -54,7 +55,19 @@ def convert_inputs(self, inputs, **kwargs):
 
 最重要的是实现 infer，infer是整个工具推理的核心代码。
 
+对于ImageCaption工具而言，输入输出都是文本，所以实现比较简单，大家注意 scope 的切换就好
+```python
+def infer(self, inputs, **kwargs):
+    if self.remote:
+        raise NotImplementedError
+    else:
+        with Registry('scope').switch_scope_and_registry('mmpretrain'):
+            outputs = self.inferencer(inputs)[0]['pred_caption']
+    return outputs
+```
+
 对于检测工具 GLIP 而言，输入有两个：image_path 和 text，在convert_inputs已经完成了解析
+
 ```Python
 def infer(self, inputs, **kwargs):
     image_path, text = inputs
