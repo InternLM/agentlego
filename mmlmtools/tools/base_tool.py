@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from abc import abstractmethod
-
-from .base import BaseToolModule
+from abc import ABCMeta, abstractmethod
 
 
-class BaseTool(BaseToolModule):
+class BaseTool(metaclass=ABCMeta):
     """"""
 
     def __init__(self,
@@ -45,3 +43,9 @@ class BaseTool(BaseToolModule):
         outputs = self.infer(converted_inputs, **kwargs)
         results = self.convert_outputs(outputs, **kwargs)
         return results
+
+    def inference(self, inputs, **kwargs):
+        return self.apply(inputs, **kwargs)
+
+    def __call__(self, inputs, **kwargs):
+        return self.apply(inputs, **kwargs)

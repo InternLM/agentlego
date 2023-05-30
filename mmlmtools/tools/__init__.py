@@ -5,4 +5,7 @@ from .mmocr import OCRTool
 from .mmpose import HumanBodyPoseTool
 from .mmpretrain import ImageCaptionTool
 
-__all__ = ['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool', 'HumanBodyPoseTool']
+__all__ = [
+    'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
+    'HumanBodyPoseTool'
+]
