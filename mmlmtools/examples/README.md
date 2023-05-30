@@ -45,10 +45,12 @@ pip install -e .
 cd ..
 ```
 
-3. 用本目录下的 `visual_chatgpt.py` 覆盖官方 TaskMatrix 下的同名文件
+3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件
 
 4. 启动
 
 ```bash
+cd TaskMatrix
+
 python visual_chatgpt.py
 ```
