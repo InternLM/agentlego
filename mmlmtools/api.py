@@ -39,6 +39,12 @@ DEFAULT_TOOLS = {
         model='svtr-small',
         description=
         'useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. '  # noqa
+    ),
+    'HumanBodyPoseTool':
+    dict(
+        model='human',
+        description=
+        'useful when you want to know the skeleton of a human, or estimate the pose or keypoints of a human. The input to this tool should be a string, representing the image_path. '  # noqa
     )
 }
 
