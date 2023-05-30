@@ -1544,9 +1544,10 @@ class ConversationBot:
         print(f'Initializing VisualChatGPT, load_dict={load_dict}')
 
         self.tools = []
-
+        self.models = {}
         from mmlmtools import list_tool, load_tool
-        for tool_name in list_tool():
+        mmtools = list_tool()
+        for tool_name in mmtools:
             mmtool, toolmeta = load_tool(tool_name, device='cpu')
             self.models[tool_name] = mmtool
             self.tools.append(
