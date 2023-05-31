@@ -31,12 +31,15 @@ class Text2ImageTool(BaseTool):
             image_path = get_new_image_name(
                 'image/sd-res.png', func_name='generate-image')
             with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
-                    text=inputs, result_out_dir=image_path)
+                self.inferencer.infer(text=inputs, result_out_dir=image_path)
         return image_path
 
     def convert_outputs(self, outputs, **kwargs):
         if self.output_style == 'image_path':
+            return outputs
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
             return outputs
         else:
             raise NotImplementedError

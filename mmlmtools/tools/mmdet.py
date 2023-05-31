@@ -61,3 +61,13 @@ class Text2BoxTool(BaseTool):
                     pred_score_thr=0.5)
 
         return output_path
+
+    def convert_outputs(self, outputs, **kwargs):
+        if self.output_style == 'image_path':  # visual chatgpt style
+            return outputs
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError

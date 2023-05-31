@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import shutil
-
 from mmengine import Registry
 from mmpose.apis import MMPoseInferencer
-from PIL import Image
 
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -39,20 +36,18 @@ class HumanBodyPoseTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(self.inferencer(inputs, vis_out_dir='image/pose-res/'))
-            src_path = 'image/pose-res/' + inputs.split('/')[-1]
             image_path = get_new_image_name(
-                'image/' + inputs.split('/')[-1], func_name='pose-estimation')
-            shutil.move(src_path, image_path)
+                inputs, func_name='pose-estimation')
+            with Registry('scope').switch_scope_and_registry('mmpose'):
+                next(self.inferencer(inputs, vis_out_dir=image_path))
         return image_path
 
     def convert_outputs(self, outputs, **kwargs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
-        elif self.output_style == 'pil image':   # transformer agent style
-            img = Image.open(outputs)
-            return img
-
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
         else:
             raise NotImplementedError
