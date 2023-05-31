@@ -50,7 +50,7 @@ class HumanBodyPoseTool(BaseTool):
     def convert_outputs(self, outputs, **kwargs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
-        elif self.output_style == 'image':   # transformer agent style
+        elif self.output_style == 'pil image':   # transformer agent style
             img = Image.open(outputs)
             return img
 
