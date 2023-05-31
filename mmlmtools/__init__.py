@@ -13,24 +13,24 @@ try:
     import mmdet  # noqa
 except Exception:
     warnings.warn('Import mmdet failed. '
-                  'Please check wheter it is installed properly.')
+                  'Please check whether it is installed properly.')
 
 try:
     import mmocr  # noqa
 except Exception:
     warnings.warn('Import mmocr failed. '
-                  'Please check wheter it is installed properly.')
+                  'Please check whether it is installed properly.')
 
 try:
     import mmpose  # noqa
 except Exception:
     warnings.warn('Import mmpose failed. '
-                  'Please check wheter it is installed properly.')
+                  'Please check whether it is installed properly.')
 
 try:
     import mmpretrain  # noqa
 except Exception:
     warnings.warn('Import mmpretrain failed. '
-                  'Please check wheter it is installed properly.')
+                  'Please check whether it is installed properly.')
 
 __all__ = ['load_tool', 'custom_tool', 'list_tool']
