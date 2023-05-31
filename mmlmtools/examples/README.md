@@ -43,6 +43,11 @@ git clone https://github.com/open-mmlab/mmdetection.git -b dev-3.x
 cd mmdetection
 pip install -e .
 cd ..
+
+git clone https://github.com/open-mmlab/mmpose.git -b dev-1.x
+cd mmpose
+pip install -e .
+cd ..
 ```
 
 3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件

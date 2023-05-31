@@ -4,10 +4,9 @@ from collections import defaultdict
 from pickle import dumps
 from typing import Optional, Tuple
 
-from tools.base_tool import BaseTool
-
 import mmlmtools.tools as tools
 from .toolmeta import ToolMeta
+from .tools.base_tool import BaseTool
 
 # Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
 
@@ -46,7 +45,8 @@ DEFAULT_TOOLS = {
 
 TASK2TOOL = {
     k: v
-    for k, v in tools.__dict__.items() if inspect.isclass(v) and issubclass(v, BaseTool)
+    for k, v in tools.__dict__.items()
+    if inspect.isclass(v) and issubclass(v, BaseTool)
 }
 
 CACHED_TOOLS = defaultdict(dict)
