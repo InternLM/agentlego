@@ -1,13 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import enum
 from dataclasses import dataclass
 from typing import Optional
-
-
-class Mode(enum.Enum):
-    efficiency = 'high efficiency'
-    balance = 'balance'
-    performance = 'high performance'
 
 
 @dataclass
