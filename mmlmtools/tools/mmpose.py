@@ -3,6 +3,7 @@ import shutil
 
 from mmengine import Registry
 from mmpose.apis import MMPoseInferencer
+from PIL import Image
 
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -23,6 +24,17 @@ class HumanBodyPoseTool(BaseTool):
 
         self.inferencer = MMPoseInferencer(model, device=device, **kwargs)
 
+    def convert_inputs(self, inputs, **kwargs):
+        if self.input_style == 'image_path':  # visual chatgpt style
+            return inputs
+        elif self.input_style == 'pil image':  # transformer agent style
+            temp_image_path = get_new_image_name(
+                'image/temp.jpg', func_name='temp')
+            inputs.save(temp_image_path)
+            return temp_image_path
+        else:
+            raise NotImplementedError
+
     def infer(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
@@ -36,7 +48,11 @@ class HumanBodyPoseTool(BaseTool):
         return image_path
 
     def convert_outputs(self, outputs, **kwargs):
-        if self.output_style == 'image_path':
+        if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
+        elif self.output_style == 'image':   # transformer agent style
+            img = Image.open(outputs)
+            return img
+
         else:
             raise NotImplementedError
