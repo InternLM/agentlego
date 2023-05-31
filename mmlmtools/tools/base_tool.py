@@ -11,8 +11,7 @@ class BaseTool(metaclass=ABCMeta):
                  input_style: str = None,
                  output_style: str = None,
                  remote: bool = False,
-                 device: str = 'cpu',
-                 **kwargs):
+                 device: str = 'cpu'):
         self.model = model
         self.checkpoint = checkpoint
         self.input_style = input_style

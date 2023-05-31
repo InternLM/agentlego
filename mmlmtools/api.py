@@ -8,12 +8,13 @@ from pickle import dumps
 from typing import Optional, Tuple, Union
 
 import modelindex
+import tools
 from modelindex.models.Model import Model
 from modelindex.models.ModelIndex import BaseModelIndex, ModelIndex
 from rich.progress import track
+from tools.base_tool import BaseTool
 
 from .toolmeta import Mode, ToolMeta
-from .tools import *
 
 DEFAULT_TOOLS = {
     'ImageCaptionTool':
@@ -56,6 +57,11 @@ DEFAULT_TOOLS = {
 #  'image classification': {
 #      'MobileNet V2': dict(...),
 #      ...}}
+
+TASK2TOOL = {
+    k: v
+    for k, v in tools.__dict__.items() if isinstance(v, BaseTool)
+}
 MMTOOLS = defaultdict(dict)
 
 CACHED_TOOLS = defaultdict(dict)
@@ -167,7 +173,7 @@ def load_tool(tool_name: str,
         kwargs['model'] = model
 
     tool_id = dumps((tool_name, model, mode, kwargs))
-    tool_type = globals()[tool_name]
+    tool_type = TASK2TOOL[tool_name]
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
