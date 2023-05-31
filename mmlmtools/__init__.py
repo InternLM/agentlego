@@ -7,7 +7,7 @@ try:
     import mmagic  # noqa
 except Exception:
     warnings.warn('Import mmagic failed. '
-                  'Please check wheter it is installed properly.')
+                  'Please check whether it is installed properly.')
 
 try:
     import mmdet  # noqa
