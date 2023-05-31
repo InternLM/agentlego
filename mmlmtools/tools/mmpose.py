@@ -21,8 +21,7 @@ class HumanBodyPoseTool(BaseTool):
         super().__init__(model, checkpoint, input_style, output_style, remote,
                          **kwargs)
 
-        self.inferencer = MMPoseInferencer(
-            model_name=model, device=device, **kwargs)
+        self.inferencer = MMPoseInferencer(model, device=device, **kwargs)
 
     def infer(self, inputs, **kwargs):
         if self.remote:
