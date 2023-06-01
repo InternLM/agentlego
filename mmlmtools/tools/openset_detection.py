@@ -16,7 +16,8 @@ class Text2BoxTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='Text2BoxTool',
         model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-        description='useful when you only want to detect or find out '
+        description='This is a useful tool '
+        'when you only want to detect or find out '
         'given objects in the picture.')
 
     def __init__(self,

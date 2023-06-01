@@ -11,7 +11,8 @@ class OCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='OCRTool',
         model='svtr-small',
-        description='useful when you want to recognize the text from a photo.')
+        description='This is a useful tool '
+        'when you want to recognize the text from a photo.')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,

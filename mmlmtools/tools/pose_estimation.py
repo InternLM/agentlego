@@ -11,8 +11,9 @@ class HumanBodyPoseTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='HumanBodyPoseTool',
         model='human',
-        description='useful when you want to draw the skeleton of human, '
-        'or estimate the pose or keypoints of human.')
+        description='This is a useful tool '
+        'when you want to draw or show the skeleton of human, '
+        'or estimate the pose or keypoints of human in a photo.')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,

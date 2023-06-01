@@ -11,7 +11,8 @@ class Text2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='Text2ImageTool',
         model='stable_diffusion',
-        description='useful when you want to generate an image from'
+        description='This is a useful tool '
+        'when you want to generate an image from'
         'a user input text and save it to a file. like: generate '
         'an image of an object or something, or generate an image that includes some objects.'  # noqa
     )

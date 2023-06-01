@@ -11,7 +11,8 @@ class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='ImageCaptionTool',
         model='blip-base_3rdparty_caption',
-        description='useful when you want to know what is inside the image.')
+        description='This is a useful tool '
+        'when you want to know what is inside the image.')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,

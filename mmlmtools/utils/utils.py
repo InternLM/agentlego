@@ -29,13 +29,3 @@ def get_new_image_name(org_img_name, func_name='update'):
     new_file_name += '.png'
     new_image_path = os.path.join(head, new_file_name)
     return new_image_path
-
-
-def convert_description(src_description, src_style, dst_style):
-    """convert description from one style into another to adapt different LLM.
-
-    Args:
-        src_description (str): Tool description
-    """
-
-    return src_description
