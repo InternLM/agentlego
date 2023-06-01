@@ -16,3 +16,5 @@ class ToolMeta:
     tool_name: str
     description: Optional[str] = None
     model: Optional[str] = None
+    input_description: Optional[str] = None
+    output_description: Optional[str] = None

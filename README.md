@@ -2,6 +2,8 @@
 
 ## Visual ChatGPT
 
+### 基础使用
+
 ```Python
 from mmlmtools import list_tool, load_tool
 
@@ -12,29 +14,69 @@ mmtools = list_tool()  # get the list of mmtools
 # dict_keys(['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool'])
 
 for tool_name in mmtools:
-    # obtain tool instance and toolmeta via `load_tool()`
-    mmtool, toolmeta = load_tool(tool_name, device='cpu')
+    # obtain tool instance via `load_tool()`
+    mmtool = load_tool(tool_name, device='cpu')
 
     models[tool_name] = mmtool
     tools.append(
         Tool(
-            name=toolmeta.tool_name,
-            description=toolmeta.description,
-            func=mmtool.apply))
+            name=mmtool.toolmeta.tool_name,
+            description=mmtool.toolmeta.description,
+            func=mmtool))
+```
+
+### 高级使用
+
+`load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
+
+- `device`: 模型加载的设备
+- `model`: 推理所使用的模型
+- `description`: 工具的功能描述
+- `input_description`: 工具的输入格式描述
+- `output_description`: 工具的输出格式描述
+
+```Python
+
+mmtool = load_tool('ImageCaptionTool',
+                   device='cuda:0',
+                   description='This is a useful tool '
+                               'when you want to know what is inside the image.'
+                   input_description='It takes a string as the input, representing the image_path. ',
+                   output_description='It returns a text that contains the description of the input image. '
+                   )
+
 ```
 
 ## 添加新工具
 
 ### 1. 创建文件
 
-- 在 tools/ 目录下新建对应工具的文件，例如：openset_detection.py
+- 在 tools/ 目录下新建对应工具的文件，例如：image_caption.py
 - Tool 命名要能体现功能，可以参考 Inferencer 命名，例如：Text2ImageTool, OCRTool
 - 新的工具必须继承基类 BaseTool
+- 需要定义一个 `dict` 类型的成员 `DEFAULT_TOOLMETA` 作为该工具默认加载的 `ToolMeta`，否则用户必须在实例化这个 Tool 的时候手动定义这些信息（通过 `load_tool(..., model='xxx', description='xxx')`）
 
 ```Python
-from .base_tool import BaseTool
+class ImageCaptionTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='ImageCaptionTool',
+        model='blip-base_3rdparty_caption',
+        description='This is a useful tool '
+        'when you want to know what is inside the image.')
+    ...
+```
 
-class Text2BoxTool(BaseTool):
+- `description` 部分只需要提供功能描述，不需要写输入输出格式相关的描述。
+- 输入输出相关的描述会根据 `self.input_style` 和 `self.output_tyle` 自动生成。
+- 最终的工具描述由 `{功能描述} {输入描述} {输出描述}` 拼接而成。
+- 你也可以通过添加 `input_description` 和 `output_description` 字段来提供更加精准的输入输出格式描述。
+
+```Python
+class ImageCaptionTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        ...
+        input_description='The input to this tool should be a string, representing the image_path. ',
+        output_description='It returns a text that contains the description of the input image. ')
     ...
 ```
 
@@ -73,7 +115,8 @@ def convert_outputs(self, outputs, **kwargs):
         raise NotImplementedError
 ```
 
-默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs
+- 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs。
+- 如果你定义了一个新的 `input_style` 或 `output_style`，你需要到 `tools/base_tool.py` 下更新对应的 `generate_xxx_description()`，用来为该类型自动生成格式描述。
 
 ### 3. 实现 infer
 
@@ -121,34 +164,3 @@ def infer(self, inputs, **kwargs):
 在这里例子中，我们假设Tool的输出也是 image_path ，因此在 infer() 中直接调用了 visualizer 来把图片存到本地。
 
 但是假如我们的 Tool 想要适配不同的系统，Tool 的输出就需要在 convert_outputs 中进行转码，可以转成 image_path 也可以转成 Tensor 或者别的特定格式
-
-### 4. 加入到 DEFAULT_TOOLS
-
-对于 MM 系列的工具而言，需要默认加入到 api.py 下的 DEFAULT_TOOLS
-格式为：
-
-```python
-'类名': dict(
-    model='传给inferencer的模型初始化key',
-    description='写给LLM的工具描述'
-)
-```
-
-例如：
-
-```python
-DEFAULT_TOOLS = {
-    'ImageCaptionTool':
-    dict(
-        model='blip-base_3rdparty_caption',
-        description=
-        'useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. '  # noqa
-    ),
-    'Text2BoxTool':
-    dict(
-        model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-        description=
-        'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'  # noqa
-    ),
-}
-```

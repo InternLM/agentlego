@@ -67,6 +67,8 @@ def load_tool(tool_name: str,
               model: Optional[str] = None,
               description: Optional[str] = None,
               device: Optional[str] = 'cpu',
+              input_description: Optional[str] = None,
+              output_description: Optional[str] = None,
               **kwargs) -> Tuple[callable, ToolMeta]:
     """Load a configurable callable tool for different task.
 
@@ -117,6 +119,12 @@ def load_tool(tool_name: str,
     if description is None:
         description = tool_meta.get('description', None)
 
+    if input_description:
+        tool_meta.input_description = input_description
+
+    if output_description:
+        tool_meta.output_description = output_description
+
     tool_id = dumps((tool_name, model, kwargs))
 
     tool_type = TASK2TOOL[tool_name]
@@ -131,7 +139,10 @@ def load_tool(tool_name: str,
         tool_meta = ToolMeta(
             tool_name=_tool_name,
             description=tool_meta.get('description'),
-            model=model)
+            model=model,
+            input_description=tool_meta.get('input_description'),
+            output_description=tool_meta.get('output_description'),
+        )
 
         if inspect.isfunction(tool_type):
             # function tool

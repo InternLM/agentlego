@@ -66,6 +66,8 @@ class BaseTool(metaclass=ABCMeta):
 
     def generate_input_description(self):
         """generate input description according to input style."""
+        if self.toolmeta.input_description is not None:
+            return self.toolmeta.input_description
 
         if self.input_style == 'image_path':
             res = 'It takes a string as the input, representing the image_path. '  # noqa
@@ -81,6 +83,8 @@ class BaseTool(metaclass=ABCMeta):
 
     def generate_output_description(self):
         """generate output description according to output style."""
+        if self.toolmeta.output_description is not None:
+            return self.toolmeta.output_description
 
         if self.output_style == 'image_path':
             res = 'It returns a string as the output, representing the image_path. '  # noqa
