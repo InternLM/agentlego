@@ -28,6 +28,7 @@ python visual_chatgpt.py --load ImageCaptioning_cpu
 pip install openmim
 mim install mmcv
 mim install mmocr
+mim install mmsegmentation
 
 git clone https://github.com/open-mmlab/mmagic.git
 cd mmagic

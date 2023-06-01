@@ -11,12 +11,69 @@ from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
+class ObjectDetectionTool(BaseTool):
+    def __init__(self,
+                 model: str = 'rtmdet_l_8xb32-300e_coco',
+                 checkpoint: str = None,
+                 input_style: str = 'image_path',
+                 output_style: str = 'image_path',
+                 remote: bool = False,
+                 device: str = 'cuda',
+                 **kwargs):
+        super().__init__(model, checkpoint, input_style, output_style, remote,
+                         **kwargs)
+
+        self.inferencer = DetInferencer(model, device=device, **kwargs)
+
+    def convert_inputs(self, inputs, **kwargs):
+        if self.input_style == 'image_path':  # visual chatgpt style
+            return inputs
+        elif self.input_style == 'pil image':  # transformer agent style
+            temp_image_path = get_new_image_name(
+                'image/temp.jpg', func_name='temp')
+            inputs.save(temp_image_path)
+            return temp_image_path
+        else:
+            raise NotImplementedError
+
+    def infer(self, inputs, **kwargs):
+        if self.remote:
+            raise NotImplementedError
+        else:
+            with Registry('scope').switch_scope_and_registry('mmdet'):
+                results = self.inferencer(inputs, no_save_vis=True, return_datasample=True)
+                output_path = get_new_image_name(
+                    inputs, func_name='detect-something')
+                img = mmcv.imread(inputs)
+                img = mmcv.imconvert(img, 'bgr', 'rgb')
+                self.inferencer.visualizer.add_datasample(
+                    'results',
+                    img,
+                    data_sample=results['predictions'][0],
+                    draw_gt=False,
+                    show=False,
+                    wait_time=0,
+                    out_file=output_path,
+                    pred_score_thr=0.5)
+        return output_path
+
+    def convert_outputs(self, outputs, **kwargs):
+        if self.output_style == 'image_path':  # visual chatgpt style
+            return outputs
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
+
+
 class Text2BoxTool(BaseTool):
 
     def __init__(self,
                  model: str = '/home/PJLAB/jiangtao/Documents/git-clone/'
-                 'mmdetection/configs/glip/'
-                 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365.py',
+                              'mmdetection/configs/glip/'
+                              'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365.py',
                  checkpoint: str = None,
                  input_style: str = 'image_path, text',
                  output_style: str = 'image_path',
