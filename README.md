@@ -27,7 +27,7 @@ for tool_name in mmtools:
 
 ### 1. 创建文件
 
-- 在 tools/ 目录下新建对应repo的文件，例如：mmdet.py
+- 在 tools/ 目录下新建对应工具的文件，例如：openset_detection.py
 - Tool 命名要能体现功能，可以参考 Inferencer 命名，例如：Text2ImageTool, OCRTool
 - 新的工具必须继承基类 BaseTool
 
@@ -41,13 +41,36 @@ class Text2BoxTool(BaseTool):
 ### 2. 重载两个 convert （可选）
 
 - convert_inputs 用于把 LLM 传给 Tool 的内容解析成推理接口需要的格式，例如：
-  - GLIP 的推理接口为 self.inferencer(imgs=image_path, text_prompt=text)
-  - convert_inputs 把 '1.jpg, where is the tree?' 解析成
+  - VisualChatGPT 使用 image_path 来传递图片
+  - Transformer Agents 使用 PIL Image 来传递图片
+
+因此，我们需要在 convert_inputs 提供不同 LLM 格式的解析：
 
 ```Python
 def convert_inputs(self, inputs, **kwargs):
-    image_path, text = inputs.split(',')
-    return image_path, text
+    if self.input_style == 'image_path':  # visual chatgpt style
+        return inputs
+    elif self.input_style == 'pil image':  # transformer agent style
+        temp_image_path = get_new_image_name(
+            'image/temp.jpg', func_name='temp')
+        inputs.save(temp_image_path)
+        return temp_image_path
+    else:
+        raise NotImplementedError
+```
+
+同理，在 Tool 完成推理后也需要 convert_outputs 转为 LLM 需要的格式：
+
+```Python
+def convert_outputs(self, outputs, **kwargs):
+    if self.output_style == 'image_path':  # visual chatgpt style
+        return outputs
+    elif self.output_style == 'pil image':  # transformer agent style
+        from PIL import Image
+        outputs = Image.open(outputs)
+        return outputs
+    else:
+        raise NotImplementedError
 ```
 
 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs
