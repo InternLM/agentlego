@@ -2,29 +2,35 @@
 from mmagic.apis import MMagicInferencer
 from mmengine import Registry
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class Text2ImageTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='Text2ImageTool',
+        model='stable_diffusion',
+        description='useful when you want to generate an image from'
+        'a user input text and save it to a file. like: generate '
+        'an image of an object or something, or generate an image that includes some objects.'  # noqa
+    )
 
     def __init__(self,
-                 model: str = 'stable_diffusion',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'text',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda',
                  **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
 
-        self.a_prompt = 'best quality, extremely detailed'
+        self.aux_prompt = 'best quality, extremely detailed'
         self.inferencer = MMagicInferencer(
-            model_name=model, device=device, **kwargs)
+            model_name=toolmeta.model, device=device, **kwargs)
 
     def infer(self, inputs, **kwargs):
-        inputs += self.a_prompt
+        inputs += self.aux_prompt
         if self.remote:
             raise NotImplementedError
         else:

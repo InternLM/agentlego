@@ -7,28 +7,28 @@ from mmdet.apis import DetInferencer, inference_detector
 from mmdet.registry import VISUALIZERS
 from mmengine import Registry
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class Text2BoxTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='Text2BoxTool',
+        model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+        description='useful when you only want to detect or find out '
+        'given objects in the picture.')
 
     def __init__(self,
-                 model: str = '/home/PJLAB/jiangtao/Documents/git-clone/'
-                 'mmdetection/configs/glip/'
-                 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365.py',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'image_path, text',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda',
                  **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
 
-        self.model = DetInferencer(
-            'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-            device=device).model
+        self.model = DetInferencer(toolmeta.model, device=device).model
         self.inferencer = partial(inference_detector, model=self.model)
         self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
 

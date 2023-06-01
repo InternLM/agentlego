@@ -1,23 +1,29 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
 
+from mmlmtools.toolmeta import ToolMeta
+
 
 class BaseTool(metaclass=ABCMeta):
     """"""
+    DEFAULT_TOOLMETA = dict(
+        tool_name='BaseTool',
+        model=None,
+        description='This is a tool can do nothing.')
 
     def __init__(self,
-                 model: str = None,
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = None,
                  output_style: str = None,
                  remote: bool = False,
                  device: str = 'cpu'):
-        self.model = model
-        self.checkpoint = checkpoint
+
         self.input_style = input_style
         self.output_style = output_style
         self.remote = remote
         self.device = device
+        self.toolmeta = toolmeta if toolmeta else ToolMeta(
+            **self.DEFAULT_TOOLMETA)
 
     def convert_inputs(self, inputs, **kwargs):
         """"""
