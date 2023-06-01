@@ -5,18 +5,18 @@
 ```Python
 from mmlmtools import list_tool, load_tool
 
-self.tools = []
-self.models = {}
+tools = []
+models = {}
 
 mmtools = list_tool()  # get the list of mmtools
 # dict_keys(['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool'])
 
 for tool_name in mmtools:
     # obtain tool instance and toolmeta via `load_tool()`
-    mmtool, toolmeta = load_tool(tool_name, device='cpu')  
+    mmtool, toolmeta = load_tool(tool_name, device='cpu')
 
-    self.models[tool_name] = mmtool
-    self.tools.append(
+    models[tool_name] = mmtool
+    tools.append(
         Tool(
             name=toolmeta.tool_name,
             description=toolmeta.description,
@@ -24,11 +24,12 @@ for tool_name in mmtools:
 ```
 
 ## 添加新工具
+
 ### 1. 创建文件
 
 - 在 tools/ 目录下新建对应repo的文件，例如：mmdet.py
 - Tool 命名要能体现功能，可以参考 Inferencer 命名，例如：Text2ImageTool, OCRTool
-- 新的MM系列工具必须继承 BaseTool
+- 新的工具必须继承基类 BaseTool
 
 ```Python
 from .base_tool import BaseTool
@@ -42,6 +43,7 @@ class Text2BoxTool(BaseTool):
 - convert_inputs 用于把 LLM 传给 Tool 的内容解析成推理接口需要的格式，例如：
   - GLIP 的推理接口为 self.inferencer(imgs=image_path, text_prompt=text)
   - convert_inputs 把 '1.jpg, where is the tree?' 解析成
+
 ```Python
 def convert_inputs(self, inputs, **kwargs):
     image_path, text = inputs.split(',')
@@ -50,12 +52,12 @@ def convert_inputs(self, inputs, **kwargs):
 
 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs
 
-
 ### 3. 实现 infer
 
 最重要的是实现 infer，infer是整个工具推理的核心代码。
 
 对于ImageCaption工具而言，输入输出都是文本，所以实现比较简单，大家注意 scope 的切换就好
+
 ```python
 def infer(self, inputs, **kwargs):
     if self.remote:
@@ -98,15 +100,19 @@ def infer(self, inputs, **kwargs):
 但是假如我们的 Tool 想要适配不同的系统，Tool 的输出就需要在 convert_outputs 中进行转码，可以转成 image_path 也可以转成 Tensor 或者别的特定格式
 
 ### 4. 加入到 DEFAULT_TOOLS
+
 对于 MM 系列的工具而言，需要默认加入到 api.py 下的 DEFAULT_TOOLS
 格式为：
+
 ```python
 '类名': dict(
     model='传给inferencer的模型初始化key',
     description='写给LLM的工具描述'
 )
 ```
+
 例如：
+
 ```python
 DEFAULT_TOOLS = {
     'ImageCaptionTool':
