@@ -23,6 +23,12 @@ DEFAULT_TOOLS = {
         description=
         'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'  # noqa
     ),
+    'ObjectDetectionTool':
+        dict(
+            model='rtmdet_l_8xb32-300e_coco',
+            description=
+            'useful when you only want to detect the picture or detect all objects in the picture. like: detect all object or object. The input to this tool should be a string, representing the image_path. ' # noqa
+        ),
     'Text2ImageTool':
     dict(
         model='stable_diffusion',
@@ -40,7 +46,13 @@ DEFAULT_TOOLS = {
         model='human',
         description=
         'useful when you want to know the skeleton of a human, or estimate the pose or keypoints of a human. The input to this tool should be a string, representing the image_path. '  # noqa
-    )
+    ),
+    'SemSegTool':
+        dict(
+            model='pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
+            description=
+            'useful when you only want to segment the picture or segment all objects in the picture. like: segment all object or object. The input to this tool should be a string, representing the image_path. '  # noqa
+        ),
 }
 
 TASK2TOOL = {
