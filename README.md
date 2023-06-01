@@ -66,7 +66,7 @@ class ImageCaptionTool(BaseTool):
     ...
 ```
 
-- `description` 部分只需要提供功能描述，不需要写输入输出格式相关的描述。
+- `description` 部分只需要提供**功能描述**，不需要写输入输出格式相关的描述。
 - 输入输出相关的描述会根据 `self.input_style` 和 `self.output_tyle` 自动生成。
 - 最终的工具描述由 `{功能描述} {输入描述} {输出描述}` 拼接而成。
 - 你也可以通过添加 `input_description` 和 `output_description` 字段来提供更加精准的输入输出格式描述。
