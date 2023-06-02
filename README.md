@@ -82,9 +82,14 @@ class ImageCaptionTool(BaseTool):
 
 ### 2. 重载两个 convert （可选）
 
+在这里例子中，我们的 `Tool` 输入输出都是 `image_path` ，因此在 `infer()` 中直接调用了 `visualizer` 来把图片存到本地。
+
+但是假如我们的 `Tool` 想要适配不同的系统，`Tool` 的输出就需要在 `convert_inputs` 和 `convert_outputs` 中进行转码，可以转成 `image_path` 也可以转成 `PIL Image` 或者别的特定格式
+
 - convert_inputs 用于把 LLM 传给 Tool 的内容解析成推理接口需要的格式，例如：
   - VisualChatGPT 使用 image_path 来传递图片
   - Transformer Agents 使用 PIL Image 来传递图片
+  - 这个例子中的 Tool 输入是 image_path 格式，输出也是 image_path
 
 因此，我们需要在 convert_inputs 提供不同 LLM 格式的解析：
 
@@ -160,7 +165,3 @@ def infer(self, inputs, **kwargs):
 
         return output_path
 ```
-
-在这里例子中，我们假设Tool的输出也是 image_path ，因此在 infer() 中直接调用了 visualizer 来把图片存到本地。
-
-但是假如我们的 Tool 想要适配不同的系统，Tool 的输出就需要在 convert_outputs 中进行转码，可以转成 image_path 也可以转成 Tensor 或者别的特定格式
