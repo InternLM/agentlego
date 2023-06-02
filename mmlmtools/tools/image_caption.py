@@ -19,15 +19,17 @@ class ImageCaptionTool(BaseTool):
                  input_style: str = 'image_path',
                  output_style: str = 'text',
                  remote: bool = False,
-                 device: str = 'cuda'):
-        super().__init__(toolmeta, input_style, output_style, remote, device)
+                 device: str = 'cuda',
+                 **init_args):
+        super().__init__(toolmeta, input_style, output_style, remote, device,
+                         **init_args)
 
         self.inferencer = None
 
     def setup(self):
         if self.inferencer is None:
             self.inferencer = ImageCaptionInferencer(
-                self.toolmeta.model, device=self.device)
+                self.toolmeta.model, device=self.device, **self.init_args)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style

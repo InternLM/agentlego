@@ -5,7 +5,6 @@ from mmlmtools.toolmeta import ToolMeta
 
 
 class BaseTool(metaclass=ABCMeta):
-    """"""
     DEFAULT_TOOLMETA = dict(
         tool_name='BaseTool',
         model=None,
@@ -19,11 +18,13 @@ class BaseTool(metaclass=ABCMeta):
                  input_style: str = None,
                  output_style: str = None,
                  remote: bool = False,
-                 device: str = 'cpu'):
+                 device: str = 'cpu',
+                 **kwargs):
         self.input_style = input_style
         self.output_style = output_style
         self.remote = remote
         self.device = device
+        self.init_args = kwargs
         self.toolmeta = toolmeta if toolmeta else ToolMeta(
             **self.DEFAULT_TOOLMETA)
 
@@ -42,6 +43,7 @@ class BaseTool(metaclass=ABCMeta):
         self.format_description()
 
     def format_description(self):
+        """Generate complete description."""
         func_descrip = self.toolmeta.description
         input_descrip = self.generate_input_description()
         output_descrip = self.generate_output_description()
@@ -50,11 +52,11 @@ class BaseTool(metaclass=ABCMeta):
         return res
 
     def convert_inputs(self, inputs):
-        """"""
+        """Convert inputs into the tool required format."""
         return inputs
 
     def convert_outputs(self, outputs):
-        """"""
+        """Convert outputs into the LLM required format."""
         return outputs
 
     @abstractmethod
@@ -79,10 +81,22 @@ class BaseTool(metaclass=ABCMeta):
         return results
 
     def inference(self, inputs, **kwargs):
-        return self.apply(inputs, **kwargs)
+        """This method is for compatibility with the LangChain tool
+        interface."""
+        self.setup()
+        converted_inputs = self.convert_inputs(inputs)
+        outputs = self.infer(converted_inputs, **kwargs)
+        results = self.convert_outputs(outputs)
+        return results
 
     def __call__(self, inputs, **kwargs):
-        return self.apply(inputs, **kwargs)
+        """This method is for compatibility with the callable tool interface
+        e.g. Transformer Agent."""
+        self.setup()
+        converted_inputs = self.convert_inputs(inputs)
+        outputs = self.infer(converted_inputs, **kwargs)
+        results = self.convert_outputs(outputs)
+        return results
 
     def generate_input_description(self):
         """generate input description according to input style."""
