@@ -49,11 +49,11 @@ class BaseTool(metaclass=ABCMeta):
         self.toolmeta.description = res
         return res
 
-    def convert_inputs(self, inputs, **kwargs):
+    def convert_inputs(self, inputs):
         """"""
         return inputs
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         """"""
         return outputs
 
@@ -67,10 +67,15 @@ class BaseTool(metaclass=ABCMeta):
         return outputs
         """
 
+    @abstractmethod
+    def setup(self):
+        """instantiate inferencer."""
+
     def apply(self, inputs, **kwargs):
-        converted_inputs = self.convert_inputs(inputs, **kwargs)
+        self.setup()
+        converted_inputs = self.convert_inputs(inputs)
         outputs = self.infer(converted_inputs, **kwargs)
-        results = self.convert_outputs(outputs, **kwargs)
+        results = self.convert_outputs(outputs)
         return results
 
     def inference(self, inputs, **kwargs):

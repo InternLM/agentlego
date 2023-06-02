@@ -20,14 +20,17 @@ class HumanBodyPoseTool(BaseTool):
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = MMPoseInferencer(
-            toolmeta.model, device=device, **kwargs)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = MMPoseInferencer(
+                self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -45,10 +48,10 @@ class HumanBodyPoseTool(BaseTool):
             image_path = get_new_image_name(
                 inputs, func_name='pose-estimation')
             with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(self.inferencer(inputs, vis_out_dir=image_path))
+                next(self.inferencer(inputs, vis_out_dir=image_path, **kwargs))
         return image_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style

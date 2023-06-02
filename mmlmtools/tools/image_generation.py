@@ -22,13 +22,16 @@ class Text2ImageTool(BaseTool):
                  input_style: str = 'text',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.aux_prompt = 'best quality, extremely detailed'
-        self.inferencer = MMagicInferencer(
-            model_name=toolmeta.model, device=device, **kwargs)
+        self.inferencer = None
+
+    def setup(self):
+        if self.inferencer is None:
+            self.aux_prompt = 'best quality, extremely detailed'
+            self.inferencer = MMagicInferencer(
+                model_name=self.toolmeta.model, device=self.device)
 
     def infer(self, inputs, **kwargs):
         inputs += self.aux_prompt
@@ -38,10 +41,11 @@ class Text2ImageTool(BaseTool):
             image_path = get_new_image_name(
                 'image/sd-res.png', func_name='generate-image')
             with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(text=inputs, result_out_dir=image_path)
+                self.inferencer.infer(
+                    text=inputs, result_out_dir=image_path, **kwargs)
         return image_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style

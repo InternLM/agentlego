@@ -25,15 +25,19 @@ class Text2BoxTool(BaseTool):
                  input_style: str = 'image_path, text',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.model = DetInferencer(toolmeta.model, device=device).model
-        self.inferencer = partial(inference_detector, model=self.model)
-        self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.model = DetInferencer(
+                self.toolmeta.model, device=self.device).model
+            self.inferencer = partial(inference_detector, model=self.model)
+            self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path, text':
             splited_inputs = inputs.split(',')
             image_path = splited_inputs[0]
@@ -46,7 +50,8 @@ class Text2BoxTool(BaseTool):
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self.inferencer(imgs=image_path, text_prompt=text)
+                results = self.inferencer(
+                    imgs=image_path, text_prompt=text, **kwargs)
                 output_path = get_new_image_name(
                     image_path, func_name='detect-something')
                 img = mmcv.imread(image_path)
@@ -63,7 +68,7 @@ class Text2BoxTool(BaseTool):
 
         return output_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style
@@ -87,14 +92,17 @@ class ObjectDetectionTool(BaseTool):
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = DetInferencer(
-            toolmeta.model, device=device, **kwargs)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = DetInferencer(
+                self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -111,7 +119,7 @@ class ObjectDetectionTool(BaseTool):
         else:
             with Registry('scope').switch_scope_and_registry('mmdet'):
                 results = self.inferencer(
-                    inputs, no_save_vis=True, return_datasample=True)
+                    inputs, no_save_vis=True, return_datasample=True, **kwargs)
                 output_path = get_new_image_name(
                     inputs, func_name='detect-something')
                 img = mmcv.imread(inputs)
@@ -127,7 +135,7 @@ class ObjectDetectionTool(BaseTool):
                     pred_score_thr=0.5)
         return output_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style

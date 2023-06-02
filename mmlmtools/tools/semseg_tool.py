@@ -22,14 +22,17 @@ class SemSegTool(BaseTool):
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = MMSegInferencer(
-            toolmeta.model, device=device, **kwargs)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = MMSegInferencer(
+                self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -45,7 +48,8 @@ class SemSegTool(BaseTool):
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmseg'):
-                results = self.inferencer(inputs, return_datasamples=True)
+                results = self.inferencer(
+                    inputs, return_datasamples=True, **kwargs)
                 output_path = get_new_image_name(
                     inputs, func_name='semseg-something')
                 img = mmcv.imread(inputs)
@@ -60,7 +64,7 @@ class SemSegTool(BaseTool):
                     out_file=output_path)
         return output_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style
