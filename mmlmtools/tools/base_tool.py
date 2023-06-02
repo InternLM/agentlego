@@ -9,7 +9,10 @@ class BaseTool(metaclass=ABCMeta):
     DEFAULT_TOOLMETA = dict(
         tool_name='BaseTool',
         model=None,
-        description='This is a tool can do nothing.')
+        description='This is an abstract tool interface '
+        'with no actual function.',
+        input_description=None,
+        output_description=None)
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -23,6 +26,19 @@ class BaseTool(metaclass=ABCMeta):
         self.device = device
         self.toolmeta = toolmeta if toolmeta else ToolMeta(
             **self.DEFAULT_TOOLMETA)
+
+        if toolmeta is not None:
+            self.toolmeta = toolmeta
+        else:
+            assert hasattr(self, 'DEFAULT_TOOLMETA')
+            class_name = self.__class__.__name__
+            assert self.DEFAULT_TOOLMETA.tool_name != class_name, (
+                'self.DEFAULT_TOOLMETA.tool_name should be the same as '
+                'the class name of the tool.')
+            assert self.DEFAULT_TOOLMETA.description is not None, (
+                'self.DEFAULT_TOOLMETA.description should not be None.')
+            self.toolmeta = ToolMeta(**self.DEFAULT_TOOLMETA)
+
         self.format_description()
 
     def format_description(self):
