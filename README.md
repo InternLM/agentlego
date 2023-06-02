@@ -80,7 +80,18 @@ class ImageCaptionTool(BaseTool):
     ...
 ```
 
-### 2. 重载两个 convert （可选）
+### 2. 定义 setup
+
+定义推理所使用的 inferencer，`setup()` 会在每次 Tool 被调用时运行一次，在首次运行时完成 inferencer 的实例化。
+
+```Python
+def setup(self):
+    if self.inferencer is None:
+        self.inferencer = MMSegInferencer(
+            self.toolmeta.model, device=self.device)
+```
+
+### 3. 重载两个 convert （可选）
 
 在这里例子中，我们的 `Tool` 输入输出都是 `image_path` ，因此在 `infer()` 中直接调用了 `visualizer` 来把图片存到本地。
 
@@ -123,7 +134,7 @@ def convert_outputs(self, outputs, **kwargs):
 - 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs。
 - 如果你定义了一个新的 `input_style` 或 `output_style`，你需要到 `tools/base_tool.py` 下更新对应的 `generate_xxx_description()`，用来为该类型自动生成格式描述。
 
-### 3. 实现 infer
+### 4. 实现 infer
 
 最重要的是实现 infer，infer是整个工具推理的核心代码。
 

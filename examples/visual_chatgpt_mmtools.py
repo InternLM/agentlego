@@ -10,7 +10,6 @@ import uuid
 
 import cv2
 import gradio as gr
-
 # Grounding DINO
 import groundingdino.datasets.transforms as T
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ from diffusers import (ControlNetModel, EulerAncestralDiscreteScheduler,
                        StableDiffusionControlNetPipeline,
                        StableDiffusionInpaintPipeline,
                        StableDiffusionInstructPix2PixPipeline,
-                       StableDiffusionPipeline, UniPCMultistepScheduler,)
+                       StableDiffusionPipeline, UniPCMultistepScheduler)
 from groundingdino.models import build_model
 from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
@@ -32,13 +31,12 @@ from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-
 # segment anything
 from segment_anything import SamAutomaticMaskGenerator, SamPredictor, build_sam
 from transformers import (AutoImageProcessor, BlipForConditionalGeneration,
                           BlipForQuestionAnswering, BlipProcessor,
                           CLIPSegForImageSegmentation, CLIPSegProcessor,
-                          UperNetForSemanticSegmentation, pipeline,)
+                          UperNetForSemanticSegmentation, pipeline)
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 

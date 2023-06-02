@@ -1,4 +1,4 @@
-exclude: ^tests/data/
+exclude: (^tests/data/|^examples/)
 repos:
   - repo: https://github.com/PyCQA/flake8
     rev: 5.0.4
