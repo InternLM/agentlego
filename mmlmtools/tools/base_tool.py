@@ -17,7 +17,6 @@ class BaseTool(metaclass=ABCMeta):
                  output_style: str = None,
                  remote: bool = False,
                  device: str = 'cpu'):
-
         self.input_style = input_style
         self.output_style = output_style
         self.remote = remote
