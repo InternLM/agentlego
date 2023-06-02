@@ -8,7 +8,7 @@ import mmlmtools.tools as tools
 from .toolmeta import ToolMeta
 from .tools.base_tool import BaseTool
 
-# Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
+# Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
 
 # DEFAULT_TOOLS = {
 #     'ImageCaptionTool':

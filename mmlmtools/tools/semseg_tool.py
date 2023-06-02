@@ -1,26 +1,33 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import mmcv
-from mmseg.apis import MMSegInferencer
 from mmengine import Registry
+from mmseg.apis import MMSegInferencer
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class SemSegTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='SemSegTool',
+        model='pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
+        description='This is a useful tool '
+        'when you only want to segment the picture or segment all '
+        'objects in the picture. like: segment all object or object. ')
+
     def __init__(self,
-                 model: str = 'pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda',
                  **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+        super().__init__(toolmeta, input_style, output_style, remote, **kwargs)
 
-        self.inferencer = MMSegInferencer(model, device=device, **kwargs)
+        self.inferencer = MMSegInferencer(
+            toolmeta.model, device=device, **kwargs)
 
     def convert_inputs(self, inputs, **kwargs):
         if self.input_style == 'image_path':  # visual chatgpt style
