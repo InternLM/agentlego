@@ -46,7 +46,7 @@ cd mmpose
 pip install -e .
 cd ..
 
-mim install mmseg
+mim install mmsegmentation
 ```
 
 3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件
