@@ -43,7 +43,7 @@ class SemSegTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def infer(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:

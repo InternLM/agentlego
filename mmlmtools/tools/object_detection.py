@@ -44,7 +44,7 @@ class Text2BoxTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def infer(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         image_path, text = inputs
         if self.remote:
             raise NotImplementedError
@@ -113,7 +113,7 @@ class ObjectDetectionTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def infer(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:
