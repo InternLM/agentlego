@@ -2,26 +2,35 @@
 from mmengine import Registry
 from mmpose.apis import MMPoseInferencer
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class HumanBodyPoseTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='HumanBodyPoseTool',
+        model='human',
+        description='This is a useful tool '
+        'when you want to draw or show the skeleton of human, '
+        'or estimate the pose or keypoints of human in a photo.')
 
     def __init__(self,
-                 model: str = 'human',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = MMPoseInferencer(model, device=device, **kwargs)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = MMPoseInferencer(
+                self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -39,10 +48,10 @@ class HumanBodyPoseTool(BaseTool):
             image_path = get_new_image_name(
                 inputs, func_name='pose-estimation')
             with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(self.inferencer(inputs, vis_out_dir=image_path))
+                next(self.inferencer(inputs, vis_out_dir=image_path, **kwargs))
         return image_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style

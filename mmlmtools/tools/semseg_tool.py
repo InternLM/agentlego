@@ -1,28 +1,38 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import mmcv
-from mmseg.apis import MMSegInferencer
 from mmengine import Registry
+from mmseg.apis import MMSegInferencer
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class SemSegTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='SemSegTool',
+        model='pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
+        description='This is a useful tool '
+        'when you only want to segment the picture or segment all '
+        'objects in the picture. like: segment all object or object. ')
+
     def __init__(self,
-                 model: str = 'pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'image_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = MMSegInferencer(model, device=device, **kwargs)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = MMSegInferencer(
+                self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -38,7 +48,8 @@ class SemSegTool(BaseTool):
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmseg'):
-                results = self.inferencer(inputs, return_datasamples=True)
+                results = self.inferencer(
+                    inputs, return_datasamples=True, **kwargs)
                 output_path = get_new_image_name(
                     inputs, func_name='semseg-something')
                 img = mmcv.imread(inputs)
@@ -53,7 +64,7 @@ class SemSegTool(BaseTool):
                     out_file=output_path)
         return output_path
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'image_path':  # visual chatgpt style
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style

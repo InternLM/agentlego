@@ -17,9 +17,6 @@ pip install  git+https://github.com/facebookresearch/segment-anything.git
 # prepare your private OpenAI key (for Linux)
 export OPENAI_API_KEY={Your_Private_Openai_Key}
 
-# Advice for CPU Users
-python visual_chatgpt.py --load ImageCaptioning_cpu
-
 ```
 
 2. 安装工具依赖（暂时方案）
@@ -28,7 +25,6 @@ python visual_chatgpt.py --load ImageCaptioning_cpu
 pip install openmim
 mim install mmcv
 mim install mmocr
-mim install mmsegmentation
 
 git clone https://github.com/open-mmlab/mmagic.git
 cd mmagic
@@ -49,6 +45,8 @@ git clone https://github.com/open-mmlab/mmpose.git -b dev-1.x
 cd mmpose
 pip install -e .
 cd ..
+
+mim install mmsegmentation
 ```
 
 3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件

@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .mmagic import Text2ImageTool
-from .mmdet import Text2BoxTool, ObjectDetectionTool
-from .mmocr import OCRTool
-from .mmpose import HumanBodyPoseTool
-from .mmpretrain import ImageCaptionTool
+from .image_caption import ImageCaptionTool
+from .image_generation import Text2ImageTool
+from .object_detection import ObjectDetectionTool, Text2BoxTool
+from .ocr import OCRTool
+from .pose_estimation import HumanBodyPoseTool
 from .semseg_tool import SemSegTool
 
 __all__ = [
     'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
-    'HumanBodyPoseTool', 'ObjectDetectionTool', 'SemSegTool'
+    'HumanBodyPoseTool', 'SemSegTool', 'ObjectDetectionTool'
 ]

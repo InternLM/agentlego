@@ -2,27 +2,34 @@
 from mmengine import Registry
 from mmocr.apis import MMOCRInferencer
 
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
 class OCRTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        tool_name='OCRTool',
+        model='svtr-small',
+        description='This is a useful tool '
+        'when you want to recognize the text from a photo.')
 
     def __init__(self,
-                 model: str = 'svtr-small',
-                 checkpoint: str = None,
+                 toolmeta: ToolMeta = None,
                  input_style: str = 'image_path',
                  output_style: str = 'text',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **kwargs):
-        super().__init__(model, checkpoint, input_style, output_style, remote,
-                         **kwargs)
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = MMOCRInferencer(
-            det='dbnetpp', rec=model, device=device)
+        self.inferencer = None
 
-    def convert_inputs(self, inputs, **kwargs):
+    def setup(self):
+        if self.inferencer is None:
+            self.inferencer = MMOCRInferencer(
+                det='dbnetpp', rec=self.toolmeta.model, device=self.device)
+
+    def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
@@ -45,7 +52,7 @@ class OCRTool(BaseTool):
                 outputs += x['rec_texts']
         return outputs
 
-    def convert_outputs(self, outputs, **kwargs):
+    def convert_outputs(self, outputs):
         if self.output_style == 'text':
             outputs = ', '.join(outputs)
             return outputs

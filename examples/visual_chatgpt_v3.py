@@ -10,7 +10,6 @@ import uuid
 
 import cv2
 import gradio as gr
-
 # Grounding DINO
 import groundingdino.datasets.transforms as T
 import matplotlib.pyplot as plt
@@ -22,7 +21,7 @@ from diffusers import (ControlNetModel, EulerAncestralDiscreteScheduler,
                        StableDiffusionControlNetPipeline,
                        StableDiffusionInpaintPipeline,
                        StableDiffusionInstructPix2PixPipeline,
-                       StableDiffusionPipeline, UniPCMultistepScheduler,)
+                       StableDiffusionPipeline, UniPCMultistepScheduler)
 from groundingdino.models import build_model
 from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
@@ -32,13 +31,12 @@ from langchain.agents.tools import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-
 # segment anything
 from segment_anything import SamAutomaticMaskGenerator, SamPredictor, build_sam
 from transformers import (AutoImageProcessor, BlipForConditionalGeneration,
                           BlipForQuestionAnswering, BlipProcessor,
                           CLIPSegForImageSegmentation, CLIPSegProcessor,
-                          UperNetForSemanticSegmentation, pipeline,)
+                          UperNetForSemanticSegmentation, pipeline)
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -1541,20 +1539,19 @@ class ConversationBot:
 
     def __init__(self, load_dict):
         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
-        print(f'Initializing VisualChatGPT, load_dict={load_dict}')
+        # print(f"Initializing VisualChatGPT, load_dict={load_dict}")
 
         self.tools = []
         self.models = {}
         from mmlmtools import list_tool, load_tool
-        mmtools = list_tool()
-        for tool_name in mmtools:
-            mmtool, toolmeta = load_tool(tool_name, device='cpu')
+        for tool_name in list_tool():
+            mmtool = load_tool(tool_name, device='cpu')
             self.models[tool_name] = mmtool
             self.tools.append(
                 Tool(
-                    name=toolmeta.tool_name,
-                    description=toolmeta.description,
-                    func=mmtool.apply))
+                    name=mmtool.toolmeta.tool_name,
+                    description=mmtool.toolmeta.description,
+                    func=mmtool))
 
         print(f'All the Available Functions: {self.models}')
 
@@ -1616,6 +1613,7 @@ class ConversationBot:
         img.save(image_filename, 'PNG')
         print(
             f'Resize image form {width}x{height} to {width_new}x{height_new}')
+        # description = self.models['ImageCaptioning'].inference(image_filename)
         description = self.models['ImageCaptionTool'].inference(image_filename)
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
@@ -1637,14 +1635,10 @@ if __name__ == '__main__':
     if not os.path.exists('checkpoints'):
         os.mkdir('checkpoints')
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--load', type=str, default='ImageCaptioning_cuda:0,Text2Image_cuda:0')
+    # parser.add_argument('--load', type=str, default="ImageCaptioning_cuda:0,Text2Image_cuda:0")
     args = parser.parse_args()
-    load_dict = {
-        e.split('_')[0].strip(): e.split('_')[1].strip()
-        for e in args.load.split(',')
-    }
-    bot = ConversationBot(load_dict=load_dict)
+    # load_dict = {e.split('_')[0].strip(): e.split('_')[1].strip() for e in args.load.split(',')}
+    bot = ConversationBot(load_dict={})
     with gr.Blocks(css='#chatbot .overflow-y-auto{height:500px}') as demo:
         lang = gr.Radio(
             choices=['Chinese', 'English'], value=None, label='Language')

@@ -8,51 +8,45 @@ import mmlmtools.tools as tools
 from .toolmeta import ToolMeta
 from .tools.base_tool import BaseTool
 
-# Loaded from OpenMMLab metafiles, the loaded MMTOOLS will be like this:
+# Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
+
+# DEFAULT_TOOLS = {
+#     'ImageCaptionTool':
+#     dict(
+#         model='blip-base_3rdparty_caption',
+#         description=
+#         'useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. '  # noqa
+#     ),
+#     'Text2BoxTool':
+#     dict(
+#         model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+#         description=
+#         'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'  # noqa
+#     ),
+#     'Text2ImageTool':
+#     dict(
+#         model='stable_diffusion',
+#         description=
+#         'useful when you want to generate an image from a user input text and save it to a file. like: generate an image of an object or something, or generate an image that includes some objects. The input to this tool should be a string, representing the text used to generate image. '  # noqa
+#     ),
+#     'OCRTool':
+#     dict(
+#         model='svtr-small',
+#         description=
+#         'useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. '  # noqa
+#     ),
+#     'HumanBodyPoseTool':
+#     dict(
+#         model='human',
+#         description=
+#         'useful when you want to know the skeleton of a human, or estimate the pose or keypoints of a human. The input to this tool should be a string, representing the image_path. '  # noqa
+#     )
+# }
 
 DEFAULT_TOOLS = {
-    'ImageCaptionTool':
-    dict(
-        model='blip-base_3rdparty_caption',
-        description=
-        'useful when you want to know what is inside the photo. receives image_path as input. The input to this tool should be a string, representing the image_path. '  # noqa
-    ),
-    'Text2BoxTool':
-    dict(
-        model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-        description=
-        'useful when you only want to detect or find out given objects in the picture. The input to this tool should be a comma separated string of two, representing the image_path, the text description of the object to be found'  # noqa
-    ),
-    'ObjectDetectionTool':
-        dict(
-            model='rtmdet_l_8xb32-300e_coco',
-            description=
-            'useful when you only want to detect the picture or detect all objects in the picture. like: detect all object or object. The input to this tool should be a string, representing the image_path. ' # noqa
-        ),
-    'Text2ImageTool':
-    dict(
-        model='stable_diffusion',
-        description=
-        'useful when you want to generate an image from a user input text and save it to a file. like: generate an image of an object or something, or generate an image that includes some objects. The input to this tool should be a string, representing the text used to generate image. '  # noqa
-    ),
-    'OCRTool':
-    dict(
-        model='svtr-small',
-        description=
-        'useful when you want to recognize the text from a photo. receives image_path as inputs. The input to this tool should be a string, representing the image_path. '  # noqa
-    ),
-    'HumanBodyPoseTool':
-    dict(
-        model='human',
-        description=
-        'useful when you want to know the skeleton of a human, or estimate the pose or keypoints of a human. The input to this tool should be a string, representing the image_path. '  # noqa
-    ),
-    'SemSegTool':
-        dict(
-            model='pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
-            description=
-            'useful when you only want to segment the picture or segment all objects in the picture. like: segment all object or object. The input to this tool should be a string, representing the image_path. '  # noqa
-        ),
+    k: v.DEFAULT_TOOLMETA
+    for k, v in tools.__dict__.items()
+    if inspect.isclass(v) and issubclass(v, BaseTool)
 }
 
 TASK2TOOL = {
@@ -71,7 +65,10 @@ def list_tool():
 def load_tool(tool_name: str,
               *,
               model: Optional[str] = None,
+              description: Optional[str] = None,
               device: Optional[str] = 'cpu',
+              input_description: Optional[str] = None,
+              output_description: Optional[str] = None,
               **kwargs) -> Tuple[callable, ToolMeta]:
     """Load a configurable callable tool for different task.
 
@@ -118,10 +115,15 @@ def load_tool(tool_name: str,
 
     if model is None:
         model = tool_meta.get('model', None)
-        if model is not None:
-            kwargs.update(model=model)
-    else:
-        kwargs.update(model=model)
+
+    if description is None:
+        description = tool_meta.get('description', None)
+
+    if input_description:
+        tool_meta.input_description = input_description
+
+    if output_description:
+        tool_meta.output_description = output_description
 
     tool_id = dumps((tool_name, model, kwargs))
 
@@ -129,21 +131,27 @@ def load_tool(tool_name: str,
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
-        if inspect.isfunction(tool_type):
-            # function tool
-            tool_obj = tool_type
-        else:
-            tool_obj = tool_type(device=device, **kwargs)
-
         if len(CACHED_TOOLS[tool_name]) != 0:
             _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
         else:
             _tool_name = tool_name
 
-        tool_meta = ToolMeta(_tool_name, tool_meta.get('description'),
-                             tool_meta.get('model'))
-        CACHED_TOOLS[tool_name][tool_id] = tool_obj, tool_meta
-    return tool_obj, tool_meta
+        tool_meta = ToolMeta(
+            tool_name=_tool_name,
+            description=tool_meta.get('description'),
+            model=model,
+            input_description=tool_meta.get('input_description'),
+            output_description=tool_meta.get('output_description'),
+        )
+
+        if inspect.isfunction(tool_type):
+            # function tool
+            tool_obj = tool_type
+        else:
+            tool_obj = tool_type(toolmeta=tool_meta, device=device, **kwargs)
+
+        CACHED_TOOLS[tool_name][tool_id] = tool_obj
+    return tool_obj
 
 
 def custom_tool(*, tool, description, force=False):
@@ -163,7 +171,7 @@ def custom_tool(*, tool, description, force=False):
 
     def wrapper(func):
         if tool not in DEFAULT_TOOLS:
-            DEFAULT_TOOLS[tool] = dict(description=description)
+            DEFAULT_TOOLS[tool] = dict(tool_name=tool, description=description)
             TASK2TOOL[tool] = func
         else:
             if not force:
@@ -172,7 +180,8 @@ def custom_tool(*, tool, description, force=False):
                     f'{tool}. If you want to overwrite the old tool, please '
                     'set `force=True`')
             else:
-                DEFAULT_TOOLS[tool] = dict(description=description)
+                DEFAULT_TOOLS[tool] = dict(
+                    tool_name=tool, description=description)
                 TASK2TOOL[tool] = func
         return func
 
