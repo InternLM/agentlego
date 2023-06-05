@@ -60,7 +60,7 @@ class BaseTool(metaclass=ABCMeta):
         return outputs
 
     @abstractmethod
-    def infer(self, inputs, **kwargs):
+    def apply(self, inputs, **kwargs):
         """if self.remote:
 
         raise NotImplementedError
@@ -73,30 +73,17 @@ class BaseTool(metaclass=ABCMeta):
     def setup(self):
         """instantiate inferencer."""
 
-    def apply(self, inputs, **kwargs):
+    def __call__(self, inputs, **kwargs):
         self.setup()
         converted_inputs = self.convert_inputs(inputs)
-        outputs = self.infer(converted_inputs, **kwargs)
+        outputs = self.apply(converted_inputs, **kwargs)
         results = self.convert_outputs(outputs)
         return results
 
     def inference(self, inputs, **kwargs):
         """This method is for compatibility with the LangChain tool
         interface."""
-        self.setup()
-        converted_inputs = self.convert_inputs(inputs)
-        outputs = self.infer(converted_inputs, **kwargs)
-        results = self.convert_outputs(outputs)
-        return results
-
-    def __call__(self, inputs, **kwargs):
-        """This method is for compatibility with the callable tool interface
-        e.g. Transformer Agent."""
-        self.setup()
-        converted_inputs = self.convert_inputs(inputs)
-        outputs = self.infer(converted_inputs, **kwargs)
-        results = self.convert_outputs(outputs)
-        return results
+        return self(inputs, **kwargs)
 
     def generate_input_description(self):
         """generate input description according to input style."""

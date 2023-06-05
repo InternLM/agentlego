@@ -93,7 +93,7 @@ def setup(self):
 
 ### 3. 重载两个 convert （可选）
 
-在这里例子中，我们的 `Tool` 输入输出都是 `image_path` ，因此在 `infer()` 中直接调用了 `visualizer` 来把图片存到本地。
+在这里例子中，我们的 `Tool` 输入输出都是 `image_path` ，因此在 `apply()` 中直接调用了 `visualizer` 来把图片存到本地。
 
 但是假如我们的 `Tool` 想要适配不同的系统，`Tool` 的输出就需要在 `convert_inputs` 和 `convert_outputs` 中进行转码，可以转成 `image_path` 也可以转成 `PIL Image` 或者别的特定格式
 
@@ -134,14 +134,14 @@ def convert_outputs(self, outputs, **kwargs):
 - 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs。
 - 如果你定义了一个新的 `input_style` 或 `output_style`，你需要到 `tools/base_tool.py` 下更新对应的 `generate_xxx_description()`，用来为该类型自动生成格式描述。
 
-### 4. 实现 infer
+### 4. 实现 apply
 
-最重要的是实现 infer，infer是整个工具推理的核心代码。
+最重要的是实现 apply ，apply 是整个工具推理的核心代码。
 
 对于ImageCaption工具而言，输入输出都是文本，所以实现比较简单，大家注意 scope 的切换就好
 
 ```python
-def infer(self, inputs, **kwargs):
+def apply(self, inputs, **kwargs):
     if self.remote:
         raise NotImplementedError
     else:
@@ -153,7 +153,7 @@ def infer(self, inputs, **kwargs):
 对于检测工具 GLIP 而言，输入有两个：image_path 和 text，在convert_inputs已经完成了解析
 
 ```Python
-def infer(self, inputs, **kwargs):
+def apply(self, inputs, **kwargs):
     image_path, text = inputs
     if self.remote:
         ...
