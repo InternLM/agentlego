@@ -12,7 +12,7 @@ class ToolAdapter(Tool):
 
         # Transformers Agent requires the input or output to be a PIL image.
         if 'image_path' in tool.input_style:
-            # when the tool is initialized, the description is already 
+            # when the tool is initialized, the description is already
             # formatted with the input description and output description.
             # so we need to update the description after we change the
             # input_style and output_style.
