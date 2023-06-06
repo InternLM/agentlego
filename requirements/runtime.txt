@@ -1,5 +1,5 @@
 mmpretrain>=1.0.0rc8
+modelindex
 numpy
 opencv-python
 torch>=1.8.0
-modelindex
