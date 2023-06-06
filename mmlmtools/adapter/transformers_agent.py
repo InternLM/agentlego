@@ -8,12 +8,16 @@ class ToolAdapter(Tool):
         self.tool = tool
     
         if 'image_path' in tool.input_style:
+            old_input_description = self.tool.generate_input_description()
             self.tool.input_style = self.tool.input_style.replace('image_path', 'pil image')
+            new_input_description = self.tool.generate_input_description()
+            self.tool.toolmeta.description = self.tool.toolmeta.description.replace(old_input_description, new_input_description)
 
         if 'image_path' in tool.output_style:
+            old_output_description = self.tool.generate_output_description()
             self.tool.output_style = self.tool.output_style.replace('image_path', 'pil image')
-
-        self.tool.format_description()
+            new_output_description = self.tool.generate_output_description()
+            self.tool.toolmeta.description = self.tool.toolmeta.description.replace(old_output_description, new_output_description)
 
         self.description = tool.toolmeta.description
 

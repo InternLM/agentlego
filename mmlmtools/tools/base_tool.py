@@ -25,8 +25,6 @@ class BaseTool(metaclass=ABCMeta):
         self.remote = remote
         self.device = device
         self.init_args = kwargs
-        self.toolmeta = toolmeta if toolmeta else ToolMeta(
-            **self.DEFAULT_TOOLMETA)
 
         if toolmeta is not None:
             self.toolmeta = toolmeta
@@ -98,6 +96,8 @@ class BaseTool(metaclass=ABCMeta):
             res = 'The input to this tool should be a comma separated string of two, representing the image_path and the text description of objects. '  # noqa
         elif self.input_style == 'pil image':
             res = 'It takes a <PIL Image> typed image as the input. '
+        elif self.input_style == 'pil image, text':
+            res = 'The input to this tool should be a comma separated string of two, representing the <PIL Image> typed image and the text description of objects. '  # noqa
         else:
             raise NotImplementedError
         return res
