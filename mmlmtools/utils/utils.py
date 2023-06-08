@@ -3,6 +3,7 @@ import os
 import uuid
 
 import mmengine
+from PIL import Image
 
 
 def get_new_image_name(org_img_name, func_name='update'):
@@ -31,3 +32,41 @@ def get_new_image_name(org_img_name, func_name='update'):
     new_file_name += '.png'
     new_image_path = os.path.join(dirname, new_file_name)
     return new_image_path
+
+
+def identity(x):
+    return x
+
+
+image_path_to_inputs = identity
+image_path_to_outputs = identity
+text_to_inputs = identity
+text_to_outputs = identity
+
+
+def pil_image_to_inputs(inputs: Image) -> str:
+    temp_image_path = get_new_image_name('image/temp.jpg', func_name='temp')
+    inputs.save(temp_image_path)
+    return temp_image_path
+
+
+def outputs_to_pil_image(outputs: str) -> Image:
+    outputs = Image.open(outputs)
+    return outputs
+
+
+inputs_conversions = {
+    'image_path': image_path_to_inputs,
+    'text': text_to_inputs,
+    'pil image': pil_image_to_inputs,
+    'eval': eval,
+    'identity': identity
+}
+
+outputs_conversions = {
+    'image_path': image_path_to_outputs,
+    'text': text_to_outputs,
+    'pil image': outputs_to_pil_image,
+    'eval': eval,
+    'identity': identity,
+}

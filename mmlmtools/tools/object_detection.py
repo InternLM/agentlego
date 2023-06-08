@@ -22,7 +22,7 @@ class Text2BoxTool(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path, text',
+                 input_style: str = '{image_path}, {text}',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):
@@ -44,8 +44,7 @@ class Text2BoxTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
-        image_path, text = inputs
+    def apply(self, image_path, text, **kwargs):
         if self.remote:
             raise NotImplementedError
         else:
@@ -102,17 +101,6 @@ class ObjectDetectionTool(BaseTool):
             self.inferencer = DetInferencer(
                 self.toolmeta.model, device=self.device)
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path':  # visual chatgpt style
-            return inputs
-        elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
-                'image/temp.jpg', func_name='temp')
-            inputs.save(temp_image_path)
-            return temp_image_path
-        else:
-            raise NotImplementedError
-
     def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
@@ -134,13 +122,3 @@ class ObjectDetectionTool(BaseTool):
                     out_file=output_path,
                     pred_score_thr=0.5)
         return output_path
-
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError

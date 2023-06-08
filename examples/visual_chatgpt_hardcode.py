@@ -1477,7 +1477,7 @@ class ImageEditing:
                 slice(max(0, i - padding), i + padding + 1) for i in idx)
             mask_array[padded_slice] = True
         new_mask = (mask_array * 255).astype(np.uint8)
-        #new_mask
+        # new_mask
         return new_mask
 
     @prompts(

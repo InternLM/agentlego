@@ -32,17 +32,6 @@ class SemSegTool(BaseTool):
             self.inferencer = MMSegInferencer(
                 self.toolmeta.model, device=self.device)
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path':  # visual chatgpt style
-            return inputs
-        elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
-                'image/temp.jpg', func_name='temp')
-            inputs.save(temp_image_path)
-            return temp_image_path
-        else:
-            raise NotImplementedError
-
     def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
@@ -63,13 +52,3 @@ class SemSegTool(BaseTool):
                     show=False,
                     out_file=output_path)
         return output_path
-
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError

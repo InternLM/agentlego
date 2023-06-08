@@ -2,7 +2,7 @@
 import inspect
 from collections import defaultdict
 from pickle import dumps
-from typing import Optional, Tuple
+from typing import Optional, Union
 
 import mmlmtools.tools as tools
 from .toolmeta import ToolMeta
@@ -49,7 +49,7 @@ DEFAULT_TOOLS = {
     if inspect.isclass(v) and issubclass(v, BaseTool)
 }
 
-TASK2TOOL = {
+NAMES2TOOLS = {
     k: v
     for k, v in tools.__dict__.items()
     if inspect.isclass(v) and issubclass(v, BaseTool)
@@ -66,10 +66,10 @@ def load_tool(tool_name: str,
               *,
               model: Optional[str] = None,
               description: Optional[str] = None,
-              device: Optional[str] = 'cpu',
               input_description: Optional[str] = None,
               output_description: Optional[str] = None,
-              **kwargs) -> Tuple[callable, ToolMeta]:
+              device: Optional[str] = 'cpu',
+              **kwargs) -> Union[callable, BaseTool]:
     """Load a configurable callable tool for different task.
 
     Args:
@@ -105,11 +105,11 @@ def load_tool(tool_name: str,
 
     .. _Capability Matrix: TODO
     """
-    if tool_name not in TASK2TOOL:
+    if tool_name not in NAMES2TOOLS:
         # Using ValueError to show error msg cross lines.
         raise ValueError(f'{tool_name} is not supported now, the available '
                          'tools are:\n' +
-                         '\n'.join(map(repr, TASK2TOOL.keys())))
+                         '\n'.join(map(repr, NAMES2TOOLS.keys())))
 
     tool_meta = DEFAULT_TOOLS[tool_name]
 
@@ -117,17 +117,19 @@ def load_tool(tool_name: str,
         model = tool_meta.get('model', None)
 
     if description is None:
-        description = tool_meta.get('description', None)
+        description = tool_meta.get('description')
 
-    if input_description:
-        tool_meta.input_description = input_description
+    if input_description is None:
+        input_description = tool_meta.get('input_description')
 
-    if output_description:
-        tool_meta.output_description = output_description
+    if output_description is None:
+        output_description = tool_meta.get('output_description')
 
-    tool_id = dumps((tool_name, model, kwargs))
+    tool_id = dumps((tool_name, model, model, description, input_description,
+                     output_description, device, kwargs))
 
-    tool_type = TASK2TOOL[tool_name]
+    tool_type = NAMES2TOOLS[tool_name]
+
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
@@ -138,15 +140,16 @@ def load_tool(tool_name: str,
 
         tool_meta = ToolMeta(
             tool_name=_tool_name,
-            description=tool_meta.get('description'),
+            description=description,
             model=model,
-            input_description=tool_meta.get('input_description'),
-            output_description=tool_meta.get('output_description'),
+            input_description=input_description,
+            output_description=output_description,
         )
 
         if inspect.isfunction(tool_type):
             # function tool
             tool_obj = tool_type
+            tool_obj.toolmeta = tool_meta
         else:
             tool_obj = tool_type(toolmeta=tool_meta, device=device, **kwargs)
 
@@ -154,35 +157,47 @@ def load_tool(tool_name: str,
     return tool_obj
 
 
-def custom_tool(*, tool, description, force=False):
+def custom_tool(*,
+                tool_name,
+                description: Optional[str] = None,
+                input_description: Optional[str] = None,
+                output_description: Optional[str] = None,
+                force=False):
     """Register custom tool.
 
     Args:
-        tool (str): The name of tool.
+        tool_name (str): The name of tool.
         description (str): The description of the tool.
         force (bool): Whether to overwrite the exists tool with the same name.
             Defaults to False.
 
     Examples:
-        >>> @custom_tool(tool="python code executor, description="execute python code")
+        >>> @custom_tool(tool_name="python code executor, description="execute python code")
         >>> def python_code_executor(inputs:)
         >>>     ...
     """  # noqa: E501
 
     def wrapper(func):
-        if tool not in DEFAULT_TOOLS:
-            DEFAULT_TOOLS[tool] = dict(tool_name=tool, description=description)
-            TASK2TOOL[tool] = func
+        if tool_name not in DEFAULT_TOOLS:
+            DEFAULT_TOOLS[tool_name] = dict(
+                tool_name=tool_name,
+                description=description,
+                input_description=input_description,
+                output_description=output_description)
+            NAMES2TOOLS[tool_name] = func
         else:
             if not force:
                 raise KeyError(
                     'Please do not register tool with duplicated name '
-                    f'{tool}. If you want to overwrite the old tool, please '
-                    'set `force=True`')
+                    f'{tool_name}. If you want to overwrite the old tool, '
+                    'please set `force=True`')
             else:
-                DEFAULT_TOOLS[tool] = dict(
-                    tool_name=tool, description=description)
-                TASK2TOOL[tool] = func
+                DEFAULT_TOOLS[tool_name] = dict(
+                    tool_name=tool_name,
+                    description=description,
+                    input_description=input_description,
+                    output_description=output_description)
+                NAMES2TOOLS[tool_name] = func
         return func
 
     return wrapper
