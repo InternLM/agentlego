@@ -128,11 +128,10 @@ def load_tool(tool_name: str,
     tool_id = dumps((tool_name, model, model, description, input_description,
                      output_description, device, kwargs))
 
-    tool_type = NAMES2TOOLS[tool_name]
-
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
+        tool_type = NAMES2TOOLS[tool_name]
         if len(CACHED_TOOLS[tool_name]) != 0:
             _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
         else:
