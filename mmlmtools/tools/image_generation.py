@@ -72,7 +72,7 @@ class Canny2ImageTool(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = '{image_path}, {text}',
+                 input_style: str = 'image_path, text',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):

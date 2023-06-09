@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import re
 from abc import ABCMeta, abstractmethod
 
-from mmengine import is_list_of
-
 from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import inputs_conversions, outputs_conversions
 
 
 class BaseTool(metaclass=ABCMeta):
@@ -19,8 +15,8 @@ class BaseTool(metaclass=ABCMeta):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = 'identity',
-                 output_style: str = 'identity',
+                 input_style: str = None,
+                 output_style: str = None,
                  remote: bool = False,
                  device: str = 'cpu',
                  **kwargs):
@@ -34,6 +30,10 @@ class BaseTool(metaclass=ABCMeta):
             self.toolmeta = toolmeta
         else:
             assert hasattr(self, 'DEFAULT_TOOLMETA')
+            class_name = self.__class__.__name__
+            assert self.DEFAULT_TOOLMETA.get('tool_name') != class_name, (
+                'self.DEFAULT_TOOLMETA.tool_name should be the same as '
+                'the class name of the tool.')
             assert self.DEFAULT_TOOLMETA.get('description') is not None, (
                 '`description` in `DEFAULT_TOOLMETA` should not be None.')
             self.toolmeta = ToolMeta(**self.DEFAULT_TOOLMETA)
@@ -50,32 +50,12 @@ class BaseTool(metaclass=ABCMeta):
         return res
 
     def convert_inputs(self, inputs):
-        return self.convert(inputs, inputs_conversions, self.input_style)
+        """Convert inputs into the tool required format."""
+        return inputs
 
     def convert_outputs(self, outputs):
-        return self.convert(outputs, outputs_conversions, self.output_style)
-
-    def convert(self, inputs, mapping, style):
-        """Convert inputs into the tool required format."""
-        if not self._is_composed_conversion(style):
-            return mapping[style](inputs)
-
-        # This is not a general regex for all conditions. However, consider
-        # most inputs will not consider more than two element, this
-        # regex is enough
-        style_pattern = re.sub(r'(\{[^}]*\})', '(.+?)', style) + '$'
-        inputs = re.findall(style_pattern, inputs)
-        # if inputs have multiple groups, `find_all` will return a list of
-        # tuple with all matched groups
-        if is_list_of(inputs, tuple):
-            inputs = inputs[0]
-        func_names = re.findall(r'\{([^}]*)\}', style)
-
-        res = []
-        for input, func_name in zip(inputs, func_names):
-            res.append(mapping[func_name](input))
-
-        return tuple(res)
+        """Convert outputs into the LLM required format."""
+        return outputs
 
     @abstractmethod
     def apply(self, inputs, **kwargs):
@@ -94,11 +74,9 @@ class BaseTool(metaclass=ABCMeta):
     def __call__(self, inputs, **kwargs):
         self.setup()
         converted_inputs = self.convert_inputs(inputs)
-        if not isinstance(converted_inputs, tuple):
-            converted_inputs = (converted_inputs, )
-        outputs = self.apply(*converted_inputs, **kwargs)
-        outputs = self.convert_outputs(outputs)
-        return outputs
+        outputs = self.apply(converted_inputs, **kwargs)
+        results = self.convert_outputs(outputs)
+        return results
 
     def inference(self, inputs, **kwargs):
         """This method is for compatibility with the LangChain tool
@@ -114,14 +92,14 @@ class BaseTool(metaclass=ABCMeta):
             res = 'It takes a string as the input, representing the image_path. '  # noqa
         elif self.input_style == 'text':
             res = 'It takes a string as the input, representing the text that the tool required. '  # noqa
-        elif self.input_style == '{image_path}, {text}':
+        elif self.input_style == 'image_path, text':
             res = 'The input to this tool should be a comma separated string of two, representing the image_path and the text description of objects. '  # noqa
         elif self.input_style == 'pil image':
             res = 'It takes a <PIL Image> typed image as the input. '
-        elif self.input_style == '{pil image}, {text}':
+        elif self.input_style == 'pil image, text':
             res = 'The input to this tool should be a comma separated string of two, representing the <PIL Image> typed image and the text description of objects. '  # noqa
         else:
-            res = ''
+            raise NotImplementedError
         return res
 
     def generate_output_description(self):
@@ -136,8 +114,5 @@ class BaseTool(metaclass=ABCMeta):
         elif self.output_style == 'pil image':
             res = 'It returns a <PIL Image> typed image as the output. '  # noqa
         else:
-            res = ''
+            raise NotImplementedError
         return res
-
-    def _is_composed_conversion(self, convert):
-        return isinstance(convert, str) and '{' in convert

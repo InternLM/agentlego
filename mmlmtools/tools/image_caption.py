@@ -3,6 +3,7 @@ from mmengine import Registry
 from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.toolmeta import ToolMeta
+from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
@@ -29,6 +30,17 @@ class ImageCaptionTool(BaseTool):
         if self.inferencer is None:
             self.inferencer = ImageCaptionInferencer(
                 self.toolmeta.model, device=self.device, **self.init_args)
+
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path':  # visual chatgpt style
+            return inputs
+        elif self.input_style == 'pil image':  # transformer agent style
+            temp_image_path = get_new_image_name(
+                'image/temp.jpg', func_name='temp')
+            inputs.save(temp_image_path)
+            return temp_image_path
+        else:
+            raise NotImplementedError
 
     def apply(self, inputs, **kwargs):
         if self.remote:

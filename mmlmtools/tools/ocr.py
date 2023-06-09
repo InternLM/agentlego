@@ -3,6 +3,7 @@ from mmengine import Registry
 from mmocr.apis import MMOCRInferencer
 
 from mmlmtools.toolmeta import ToolMeta
+from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
 
@@ -28,6 +29,17 @@ class OCRTool(BaseTool):
             self.inferencer = MMOCRInferencer(
                 det='dbnetpp', rec=self.toolmeta.model, device=self.device)
 
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path':  # visual chatgpt style
+            return inputs
+        elif self.input_style == 'pil image':  # transformer agent style
+            temp_image_path = get_new_image_name(
+                'image/temp.jpg', func_name='temp')
+            inputs.save(temp_image_path)
+            return temp_image_path
+        else:
+            raise NotImplementedError
+
     def apply(self, inputs, **kwargs):
         if self.remote:
             raise NotImplementedError
@@ -39,3 +51,10 @@ class OCRTool(BaseTool):
             for x in ocr_results:
                 outputs += x['rec_texts']
         return outputs
+
+    def convert_outputs(self, outputs):
+        if self.output_style == 'text':
+            outputs = ', '.join(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
