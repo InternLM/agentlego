@@ -60,6 +60,7 @@ class Text2ImageTool(BaseTool):
 
 class Canny2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
+        tool_name='Canny2ImageTool',
         model='mmagic::controlnet/controlnet-canny.py',
         description='This is a useful tool '
         'when you want to generate a new real image from a canny image and '
@@ -85,9 +86,16 @@ class Canny2ImageTool(BaseTool):
             self.inferencer = get_model(self.toolmeta.model).to(
                 device=self.device)
 
-    def apply(self, image, prompt, **kwargs):
-        if isinstance(image, str):
-            image = Image.open(image)
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path, text':
+            splited_inputs = inputs.split(',')
+            image_path = splited_inputs[0]
+            image = Image.open(image_path)
+            text = ','.join(splited_inputs[1:])
+        return image, text
+
+    def apply(self, inputs, **kwargs):
+        image, prompt = inputs
         if self.remote:
             raise NotImplementedError
         else:
@@ -99,3 +107,13 @@ class Canny2ImageTool(BaseTool):
                 control = output_dict['samples'][0]
                 control.save(image_path)
         return image_path
+
+    def convert_outputs(self, outputs):
+        if self.output_style == 'image_path':
+            return outputs
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
