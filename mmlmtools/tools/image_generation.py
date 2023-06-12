@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmagic.apis import MMagicInferencer
 from mmengine import Registry
-from mmengine.config import Config
+from mmengine.hub import get_model
 from PIL import Image
 
-from mmagic.apis import MMagicInferencer
-from mmagic.registry import MODELS
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -62,7 +61,7 @@ class Text2ImageTool(BaseTool):
 class Canny2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='Canny2ImageTool',
-        model='../mmagic/configs/controlnet/controlnet-canny.py',
+        model='mmagic::controlnet/controlnet-canny.py',
         description='This is a useful tool '
         'when you want to generate a new real image from a canny image and '
         'the user description. like: generate a real image of a '
@@ -84,9 +83,8 @@ class Canny2ImageTool(BaseTool):
 
     def setup(self):
         if self.inferencer is None:
-            cfg = Config.fromfile(self.toolmeta.model)
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer = MODELS.build(cfg.model).to(self.device)
+            self.inferencer = get_model(self.toolmeta.model).to(
+                device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, text':
