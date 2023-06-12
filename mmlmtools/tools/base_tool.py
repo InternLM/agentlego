@@ -31,7 +31,7 @@ class BaseTool(metaclass=ABCMeta):
         else:
             assert hasattr(self, 'DEFAULT_TOOLMETA')
             class_name = self.__class__.__name__
-            assert self.DEFAULT_TOOLMETA.get('tool_name') != class_name, (
+            assert self.DEFAULT_TOOLMETA.get('tool_name') == class_name, (
                 'self.DEFAULT_TOOLMETA.tool_name should be the same as '
                 'the class name of the tool.')
             assert self.DEFAULT_TOOLMETA.get('description') is not None, (
