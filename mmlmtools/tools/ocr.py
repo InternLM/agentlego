@@ -22,11 +22,11 @@ class OCRTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMOCRInferencer(
+        if self._inferencer is None:
+            self._inferencer = MMOCRInferencer(
                 det='dbnetpp', rec=self.toolmeta.model, device=self.device)
 
     def convert_inputs(self, inputs):
@@ -40,13 +40,13 @@ class OCRTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmocr'):
-                ocr_results = self.inferencer(
-                    inputs, show=False, **kwargs)['predictions']
+                ocr_results = self._inferencer(
+                    inputs, show=False)['predictions']
             outputs = []
             for x in ocr_results:
                 outputs += x['rec_texts']

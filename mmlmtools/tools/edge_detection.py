@@ -22,10 +22,14 @@ class Image2CannyTool(BaseTool):
                  remote: bool = False,
                  device: str = 'cpu',
                  low_threshold: int = 100,
-                 high_threshold: int = 200,
-                 **init_args):
-        super().__init__(toolmeta, input_style, output_style, remote, device,
-                         **init_args)
+                 high_threshold: int = 200):
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device,
+        )
         self.low_threshold = low_threshold
         self.high_threshold = high_threshold
 
@@ -43,7 +47,7 @@ class Image2CannyTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmagic.apis import MMagicInferencer
 from mmengine import Registry
 
-from mmagic.apis import MMagicInferencer
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -25,15 +25,15 @@ class Text2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
+        if self._inferencer is None:
             self.aux_prompt = 'best quality, extremely detailed'
-            self.inferencer = MMagicInferencer(
+            self._inferencer = MMagicInferencer(
                 model_name=self.toolmeta.model, device=self.device)
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         inputs += self.aux_prompt
         if self.remote:
             raise NotImplementedError
@@ -41,8 +41,7 @@ class Text2ImageTool(BaseTool):
             image_path = get_new_image_name(
                 'image/sd-res.png', func_name='generate-image')
             with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
-                    text=inputs, result_out_dir=image_path, **kwargs)
+                self._inferencer.infer(text=inputs, result_out_dir=image_path)
         return image_path
 
     def convert_outputs(self, outputs):
@@ -138,7 +137,7 @@ class Canny2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
         if self.inferencer is None:
@@ -154,7 +153,7 @@ class Canny2ImageTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         image_path, prompt = inputs
         if self.remote:
             raise NotImplementedError

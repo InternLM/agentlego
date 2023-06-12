@@ -23,11 +23,11 @@ class HumanBodyPoseTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMPoseInferencer(
+        if self._inferencer is None:
+            self._inferencer = MMPoseInferencer(
                 self.toolmeta.model, device=self.device)
 
     def convert_inputs(self, inputs):
@@ -41,14 +41,17 @@ class HumanBodyPoseTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
             image_path = get_new_image_name(
                 inputs, func_name='pose-estimation')
             with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(self.inferencer(inputs, vis_out_dir=image_path, **kwargs))
+                next(self._inferencer(
+                    inputs,
+                    vis_out_dir=image_path,
+                ))
         return image_path
 
     def convert_outputs(self, outputs):

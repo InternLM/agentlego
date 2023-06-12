@@ -19,17 +19,21 @@ class ImageCaptionTool(BaseTool):
                  input_style: str = 'image_path',
                  output_style: str = 'text',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **init_args):
-        super().__init__(toolmeta, input_style, output_style, remote, device,
-                         **init_args)
+                 device: str = 'cuda'):
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device,
+        )
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = ImageCaptionInferencer(
-                self.toolmeta.model, device=self.device, **self.init_args)
+        if self._inferencer is None:
+            self._inferencer = ImageCaptionInferencer(
+                self.toolmeta.model, device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -42,10 +46,10 @@ class ImageCaptionTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmpretrain'):
-                outputs = self.inferencer(inputs, **kwargs)[0]['pred_caption']
+                outputs = self._inferencer(inputs)[0]['pred_caption']
         return outputs

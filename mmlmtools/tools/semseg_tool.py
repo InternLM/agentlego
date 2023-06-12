@@ -25,11 +25,11 @@ class SemSegTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMSegInferencer(
+        if self._inferencer is None:
+            self._inferencer = MMSegInferencer(
                 self.toolmeta.model, device=self.device)
 
     def convert_inputs(self, inputs):
@@ -43,18 +43,17 @@ class SemSegTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmseg'):
-                results = self.inferencer(
-                    inputs, return_datasamples=True, **kwargs)
+                results = self._inferencer(inputs, return_datasamples=True)
                 output_path = get_new_image_name(
                     inputs, func_name='semseg-something')
                 img = mmcv.imread(inputs)
                 img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self.inferencer.visualizer.add_datasample(
+                self._inferencer.visualizer.add_datasample(
                     'results',
                     img,
                     data_sample=results,

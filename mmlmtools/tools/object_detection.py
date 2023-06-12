@@ -28,13 +28,13 @@ class Text2BoxTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
+        if self._inferencer is None:
             self.model = DetInferencer(
                 self.toolmeta.model, device=self.device).model
-            self.inferencer = partial(inference_detector, model=self.model)
+            self._inferencer = partial(inference_detector, model=self.model)
             self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
 
     def convert_inputs(self, inputs):
@@ -44,14 +44,13 @@ class Text2BoxTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         image_path, text = inputs
         if self.remote:
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self.inferencer(
-                    imgs=image_path, text_prompt=text, **kwargs)
+                results = self._inferencer(imgs=image_path, text_prompt=text)
                 output_path = get_new_image_name(
                     image_path, func_name='detect-something')
                 img = mmcv.imread(image_path)
@@ -95,11 +94,11 @@ class ObjectDetectionTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = DetInferencer(
+        if self._inferencer is None:
+            self._inferencer = DetInferencer(
                 self.toolmeta.model, device=self.device)
 
     def convert_inputs(self, inputs):
@@ -113,18 +112,18 @@ class ObjectDetectionTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
             with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self.inferencer(
-                    inputs, no_save_vis=True, return_datasample=True, **kwargs)
+                results = self._inferencer(
+                    inputs, no_save_vis=True, return_datasample=True)
                 output_path = get_new_image_name(
                     inputs, func_name='detect-something')
                 img = mmcv.imread(inputs)
                 img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self.inferencer.visualizer.add_datasample(
+                self._inferencer.visualizer.add_datasample(
                     'results',
                     img,
                     data_sample=results['predictions'][0],
