@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+import sys
 from collections import defaultdict
 from pickle import dumps
 from typing import Optional, Union
@@ -56,6 +57,13 @@ NAMES2TOOLS = {
 }
 
 CACHED_TOOLS = defaultdict(dict)
+
+
+def import_all_tools_to(target_dir):
+    global_dict = sys.modules[target_dir].__dict__
+    for k, v in tools.__dict__.items():
+        if inspect.isclass(v) and issubclass(v, BaseTool):
+            global_dict[k] = v
 
 
 def list_tool():
