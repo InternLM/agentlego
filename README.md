@@ -35,6 +35,81 @@ for tool_name in mmtools:
             func=mmtool))
 ```
 
+### 适配 VisualChatGPT / InterGPT
+
+通过两行代码可以快速将 MMLMTools 集成到 VisualChatGPT / InterGPT 项目中：
+
+#### VisualChatGPT
+
+```Python
+from mmlmtools.adapter.convert_tools_for_visualchatgpt
+
+#class ConversationBot:
+#    def __init__(self, load_dict):
+#        # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
+#        print(f"Initializing VisualChatGPT, load_dict={load_dict}")
+#        if 'ImageCaptioning' not in load_dict:
+#            raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
+#
+#        self.models = {}
+#        # Load Basic Foundation Models
+#        for class_name, device in load_dict.items():
+#            self.models[class_name] = globals()[class_name](device=device)
+#
+        # Convert MMLMTools into VisualChatGPT style
+        convert_tools_for_visualchatgpt(self.models)
+#
+#        # Load Template Foundation Models
+#        for class_name, module in globals().items():
+#            if getattr(module, 'template_model', False):
+#                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
+#                loaded_names = set([type(e).__name__ for e in self.models.values()])
+#                if template_required_names.issubset(loaded_names):
+#                    self.models[class_name] = globals()[class_name](
+#                        **{name: self.models[name] for name in template_required_names})
+#
+#        print(f"All the Available Functions: {self.models}")
+```
+
+#### InterGPT
+
+```Python
+from mmlmtools.adapter.convert_tools_for_igpt
+
+#class ConversationBot:
+#    def __init__(self, load_dict, chat_disabled=False):
+#        print(f"Initializing InternGPT, load_dict={load_dict}")
+#
+#        self.chat_disabled = chat_disabled
+#        self.models = {}
+#        self.audio_model = whisper.load_model("small").to('cuda:0')
+        #self.audio_model = whisper.load_model("small")
+        # Load Basic Foundation Models
+#        for class_name, device in load_dict.items():
+#            self.models[class_name] = globals()[class_name](device=device)
+
+        # Convert MMLMTools into iGPT style
+        convert_tools_for_igpt(self.models)
+
+#        # Load Template Foundation Models
+#        for class_name, module in globals().items():
+#            if getattr(module, 'template_model', False):
+#                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
+#                loaded_names = set([type(e).__name__ for e in self.models.values()])
+#                if template_required_names.issubset(loaded_names):
+#                    self.models[class_name] = globals()[class_name](
+#                        **{name: self.models[name] for name in template_required_names})
+#        self.tools = []
+#        for instance in self.models.values():
+#            for e in dir(instance):
+#                if e.startswith('inference'):
+#                    func = getattr(instance, e)
+#                    self.tools.append(Tool(name=func.name, description=func.description, func=func))
+#
+#        print("Current allocated memory:", torch.cuda.memory_allocated())
+#        print("models",set([type(e).__name__ for e in self.models.values()]))
+```
+
 ### 高级使用
 
 `load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
