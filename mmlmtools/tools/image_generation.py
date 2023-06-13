@@ -104,8 +104,6 @@ class Seg2ImageTool(BaseTool):
             with Registry('scope').switch_scope_and_registry('mmagic'):
                 self.inferencer.infer(
                     text=prompt, control=image_path, result_out_dir=out_path)
-                # control = output_dict['samples'][0]
-                # control.save(out_path)
         return out_path
 
     def convert_outputs(self, outputs):
