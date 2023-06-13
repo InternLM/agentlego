@@ -20,14 +20,17 @@ def get_new_image_name(org_img_name, func_name='update'):
 
     name_split = basename.split('.')[0].split('_')
     this_new_uuid = str(uuid.uuid4())[:4]
-    if len(name_split) == 1:
-        most_org_file_name = name_split[0]
-    else:
-        assert len(name_split) == 4
-        most_org_file_name = name_split[3]
+    most_org_file_name = name_split[-1]
     recent_prev_file_name = name_split[0]
-    new_file_name = '_'.join(
-        [this_new_uuid, func_name, recent_prev_file_name, most_org_file_name])
+    if len(name_split) in [1, 4]:
+        new_file_name = '_'.join([
+            this_new_uuid, func_name, recent_prev_file_name, most_org_file_name
+        ])
+    elif len(name_split) == 3:
+        new_file_name = '_'.join(
+            [recent_prev_file_name, this_new_uuid, most_org_file_name])
+    else:
+        raise NotImplementedError
     new_file_name += '.png'
     new_image_path = os.path.join(dirname, new_file_name)
     return new_image_path
