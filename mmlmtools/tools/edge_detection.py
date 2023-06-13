@@ -10,7 +10,7 @@ from .base_tool import BaseTool
 
 class Image2CannyTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='EdgeDetectionTool',
+        tool_name='Image2CannyTool',
         model='canny',
         description='This is a useful tool '
         'when you want to detect the edge of the image.')

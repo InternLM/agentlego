@@ -12,7 +12,7 @@ from .base_tool import BaseTool
 class SemSegTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         tool_name='SemSegTool',
-        model='pspnet_r50-d8_4xb2-40k_cityscapes-512x1024',
+        model='mask2former_r50_8xb2-90k_cityscapes-512x1024',
         description='This is a useful tool '
         'when you only want to segment the picture or segment all '
         'objects in the picture. like: segment all object or object. ')
