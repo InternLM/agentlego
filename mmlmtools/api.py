@@ -121,6 +121,8 @@ def load_tool(tool_name: str,
 
     tool_meta = DEFAULT_TOOLS[tool_name]
 
+    name = tool_meta.get('name', None)
+
     if model is None:
         model = tool_meta.get('model', None)
 
@@ -133,7 +135,7 @@ def load_tool(tool_name: str,
     if output_description is None:
         output_description = tool_meta.get('output_description')
 
-    tool_id = dumps((tool_name, model, model, description, input_description,
+    tool_id = dumps((tool_name, name, model, description, input_description,
                      output_description, device, kwargs))
 
     if tool_id in CACHED_TOOLS[tool_name]:

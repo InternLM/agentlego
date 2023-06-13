@@ -11,7 +11,17 @@ tools = []
 models = {}
 
 mmtools = list_tool()  # get the list of mmtools
-# dict_keys(['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool'])
+# dict_keys([
+# 'Image2CannyTool',
+# 'ImageCaptionTool',
+# 'Text2BoxTool',
+# 'Text2ImageTool',
+# 'OCRTool',
+# 'Canny2ImageTool',
+# 'ObjectDetectionTool',
+# 'HumanBodyPoseTool',
+# 'SemSegTool',
+# ])
 
 for tool_name in mmtools:
     # obtain tool instance via `load_tool()`
