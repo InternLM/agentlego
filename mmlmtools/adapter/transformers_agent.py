@@ -7,7 +7,7 @@ from mmlmtools import list_tool, load_tool
 class ToolAdapter(Tool):
 
     def __init__(self, tool):
-        self.name = tool.toolmeta.tool_name
+        self.name = tool.toolmeta.name
         self.tool = tool
 
         # Transformers Agent requires the input or output to be a PIL image.
