@@ -57,7 +57,7 @@ class BaseTool(metaclass=ABCMeta):
 
         raise NotImplementedError
         else:
-            outputs = self.inferencer(inputs)
+            outputs = self._inferencer(inputs)
         return outputs
         """
 

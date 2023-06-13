@@ -115,6 +115,7 @@ from mmlmtools.adapter.convert_tools_for_igpt
 `load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
 
 - `device`: 模型加载的设备
+- `name`: 提供给 Agent 的工具名称
 - `model`: 推理所使用的模型
 - `description`: 工具的功能描述
 - `input_description`: 工具的输入格式描述
@@ -124,6 +125,7 @@ from mmlmtools.adapter.convert_tools_for_igpt
 
 mmtool = load_tool('ImageCaptionTool',
                    device='cuda:0',
+                   name='Get Photo Description',
                    description='This is a useful tool '
                                'when you want to know what is inside the image.'
                    input_description='It takes a string as the input, representing the image_path. ',
@@ -171,8 +173,8 @@ class ImageCaptionTool(BaseTool):
 
 ```Python
 def setup(self):
-    if self.inferencer is None:
-        self.inferencer = MMSegInferencer(
+    if self._inferencer is None:
+        self._inferencer = MMSegInferencer(
             self.toolmeta.model, device=self.device)
 ```
 
@@ -231,7 +233,7 @@ def apply(self, inputs, **kwargs):
         raise NotImplementedError
     else:
         with Registry('scope').switch_scope_and_registry('mmpretrain'):
-            outputs = self.inferencer(inputs)[0]['pred_caption']
+            outputs = self._inferencer(inputs)[0]['pred_caption']
     return outputs
 ```
 
@@ -244,7 +246,7 @@ def apply(self, inputs, **kwargs):
         ...
     else:
         with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self.inferencer(imgs=image_path, text_prompt=text)
+                results = self._inferencer(imgs=image_path, text_prompt=text)
                 output_path = get_new_image_name(
                     image_path, func_name='detect-something')
                 img = mmcv.imread(image_path)
