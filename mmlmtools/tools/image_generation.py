@@ -76,11 +76,11 @@ class Seg2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMagicInferencer(
+        if self._inferencer is None:
+            self._inferencer = MMagicInferencer(
                 model_name=self.toolmeta.model,
                 model_setting=3,
                 device=self.device)
@@ -92,7 +92,7 @@ class Seg2ImageTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         image_path, prompt = inputs
         if self.remote:
             raise NotImplementedError
@@ -101,7 +101,7 @@ class Seg2ImageTool(BaseTool):
                 'image/controlnet-res.png',
                 func_name='generate-image-from-seg')
             with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
+                self._inferencer.infer(
                     text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
@@ -140,8 +140,8 @@ class Canny2ImageTool(BaseTool):
         self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMagicInferencer(
+        if self._inferencer is None:
+            self._inferencer = MMagicInferencer(
                 model_name=self.toolmeta.model,
                 model_setting=1,
                 device=self.device)
@@ -162,7 +162,7 @@ class Canny2ImageTool(BaseTool):
                 'image/controlnet-res.png',
                 func_name='generate-image-from-canny')
             with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
+                self._inferencer.infer(
                     text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
