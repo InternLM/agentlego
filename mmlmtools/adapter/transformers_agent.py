@@ -5,6 +5,7 @@ from mmlmtools import list_tool, load_tool
 
 
 class ToolAdapter(Tool):
+    """Adapter for mmlmtools.tools.Tool to transformers.tools.Tool."""
 
     def __init__(self, tool):
         self.name = tool.toolmeta.name
