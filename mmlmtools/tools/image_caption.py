@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 
 class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Get Photo Description',
+        name='Get Photo Description',
         model='blip-base_3rdparty_caption',
         description='This is a useful tool '
         'when you want to know what is inside the image.')

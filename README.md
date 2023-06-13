@@ -30,7 +30,7 @@ for tool_name in mmtools:
     models[tool_name] = mmtool
     tools.append(
         Tool(
-            name=mmtool.toolmeta.tool_name,
+            name=mmtool.toolmeta.name,
             description=mmtool.toolmeta.description,
             func=mmtool))
 ```
@@ -69,7 +69,7 @@ mmtool = load_tool('ImageCaptionTool',
 ```Python
 class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='ImageCaptionTool',
+        name='Get Photo Description',
         model='blip-base_3rdparty_caption',
         description='This is a useful tool '
         'when you want to know what is inside the image.')

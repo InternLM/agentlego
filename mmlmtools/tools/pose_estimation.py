@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 
 class HumanBodyPoseTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='HumanBodyPoseTool',
+        name='Human Body Pose Detection On Image',
         model='human',
         description='This is a useful tool '
         'when you want to draw or show the skeleton of human, '

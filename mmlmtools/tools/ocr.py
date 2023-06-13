@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 
 class OCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='OCRTool',
+        name='Recognize the Optical Characters On Image',
         model='svtr-small',
         description='This is a useful tool '
         'when you want to recognize the text from a photo.')

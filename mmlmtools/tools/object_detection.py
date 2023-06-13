@@ -14,7 +14,7 @@ from .base_tool import BaseTool
 
 class Text2BoxTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Text2BoxTool',
+        name='Detect the Give Object',
         model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
         description='This is a useful tool '
         'when you only want to detect or find out '
@@ -80,7 +80,7 @@ class Text2BoxTool(BaseTool):
 
 class ObjectDetectionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='ObjectDetectionTool',
+        name='Detect All Objects',
         model='rtmdet_l_8xb32-300e_coco',
         description='This is a useful tool '
         'when you only want to detect the picture or detect all objects '

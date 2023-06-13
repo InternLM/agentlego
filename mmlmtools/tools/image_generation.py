@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 
 class Text2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Text2ImageTool',
+        name='Generate Image From User Input Text',
         model='stable_diffusion',
         description='This is a useful tool '
         'when you want to generate an image from'
@@ -57,7 +57,7 @@ class Text2ImageTool(BaseTool):
 
 class Seg2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Seg2ImageTool',
+        name='Generate Image Condition On Segmentations',
         model='controlnet',
         description='This is a useful tool '
         'when you want to generate a new real image from a segmentation image and '  # noqa
@@ -118,7 +118,7 @@ class Seg2ImageTool(BaseTool):
 
 class Canny2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Canny2ImageTool',
+        name='Generate Image Condition On Canny Image',
         model='controlnet',
         description='This is a useful tool '
         'when you want to generate a new real image from a canny image and '
