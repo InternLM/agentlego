@@ -72,10 +72,10 @@ class BaseTool(metaclass=ABCMeta):
         results = self.convert_outputs(outputs)
         return results
 
-    def inference(self, inputs):
-        """This method is for compatibility with the LangChain tool
-        interface."""
-        return self(inputs)
+    # def inference(self, inputs):
+    #     """This method is for compatibility with the LangChain tool
+    #     interface."""
+    #     return self(inputs)
 
     def generate_input_description(self):
         """generate input description according to input style."""
