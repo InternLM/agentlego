@@ -2,16 +2,16 @@
 
 from mmlmtools.api import import_all_tools_to
 from mmlmtools.tools import *  # noqa: F401, F403
-from .visual_chatgpt import (convert_tools_for_visualchatgpt,
-                             load_tools_for_visualchatgpt)
+from .visual_chatgpt import (convert_mmtools_for_visualchatgpt,
+                             load_mmtools_for_visualchatgpt)
 
 
-def load_tools_for_igpt(load_dict):
-    return load_tools_for_visualchatgpt(load_dict)
+def load_mmtools_for_igpt(load_dict):
+    return load_mmtools_for_visualchatgpt(load_dict)
 
 
-def convert_tools_for_igpt(models):
-    convert_tools_for_visualchatgpt(models)
+def convert_mmtools_for_igpt(models):
+    convert_mmtools_for_visualchatgpt(models)
 
 
 # global_dict = sys.modules['iGPT.controllers.ConversationBot'].__dict__
