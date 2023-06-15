@@ -26,8 +26,8 @@ class Adapter:
         return self.adapter
 
 
-def load_tools_for_visualchatgpt(load_dict):
-    """Load mmtools into Visual ChatGPT.style.
+def load_mmtools_for_visualchatgpt(load_dict):
+    """Load mmtools into Visual ChatGPT style.
 
     Args:
         load_dict (dict): dict of mmtools
@@ -48,8 +48,8 @@ def load_tools_for_visualchatgpt(load_dict):
     return models
 
 
-def convert_tools_for_visualchatgpt(models):
-    """Convert mmtools into Visual ChatGPT.style.
+def convert_mmtools_for_visualchatgpt(models):
+    """Convert mmtools into Visual ChatGPT style.
 
     Args:
         models (dict): dict of mmtools

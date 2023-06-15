@@ -48,10 +48,12 @@ class HumanBodyPoseTool(BaseTool):
             image_path = get_new_image_name(
                 inputs, func_name='pose-estimation')
             with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(self._inferencer(
-                    inputs,
-                    vis_out_dir=image_path,
-                ))
+                next(
+                    self._inferencer(
+                        inputs,
+                        vis_out_dir=image_path,
+                        skeleton_style='openpose',
+                    ))
         return image_path
 
     def convert_outputs(self, outputs):

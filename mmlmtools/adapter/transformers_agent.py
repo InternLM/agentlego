@@ -40,9 +40,19 @@ class ToolAdapter(Tool):
         return self.tool(*args, **kwargs)
 
 
-def load_tools_for_tf_agent(device='cpu'):
+def load_mmtools_for_tf_agent(load_list=[], device='cpu'):
+    """Load mmtools into transformers agent style.
+
+    Args:
+        load_list (list): list of mmtools
+        device (str): device to load mmtools
+
+    Returns:
+       tools (list): list of mmtools
+    """
     tools = []
-    for tool_name in list_tool():
+    tool_list = load_list if len(load_list) else list_tool()
+    for tool_name in tool_list:
         mmtool = load_tool(tool_name, device=device)
         hf_tool = ToolAdapter(mmtool)
         tools.append(hf_tool)
