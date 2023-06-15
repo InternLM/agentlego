@@ -35,40 +35,33 @@ for tool_name in mmtools:
             func=mmtool))
 ```
 
-### 适配 VisualChatGPT / InterGPT
+### 适配已有 Agents
+
+我们提供了方便的接口来适配已有的 Agents，包括：
+
+- 直接返回 langchain Tool
+- 将 MMLMTool 转为 Visual ChatGPT / InterGPT 的模型
+- 将 MMLMTool 转为 Transformer Agent 的模型
 
 通过两行代码可以快速将 MMLMTools 集成到 VisualChatGPT / InterGPT 项目中：
 
 #### VisualChatGPT
 
 ```Python
-from mmlmtools.adapter.convert_tools_for_visualchatgpt
+from mmlmtools.adapter.load_mmtools_for_langchain
 
-#class ConversationBot:
-#    def __init__(self, load_dict):
-#        # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
-#        print(f"Initializing VisualChatGPT, load_dict={load_dict}")
-#        if 'ImageCaptioning' not in load_dict:
-#            raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
-#
-#        self.models = {}
-#        # Load Basic Foundation Models
-#        for class_name, device in load_dict.items():
-#            self.models[class_name] = globals()[class_name](device=device)
-#
-        # Convert MMLMTools into VisualChatGPT style
-        convert_tools_for_visualchatgpt(self.models)
-#
-#        # Load Template Foundation Models
-#        for class_name, module in globals().items():
-#            if getattr(module, 'template_model', False):
-#                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
-#                loaded_names = set([type(e).__name__ for e in self.models.values()])
-#                if template_required_names.issubset(loaded_names):
-#                    self.models[class_name] = globals()[class_name](
-#                        **{name: self.models[name] for name in template_required_names})
-#
-#        print(f"All the Available Functions: {self.models}")
+# class ConversationBot:
+#     def __init__(self, load_dict):
+#         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
+#         print(f"Initializing VisualChatGPT, load_dict={load_dict}")
+#         if 'ImageCaptioning' not in load_dict:
+#             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
+
+          # Load MMLMTools as langchain Tool
+          self.tools = load_mmtools_for_langchain(load_dict)
+
+#         self.llm = OpenAI(temperature=0)
+#         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 ```
 
 #### InterGPT
@@ -110,6 +103,16 @@ from mmlmtools.adapter.convert_tools_for_igpt
 #        print("models",set([type(e).__name__ for e in self.models.values()]))
 ```
 
+#### Transformer Agent
+
+```Python
+# from transformers import HfAgent
+from mmlmtools.adapter.transformers_agent import load_tools_for_tf_agent
+tools = load_tools_for_tf_agent()
+agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder",
+                additional_tools=tools)
+```
+
 ### 高级使用
 
 `load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
@@ -120,6 +123,8 @@ from mmlmtools.adapter.convert_tools_for_igpt
 - `description`: 工具的功能描述
 - `input_description`: 工具的输入格式描述
 - `output_description`: 工具的输出格式描述
+- `input_style`: Agent 输入到工具的内容格式
+- `output_style`: 工具输出给 Agent 的内容格式
 
 ```Python
 

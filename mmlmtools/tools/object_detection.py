@@ -17,8 +17,8 @@ class Text2BoxTool(BaseTool):
         name='Detect the Give Object',
         model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
         description='This is a useful tool '
-        'when you only want to detect or find out '
-        'given objects in the picture.')
+        'when you only want to show the location of given objects, '
+        'or detect or find out given objects in the picture.')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,

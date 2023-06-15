@@ -15,7 +15,7 @@ def load_mmtools_for_langchain(load_dict):
     """
     mmtool_list = list_tool()
     langchain_tools = []
-    for tool_name, device in load_dict:
+    for tool_name, device in load_dict.items():
         if tool_name in mmtool_list:
             mmtool = load_tool(tool_name, device=device)
             tool = Tool(
