@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
 
-from mmlmtools.api import import_all_tools_to, list_tool
+from mmlmtools.api import import_all_tools_to, list_tools
 from mmlmtools.tools.base_tool import BaseTool
 
 
@@ -34,7 +34,7 @@ def load_mmtools_for_visualchatgpt(load_dict):
         dict: dict of mmtools
     """
     models = {}
-    mmtool_list = list_tool()
+    mmtool_list = list_tools()
     for class_name, device in load_dict.items():
         if class_name in mmtool_list:
             v = globals()[class_name](device=device)

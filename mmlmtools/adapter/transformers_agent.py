@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from transformers.tools import Tool
 
-from mmlmtools import list_tool, load_tool
+from mmlmtools import list_tools, load_tool
 
 
 class ToolAdapter(Tool):
@@ -51,7 +51,7 @@ def load_mmtools_for_tf_agent(load_list=[], device='cpu'):
        tools (list): list of mmtools
     """
     tools = []
-    tool_list = load_list if len(load_list) else list_tool()
+    tool_list = load_list if len(load_list) else list_tools()
     for tool_name in tool_list:
         mmtool = load_tool(tool_name, device=device)
         hf_tool = ToolAdapter(mmtool)

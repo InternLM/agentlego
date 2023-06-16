@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from langchain.agents.tools import Tool
 
-from mmlmtools import list_tool, load_tool
+from mmlmtools import list_tools, load_tool
 
 
 def load_mmtools_for_langchain(load_dict):
@@ -13,7 +13,7 @@ def load_mmtools_for_langchain(load_dict):
     Returns:
         langchain_tools (list): list of mmtools
     """
-    mmtool_list = list_tool()
+    mmtool_list = list_tools()
     langchain_tools = []
     for tool_name, device in load_dict.items():
         if tool_name in mmtool_list:

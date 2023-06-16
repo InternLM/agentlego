@@ -5,12 +5,12 @@
 ### 基础使用
 
 ```Python
-from mmlmtools import list_tool, load_tool
+from mmlmtools import list_tools, load_tool
 
 tools = []
 models = {}
 
-mmtools = list_tool()  # get the list of mmtools
+mmtools = list_tools()  # get the list of mmtools
 # dict_keys([
 # 'Image2CannyTool',
 # 'ImageCaptionTool',

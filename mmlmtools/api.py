@@ -66,7 +66,7 @@ def import_all_tools_to(target_dir):
             global_dict[k] = v
 
 
-def list_tool():
+def list_tools():
     return DEFAULT_TOOLS.keys()
 
 
