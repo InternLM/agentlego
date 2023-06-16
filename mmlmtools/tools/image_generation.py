@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmagic.apis import MMagicInferencer
-from mmengine import Registry
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
@@ -14,8 +13,12 @@ class Text2ImageTool(BaseTool):
         description='This is a useful tool '
         'when you want to generate an image from'
         'a user input text and save it to a file. like: generate '
-        'an image of an object or something, or generate an image that includes some objects.'  # noqa
-    )
+        'an image of an object or something, or generate an image '
+        'that includes some objects.',
+        input_description='It takes a string as the input, '
+        'representing the text that the tool required. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -40,8 +43,7 @@ class Text2ImageTool(BaseTool):
         else:
             image_path = get_new_image_name(
                 'image/sd-res.png', func_name='generate-image')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self._inferencer.infer(text=inputs, result_out_dir=image_path)
+            self._inferencer.infer(text=inputs, result_out_dir=image_path)
         return image_path
 
     def convert_outputs(self, outputs):
@@ -100,9 +102,8 @@ class Seg2ImageTool(BaseTool):
             out_path = get_new_image_name(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-seg')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self._inferencer.infer(
-                    text=prompt, control=image_path, result_out_dir=out_path)
+            self._inferencer.infer(
+                text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
     def convert_outputs(self, outputs):
@@ -161,9 +162,8 @@ class Canny2ImageTool(BaseTool):
             out_path = get_new_image_name(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-canny')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self._inferencer.infer(
-                    text=prompt, control=image_path, result_out_dir=out_path)
+            self._inferencer.infer(
+                text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
     def convert_outputs(self, outputs):

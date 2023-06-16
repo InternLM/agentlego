@@ -5,7 +5,6 @@ from functools import partial
 import mmcv
 from mmdet.apis import DetInferencer, inference_detector
 from mmdet.registry import VISUALIZERS
-from mmengine import Registry
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
@@ -18,7 +17,12 @@ class Text2BoxTool(BaseTool):
         model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
         description='This is a useful tool '
         'when you only want to show the location of given objects, '
-        'or detect or find out given objects in the picture.')
+        'or detect or find out given objects in the picture.',
+        input_description='The input to this tool should be '
+        'a comma separated string of two, '
+        'representing the image_path and the text description of objects. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -49,21 +53,20 @@ class Text2BoxTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self._inferencer(imgs=image_path, text_prompt=text)
-                output_path = get_new_image_name(
-                    image_path, func_name='detect-something')
-                img = mmcv.imread(image_path)
-                img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self.visualizer.add_datasample(
-                    'results',
-                    img,
-                    data_sample=results,
-                    draw_gt=False,
-                    show=False,
-                    wait_time=0,
-                    out_file=output_path,
-                    pred_score_thr=0.5)
+            results = self._inferencer(imgs=image_path, text_prompt=text)
+            output_path = get_new_image_name(
+                image_path, func_name='detect-something')
+            img = mmcv.imread(image_path)
+            img = mmcv.imconvert(img, 'bgr', 'rgb')
+            self.visualizer.add_datasample(
+                'results',
+                img,
+                data_sample=results,
+                draw_gt=False,
+                show=False,
+                wait_time=0,
+                out_file=output_path,
+                pred_score_thr=0.5)
 
         return output_path
 
@@ -116,22 +119,21 @@ class ObjectDetectionTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self._inferencer(
-                    inputs, no_save_vis=True, return_datasample=True)
-                output_path = get_new_image_name(
-                    inputs, func_name='detect-something')
-                img = mmcv.imread(inputs)
-                img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self._inferencer.visualizer.add_datasample(
-                    'results',
-                    img,
-                    data_sample=results['predictions'][0],
-                    draw_gt=False,
-                    show=False,
-                    wait_time=0,
-                    out_file=output_path,
-                    pred_score_thr=0.5)
+            results = self._inferencer(
+                inputs, no_save_vis=True, return_datasample=True)
+            output_path = get_new_image_name(
+                inputs, func_name='detect-something')
+            img = mmcv.imread(inputs)
+            img = mmcv.imconvert(img, 'bgr', 'rgb')
+            self._inferencer.visualizer.add_datasample(
+                'results',
+                img,
+                data_sample=results['predictions'][0],
+                draw_gt=False,
+                show=False,
+                wait_time=0,
+                out_file=output_path,
+                pred_score_thr=0.5)
         return output_path
 
     def convert_outputs(self, outputs):

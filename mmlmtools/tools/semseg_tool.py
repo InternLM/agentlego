@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import mmcv
-from mmengine import Registry
 from mmseg.apis import MMSegInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -15,7 +14,11 @@ class SemSegTool(BaseTool):
         model='mask2former_r50_8xb2-90k_cityscapes-512x1024',
         description='This is a useful tool '
         'when you only want to segment the picture or segment all '
-        'objects in the picture. like: segment all objects. ')
+        'objects in the picture. like: segment all objects. ',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -47,20 +50,19 @@ class SemSegTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmseg'):
-                results = self._inferencer(inputs, return_datasamples=True)
-                output_path = get_new_image_name(
-                    inputs, func_name='semseg-something')
-                img = mmcv.imread(inputs)
-                img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self._inferencer.visualizer.add_datasample(
-                    'results',
-                    img,
-                    data_sample=results,
-                    draw_gt=False,
-                    draw_pred=True,
-                    show=False,
-                    out_file=output_path)
+            results = self._inferencer(inputs, return_datasamples=True)
+            output_path = get_new_image_name(
+                inputs, func_name='semseg-something')
+            img = mmcv.imread(inputs)
+            img = mmcv.imconvert(img, 'bgr', 'rgb')
+            self._inferencer.visualizer.add_datasample(
+                'results',
+                img,
+                data_sample=results,
+                draw_gt=False,
+                draw_pred=True,
+                show=False,
+                out_file=output_path)
         return output_path
 
     def convert_outputs(self, outputs):

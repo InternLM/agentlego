@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
 from mmocr.apis import MMOCRInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -12,7 +11,11 @@ class OCRTool(BaseTool):
         name='Recognize the Optical Characters On Image',
         model='svtr-small',
         description='This is a useful tool '
-        'when you want to recognize the text from a photo.')
+        'when you want to recognize the text from a photo.',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the text contains the description. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -44,9 +47,7 @@ class OCRTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmocr'):
-                ocr_results = self._inferencer(
-                    inputs, show=False)['predictions']
+            ocr_results = self._inferencer(inputs, show=False)['predictions']
             outputs = []
             for x in ocr_results:
                 outputs += x['rec_texts']

@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
 from mmpose.apis import MMPoseInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -13,7 +12,11 @@ class HumanBodyPoseTool(BaseTool):
         model='human',
         description='This is a useful tool '
         'when you want to draw or show the skeleton of human, '
-        'or estimate the pose or keypoints of human in a photo.')
+        'or estimate the pose or keypoints of human in a photo.',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -47,13 +50,12 @@ class HumanBodyPoseTool(BaseTool):
         else:
             image_path = get_new_image_name(
                 inputs, func_name='pose-estimation')
-            with Registry('scope').switch_scope_and_registry('mmpose'):
-                next(
-                    self._inferencer(
-                        inputs,
-                        vis_out_dir=image_path,
-                        skeleton_style='openpose',
-                    ))
+            next(
+                self._inferencer(
+                    inputs,
+                    vis_out_dir=image_path,
+                    skeleton_style='openpose',
+                ))
         return image_path
 
     def convert_outputs(self, outputs):

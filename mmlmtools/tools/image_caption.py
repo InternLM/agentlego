@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
 from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -12,7 +11,11 @@ class ImageCaptionTool(BaseTool):
         name='Get Photo Description',
         model='blip-base_3rdparty_caption',
         description='This is a useful tool '
-        'when you want to know what is inside the image.')
+        'when you want to know what is inside the image.',
+        input_description='It takes a string as the input, '
+        'representing the text that the tool required. ',
+        output_description='It returns a string as the output, '
+        'representing the text contains the description. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -50,6 +53,5 @@ class ImageCaptionTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmpretrain'):
-                outputs = self._inferencer(inputs)[0]['pred_caption']
+            outputs = self._inferencer(inputs)[0]['pred_caption']
         return outputs
