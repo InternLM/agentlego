@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 class HumanBodyPoseTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Human Body Pose Detection On Image',
-        model='human',
+        model={'pose2d': 'human'},
         description='This is a useful tool '
         'when you want to draw or show the skeleton of human, '
         'or estimate the pose or keypoints of human in a photo.',
@@ -31,7 +31,7 @@ class HumanBodyPoseTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = MMPoseInferencer(
-                self.toolmeta.model, device=self.device)
+                pose2d=self.toolmeta.model['pose2d'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style

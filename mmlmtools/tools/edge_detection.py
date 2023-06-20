@@ -11,9 +11,13 @@ from .base_tool import BaseTool
 class Image2CannyTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Edge Detection On Image',
-        model='canny',
+        model=None,
         description='This is a useful tool '
-        'when you want to detect the edge of the image.')
+        'when you want to detect the edge of the image.',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,

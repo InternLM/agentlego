@@ -14,7 +14,7 @@ from .base_tool import BaseTool
 class Text2BoxTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Give Object',
-        model='glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+        model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},
         description='This is a useful tool '
         'when you only want to show the location of given objects, '
         'or detect or find out given objects in the picture.',
@@ -37,7 +37,7 @@ class Text2BoxTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self.model = DetInferencer(
-                self.toolmeta.model, device=self.device).model
+                model=self.toolmeta.model['model'], device=self.device).model
             self._inferencer = partial(inference_detector, model=self.model)
             self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
 
@@ -84,7 +84,7 @@ class Text2BoxTool(BaseTool):
 class ObjectDetectionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Detect All Objects',
-        model='rtmdet_l_8xb32-300e_coco',
+        model={'model': 'rtmdet_l_8xb32-300e_coco'},
         description='This is a useful tool '
         'when you only want to detect the picture or detect all objects '
         'in the picture. like: detect all object or object. ')
@@ -102,7 +102,7 @@ class ObjectDetectionTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = DetInferencer(
-                self.toolmeta.model, device=self.device)
+                model=self.toolmeta.model['model'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style

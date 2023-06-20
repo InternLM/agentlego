@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 class Text2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image From User Input Text',
-        model='stable_diffusion',
+        model={'model_name': 'stable_diffusion'},
         description='This is a useful tool '
         'when you want to generate an image from'
         'a user input text and save it to a file. like: generate '
@@ -34,7 +34,8 @@ class Text2ImageTool(BaseTool):
         if self._inferencer is None:
             self.aux_prompt = 'best quality, extremely detailed'
             self._inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model, device=self.device)
+                model_name=self.toolmeta.model['model_name'],
+                device=self.device)
 
     def apply(self, inputs):
         inputs += self.aux_prompt
@@ -60,7 +61,10 @@ class Text2ImageTool(BaseTool):
 class Seg2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Segmentations',
-        model='controlnet',
+        model={
+            'model_name': 'controlnet',
+            'model_setting': 3
+        },
         description='This is a useful tool '
         'when you want to generate a new real image from a segmentation image and '  # noqa
         'the user description. like: generate a real image of a '
@@ -83,8 +87,8 @@ class Seg2ImageTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model,
-                model_setting=3,
+                model_name=self.toolmeta.model['model_name'],
+                model_setting=self.toolmeta.model['model_setting'],
                 device=self.device)
 
     def convert_inputs(self, inputs):
@@ -120,7 +124,10 @@ class Seg2ImageTool(BaseTool):
 class Canny2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Canny Image',
-        model='controlnet',
+        model={
+            'model_name': 'controlnet',
+            'model_setting': 1
+        },
         description='This is a useful tool '
         'when you want to generate a new real image from a canny image and '
         'the user description. like: generate a real image of a '
@@ -143,8 +150,8 @@ class Canny2ImageTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model,
-                model_setting=1,
+                model_name=self.toolmeta.model['model_name'],
+                model_setting=self.toolmeta.model['model_setting'],
                 device=self.device)
 
     def convert_inputs(self, inputs):

@@ -9,7 +9,7 @@ from .base_tool import BaseTool
 class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Get Photo Description',
-        model='blip-base_3rdparty_caption',
+        model={'model': 'blip-base_3rdparty_caption'},
         description='This is a useful tool '
         'when you want to know what is inside the image.',
         input_description='It takes a string as the input, '
@@ -36,7 +36,7 @@ class ImageCaptionTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = ImageCaptionInferencer(
-                self.toolmeta.model, device=self.device)
+                model=self.toolmeta.model['model'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style

@@ -9,7 +9,10 @@ from .base_tool import BaseTool
 class OCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize the Optical Characters On Image',
-        model='svtr-small',
+        model={
+            'det': 'dbnetpp',
+            'rec': 'svtr-small'
+        },
         description='This is a useful tool '
         'when you want to recognize the text from a photo.',
         input_description='It takes a string as the input, '
@@ -30,7 +33,9 @@ class OCRTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = MMOCRInferencer(
-                det='dbnetpp', rec=self.toolmeta.model, device=self.device)
+                det=self.toolmeta.model['det'],
+                rec=self.toolmeta.model['rec'],
+                device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style

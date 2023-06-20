@@ -11,7 +11,7 @@ from .base_tool import BaseTool
 class SemSegTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Segment the Image',
-        model='mask2former_r50_8xb2-90k_cityscapes-512x1024',
+        model={'model': 'mask2former_r50_8xb2-90k_cityscapes-512x1024'},
         description='This is a useful tool '
         'when you only want to segment the picture or segment all '
         'objects in the picture. like: segment all objects. ',
@@ -33,7 +33,7 @@ class SemSegTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             self._inferencer = MMSegInferencer(
-                self.toolmeta.model, device=self.device)
+                model=self.toolmeta.model['model'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
