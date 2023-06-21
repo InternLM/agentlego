@@ -8,13 +8,16 @@ class ToolMeta:
     """Meta information for tool.
 
     Args:
-        tool_name (callable): name of tool (task). If there are more than one
-            tools built for the same task with different arguments, tool_name
-            will end up with a index suffix like "object detection {index}"
+        name (str): tool name for agent to identify the tool.
         description (str, optional): Description for tool. Defaults to None
+        model (dict, optional): Model dict for tool. Defaults to None
+        input_description (str, optional): Input description for tool.
+            Defaults to None
+        output_description (str, optional): Output description for tool.
+            Defaults to None
     """
-    tool_name: str
+    name: str
     description: Optional[str] = None
-    model: Optional[str] = None
+    model: Optional[dict] = None
     input_description: Optional[str] = None
     output_description: Optional[str] = None

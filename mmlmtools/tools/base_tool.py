@@ -6,7 +6,7 @@ from mmlmtools.toolmeta import ToolMeta
 
 class BaseTool(metaclass=ABCMeta):
     DEFAULT_TOOLMETA = dict(
-        tool_name='BaseTool',
+        name='Abstract Base Tool',
         model=None,
         description='This is an abstract tool interface '
         'with no actual function.',
@@ -18,22 +18,16 @@ class BaseTool(metaclass=ABCMeta):
                  input_style: str = None,
                  output_style: str = None,
                  remote: bool = False,
-                 device: str = 'cpu',
-                 **kwargs):
+                 device: str = 'cpu'):
         self.input_style = input_style
         self.output_style = output_style
         self.remote = remote
         self.device = device
-        self.init_args = kwargs
 
         if toolmeta is not None:
             self.toolmeta = toolmeta
         else:
             assert hasattr(self, 'DEFAULT_TOOLMETA')
-            class_name = self.__class__.__name__
-            assert self.DEFAULT_TOOLMETA.get('tool_name') != class_name, (
-                'self.DEFAULT_TOOLMETA.tool_name should be the same as '
-                'the class name of the tool.')
             assert self.DEFAULT_TOOLMETA.get('description') is not None, (
                 '`description` in `DEFAULT_TOOLMETA` should not be None.')
             self.toolmeta = ToolMeta(**self.DEFAULT_TOOLMETA)
@@ -58,12 +52,12 @@ class BaseTool(metaclass=ABCMeta):
         return outputs
 
     @abstractmethod
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         """if self.remote:
 
         raise NotImplementedError
         else:
-            outputs = self.inferencer(inputs)
+            outputs = self._inferencer(inputs)
         return outputs
         """
 
@@ -71,17 +65,12 @@ class BaseTool(metaclass=ABCMeta):
     def setup(self):
         """instantiate inferencer."""
 
-    def __call__(self, inputs, **kwargs):
+    def __call__(self, inputs):
         self.setup()
         converted_inputs = self.convert_inputs(inputs)
-        outputs = self.apply(converted_inputs, **kwargs)
+        outputs = self.apply(converted_inputs)
         results = self.convert_outputs(outputs)
         return results
-
-    def inference(self, inputs, **kwargs):
-        """This method is for compatibility with the LangChain tool
-        interface."""
-        return self(inputs, **kwargs)
 
     def generate_input_description(self):
         """generate input description according to input style."""

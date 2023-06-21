@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
 from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -9,27 +8,35 @@ from .base_tool import BaseTool
 
 class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='ImageCaptionTool',
-        model='blip-base_3rdparty_caption',
+        name='Get Photo Description',
+        model={'model': 'blip-base_3rdparty_caption'},
         description='This is a useful tool '
-        'when you want to know what is inside the image.')
+        'when you want to know what is inside the image.',
+        input_description='It takes a string as the input, '
+        'representing the text that the tool required. ',
+        output_description='It returns a string as the output, '
+        'representing the text contains the description. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
                  input_style: str = 'image_path',
                  output_style: str = 'text',
                  remote: bool = False,
-                 device: str = 'cuda',
-                 **init_args):
-        super().__init__(toolmeta, input_style, output_style, remote, device,
-                         **init_args)
+                 device: str = 'cuda'):
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device,
+        )
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = ImageCaptionInferencer(
-                self.toolmeta.model, device=self.device, **self.init_args)
+        if self._inferencer is None:
+            self._inferencer = ImageCaptionInferencer(
+                model=self.toolmeta.model['model'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -42,10 +49,9 @@ class ImageCaptionTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmpretrain'):
-                outputs = self.inferencer(inputs, **kwargs)[0]['pred_caption']
+            outputs = self._inferencer(inputs)[0]['pred_caption']
         return outputs

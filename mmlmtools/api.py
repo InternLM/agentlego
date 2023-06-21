@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+import sys
 from collections import defaultdict
 from pickle import dumps
 from typing import Optional, Union
@@ -58,12 +59,20 @@ NAMES2TOOLS = {
 CACHED_TOOLS = defaultdict(dict)
 
 
-def list_tool():
+def import_all_tools_to(target_dir):
+    global_dict = sys.modules[target_dir].__dict__
+    for k, v in tools.__dict__.items():
+        if inspect.isclass(v) and issubclass(v, BaseTool):
+            global_dict[k] = v
+
+
+def list_tools():
     return DEFAULT_TOOLS.keys()
 
 
 def load_tool(tool_name: str,
               *,
+              name: Optional[str] = None,
               model: Optional[str] = None,
               description: Optional[str] = None,
               input_description: Optional[str] = None,
@@ -75,6 +84,7 @@ def load_tool(tool_name: str,
     Args:
         tool_name (str): tool name for specific task. You can find more
             description about supported tools in `Capability Matrix`_
+        name (str): tool name for agent to identify the tool. Defaults to None.
         model (str, optional): model name defined in OpenMMLab metafile. If it
             is not specified, recommended tool will be loaded according to the
             ``tool``. You can find more description about supported model in
@@ -113,6 +123,9 @@ def load_tool(tool_name: str,
 
     tool_meta = DEFAULT_TOOLS[tool_name]
 
+    if name is None:
+        name = tool_meta.get('name', None)
+
     if model is None:
         model = tool_meta.get('model', None)
 
@@ -125,20 +138,16 @@ def load_tool(tool_name: str,
     if output_description is None:
         output_description = tool_meta.get('output_description')
 
-    tool_id = dumps((tool_name, model, model, description, input_description,
+    tool_id = dumps((tool_name, name, model, description, input_description,
                      output_description, device, kwargs))
 
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
         tool_type = NAMES2TOOLS[tool_name]
-        if len(CACHED_TOOLS[tool_name]) != 0:
-            _tool_name = f'{tool_name} {len(CACHED_TOOLS[tool_name])+1}'
-        else:
-            _tool_name = tool_name
 
         tool_meta = ToolMeta(
-            tool_name=_tool_name,
+            name=name,
             description=description,
             model=model,
             input_description=input_description,
@@ -150,6 +159,7 @@ def load_tool(tool_name: str,
             tool_obj = tool_type
             tool_obj.toolmeta = tool_meta
         else:
+            # Instantiate class tool
             tool_obj = tool_type(toolmeta=tool_meta, device=device, **kwargs)
 
         CACHED_TOOLS[tool_name][tool_id] = tool_obj
@@ -158,6 +168,7 @@ def load_tool(tool_name: str,
 
 def custom_tool(*,
                 tool_name,
+                name: Optional[str] = None,
                 description: Optional[str] = None,
                 input_description: Optional[str] = None,
                 output_description: Optional[str] = None,
@@ -166,7 +177,8 @@ def custom_tool(*,
 
     Args:
         tool_name (str): The name of tool.
-        description (str): The description of the tool.
+        name (str): The name of the tool for agent.
+        description (str): The description of the tool for agent.
         force (bool): Whether to overwrite the exists tool with the same name.
             Defaults to False.
 
@@ -176,10 +188,13 @@ def custom_tool(*,
         >>>     ...
     """  # noqa: E501
 
+    if name is None:
+        name = tool_name
+
     def wrapper(func):
         if tool_name not in DEFAULT_TOOLS:
             DEFAULT_TOOLS[tool_name] = dict(
-                tool_name=tool_name,
+                name=name,
                 description=description,
                 input_description=input_description,
                 output_description=output_description)
@@ -192,7 +207,7 @@ def custom_tool(*,
                     'please set `force=True`')
             else:
                 DEFAULT_TOOLS[tool_name] = dict(
-                    tool_name=tool_name,
+                    name=name,
                     description=description,
                     input_description=input_description,
                     output_description=output_description)

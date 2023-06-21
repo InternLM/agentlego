@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
-
 from mmagic.apis import MMagicInferencer
+
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
@@ -9,13 +8,17 @@ from .base_tool import BaseTool
 
 class Text2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Text2ImageTool',
-        model='stable_diffusion',
+        name='Generate Image From User Input Text',
+        model={'model_name': 'stable_diffusion'},
         description='This is a useful tool '
         'when you want to generate an image from'
         'a user input text and save it to a file. like: generate '
-        'an image of an object or something, or generate an image that includes some objects.'  # noqa
-    )
+        'an image of an object or something, or generate an image '
+        'that includes some objects.',
+        input_description='It takes a string as the input, '
+        'representing the text that the tool required. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -25,24 +28,23 @@ class Text2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
+        if self._inferencer is None:
             self.aux_prompt = 'best quality, extremely detailed'
-            self.inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model, device=self.device)
+            self._inferencer = MMagicInferencer(
+                model_name=self.toolmeta.model['model_name'],
+                device=self.device)
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         inputs += self.aux_prompt
         if self.remote:
             raise NotImplementedError
         else:
             image_path = get_new_image_name(
                 'image/sd-res.png', func_name='generate-image')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
-                    text=inputs, result_out_dir=image_path, **kwargs)
+            self._inferencer.infer(text=inputs, result_out_dir=image_path)
         return image_path
 
     def convert_outputs(self, outputs):
@@ -58,8 +60,11 @@ class Text2ImageTool(BaseTool):
 
 class Seg2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Seg2ImageTool',
-        model='controlnet',
+        name='Generate Image Condition On Segmentations',
+        model={
+            'model_name': 'controlnet',
+            'model_setting': 3
+        },
         description='This is a useful tool '
         'when you want to generate a new real image from a segmentation image and '  # noqa
         'the user description. like: generate a real image of a '
@@ -77,13 +82,13 @@ class Seg2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model,
-                model_setting=3,
+        if self._inferencer is None:
+            self._inferencer = MMagicInferencer(
+                model_name=self.toolmeta.model['model_name'],
+                model_setting=self.toolmeta.model['model_setting'],
                 device=self.device)
 
     def convert_inputs(self, inputs):
@@ -93,7 +98,7 @@ class Seg2ImageTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         image_path, prompt = inputs
         if self.remote:
             raise NotImplementedError
@@ -101,9 +106,8 @@ class Seg2ImageTool(BaseTool):
             out_path = get_new_image_name(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-seg')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
-                    text=prompt, control=image_path, result_out_dir=out_path)
+            self._inferencer.infer(
+                text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
     def convert_outputs(self, outputs):
@@ -119,8 +123,11 @@ class Seg2ImageTool(BaseTool):
 
 class Canny2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Canny2ImageTool',
-        model='controlnet',
+        name='Generate Image Condition On Canny Image',
+        model={
+            'model_name': 'controlnet',
+            'model_setting': 1
+        },
         description='This is a useful tool '
         'when you want to generate a new real image from a canny image and '
         'the user description. like: generate a real image of a '
@@ -138,13 +145,13 @@ class Canny2ImageTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMagicInferencer(
-                model_name=self.toolmeta.model,
-                model_setting=1,
+        if self._inferencer is None:
+            self._inferencer = MMagicInferencer(
+                model_name=self.toolmeta.model['model_name'],
+                model_setting=self.toolmeta.model['model_setting'],
                 device=self.device)
 
     def convert_inputs(self, inputs):
@@ -154,7 +161,7 @@ class Canny2ImageTool(BaseTool):
             text = ','.join(splited_inputs[1:])
         return image_path, text
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         image_path, prompt = inputs
         if self.remote:
             raise NotImplementedError
@@ -162,9 +169,8 @@ class Canny2ImageTool(BaseTool):
             out_path = get_new_image_name(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-canny')
-            with Registry('scope').switch_scope_and_registry('mmagic'):
-                self.inferencer.infer(
-                    text=prompt, control=image_path, result_out_dir=out_path)
+            self._inferencer.infer(
+                text=prompt, control=image_path, result_out_dir=out_path)
         return out_path
 
     def convert_outputs(self, outputs):

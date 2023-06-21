@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import Registry
 from mmocr.apis import MMOCRInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -9,10 +8,17 @@ from .base_tool import BaseTool
 
 class OCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='OCRTool',
-        model='svtr-small',
+        name='Recognize the Optical Characters On Image',
+        model={
+            'det': 'dbnetpp',
+            'rec': 'svtr-small'
+        },
         description='This is a useful tool '
-        'when you want to recognize the text from a photo.')
+        'when you want to recognize the text from a photo.',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the text contains the description. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -22,12 +28,14 @@ class OCRTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
 
-        self.inferencer = None
+        self._inferencer = None
 
     def setup(self):
-        if self.inferencer is None:
-            self.inferencer = MMOCRInferencer(
-                det='dbnetpp', rec=self.toolmeta.model, device=self.device)
+        if self._inferencer is None:
+            self._inferencer = MMOCRInferencer(
+                det=self.toolmeta.model['det'],
+                rec=self.toolmeta.model['rec'],
+                device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -40,13 +48,11 @@ class OCRTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:
-            with Registry('scope').switch_scope_and_registry('mmocr'):
-                ocr_results = self.inferencer(
-                    inputs, show=False, **kwargs)['predictions']
+            ocr_results = self._inferencer(inputs, show=False)['predictions']
             outputs = []
             for x in ocr_results:
                 outputs += x['rec_texts']

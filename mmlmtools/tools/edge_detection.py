@@ -10,10 +10,14 @@ from .base_tool import BaseTool
 
 class Image2CannyTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='Image2CannyTool',
-        model='canny',
+        name='Edge Detection On Image',
+        model=None,
         description='This is a useful tool '
-        'when you want to detect the edge of the image.')
+        'when you want to detect the edge of the image.',
+        input_description='It takes a string as the input, '
+        'representing the image_path. ',
+        output_description='It returns a string as the output, '
+        'representing the image_path. ')
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
@@ -22,10 +26,14 @@ class Image2CannyTool(BaseTool):
                  remote: bool = False,
                  device: str = 'cpu',
                  low_threshold: int = 100,
-                 high_threshold: int = 200,
-                 **init_args):
-        super().__init__(toolmeta, input_style, output_style, remote, device,
-                         **init_args)
+                 high_threshold: int = 200):
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device,
+        )
         self.low_threshold = low_threshold
         self.high_threshold = high_threshold
 
@@ -43,7 +51,7 @@ class Image2CannyTool(BaseTool):
         else:
             raise NotImplementedError
 
-    def apply(self, inputs, **kwargs):
+    def apply(self, inputs):
         if self.remote:
             raise NotImplementedError
         else:

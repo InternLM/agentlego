@@ -5,13 +5,23 @@
 ### 基础使用
 
 ```Python
-from mmlmtools import list_tool, load_tool
+from mmlmtools import list_tools, load_tool
 
 tools = []
 models = {}
 
-mmtools = list_tool()  # get the list of mmtools
-# dict_keys(['ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool'])
+mmtools = list_tools()  # get the list of mmtools
+# dict_keys([
+# 'Image2CannyTool',
+# 'ImageCaptionTool',
+# 'Text2BoxTool',
+# 'Text2ImageTool',
+# 'OCRTool',
+# 'Canny2ImageTool',
+# 'ObjectDetectionTool',
+# 'HumanBodyPoseTool',
+# 'SemSegTool',
+# ])
 
 for tool_name in mmtools:
     # obtain tool instance via `load_tool()`
@@ -20,9 +30,87 @@ for tool_name in mmtools:
     models[tool_name] = mmtool
     tools.append(
         Tool(
-            name=mmtool.toolmeta.tool_name,
+            name=mmtool.toolmeta.name,
             description=mmtool.toolmeta.description,
             func=mmtool))
+```
+
+### 适配已有 Agents
+
+我们提供了方便的接口来适配已有的 Agents，包括：
+
+- 直接返回 langchain Tool
+- 将 MMLMTool 转为 Visual ChatGPT / InterGPT 的模型
+- 将 MMLMTool 转为 Transformer Agent 的模型
+
+通过两行代码可以快速将 MMLMTools 集成到 VisualChatGPT / InterGPT 项目中：
+
+#### VisualChatGPT
+
+```Python
+from mmlmtools.adapter.load_mmtools_for_langchain
+
+# class ConversationBot:
+#     def __init__(self, load_dict):
+#         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
+#         print(f"Initializing VisualChatGPT, load_dict={load_dict}")
+#         if 'ImageCaptioning' not in load_dict:
+#             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
+
+          # Load MMLMTools as langchain Tool
+          self.tools = load_mmtools_for_langchain(load_dict)
+
+#         self.llm = OpenAI(temperature=0)
+#         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
+```
+
+#### InterGPT
+
+```Python
+from mmlmtools.adapter.convert_tools_for_igpt
+
+#class ConversationBot:
+#    def __init__(self, load_dict, chat_disabled=False):
+#        print(f"Initializing InternGPT, load_dict={load_dict}")
+#
+#        self.chat_disabled = chat_disabled
+#        self.models = {}
+#        self.audio_model = whisper.load_model("small").to('cuda:0')
+        #self.audio_model = whisper.load_model("small")
+        # Load Basic Foundation Models
+#        for class_name, device in load_dict.items():
+#            self.models[class_name] = globals()[class_name](device=device)
+
+        # Convert MMLMTools into iGPT style
+        convert_tools_for_igpt(self.models)
+
+#        # Load Template Foundation Models
+#        for class_name, module in globals().items():
+#            if getattr(module, 'template_model', False):
+#                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
+#                loaded_names = set([type(e).__name__ for e in self.models.values()])
+#                if template_required_names.issubset(loaded_names):
+#                    self.models[class_name] = globals()[class_name](
+#                        **{name: self.models[name] for name in template_required_names})
+#        self.tools = []
+#        for instance in self.models.values():
+#            for e in dir(instance):
+#                if e.startswith('inference'):
+#                    func = getattr(instance, e)
+#                    self.tools.append(Tool(name=func.name, description=func.description, func=func))
+#
+#        print("Current allocated memory:", torch.cuda.memory_allocated())
+#        print("models",set([type(e).__name__ for e in self.models.values()]))
+```
+
+#### Transformer Agent
+
+```Python
+# from transformers import HfAgent
+from mmlmtools.adapter.transformers_agent import load_tools_for_tf_agent
+tools = load_tools_for_tf_agent()
+agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder",
+                additional_tools=tools)
 ```
 
 ### 高级使用
@@ -30,15 +118,19 @@ for tool_name in mmtools:
 `load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
 
 - `device`: 模型加载的设备
+- `name`: 提供给 Agent 的工具名称
 - `model`: 推理所使用的模型
 - `description`: 工具的功能描述
 - `input_description`: 工具的输入格式描述
 - `output_description`: 工具的输出格式描述
+- `input_style`: Agent 输入到工具的内容格式
+- `output_style`: 工具输出给 Agent 的内容格式
 
 ```Python
 
 mmtool = load_tool('ImageCaptionTool',
                    device='cuda:0',
+                   name='Get Photo Description',
                    description='This is a useful tool '
                                'when you want to know what is inside the image.'
                    input_description='It takes a string as the input, representing the image_path. ',
@@ -59,7 +151,7 @@ mmtool = load_tool('ImageCaptionTool',
 ```Python
 class ImageCaptionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        tool_name='ImageCaptionTool',
+        name='Get Photo Description',
         model='blip-base_3rdparty_caption',
         description='This is a useful tool '
         'when you want to know what is inside the image.')
@@ -86,8 +178,8 @@ class ImageCaptionTool(BaseTool):
 
 ```Python
 def setup(self):
-    if self.inferencer is None:
-        self.inferencer = MMSegInferencer(
+    if self._inferencer is None:
+        self._inferencer = MMSegInferencer(
             self.toolmeta.model, device=self.device)
 ```
 
@@ -146,7 +238,7 @@ def apply(self, inputs, **kwargs):
         raise NotImplementedError
     else:
         with Registry('scope').switch_scope_and_registry('mmpretrain'):
-            outputs = self.inferencer(inputs)[0]['pred_caption']
+            outputs = self._inferencer(inputs)[0]['pred_caption']
     return outputs
 ```
 
@@ -159,7 +251,7 @@ def apply(self, inputs, **kwargs):
         ...
     else:
         with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self.inferencer(imgs=image_path, text_prompt=text)
+                results = self._inferencer(imgs=image_path, text_prompt=text)
                 output_path = get_new_image_name(
                     image_path, func_name='detect-something')
                 img = mmcv.imread(image_path)
