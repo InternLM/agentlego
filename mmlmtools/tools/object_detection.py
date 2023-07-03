@@ -1,10 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from functools import partial
-
 import mmcv
-from mmdet.apis import DetInferencer, inference_detector
-from mmdet.registry import VISUALIZERS
+from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
@@ -36,10 +33,8 @@ class Text2BoxTool(BaseTool):
 
     def setup(self):
         if self._inferencer is None:
-            self.model = DetInferencer(
-                model=self.toolmeta.model['model'], device=self.device).model
-            self._inferencer = partial(inference_detector, model=self.model)
-            self.visualizer = VISUALIZERS.build(self.model.cfg.visualizer)
+            self._inferencer = DetInferencer(
+                model=self.toolmeta.model['model'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, text':
@@ -53,15 +48,18 @@ class Text2BoxTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            results = self._inferencer(imgs=image_path, text_prompt=text)
+            results = self._inferencer(inputs=image_path,
+                                       texts=text,
+                                       no_save_vis=True,
+                                       return_datasample=True)
             output_path = get_new_image_name(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
-            self.visualizer.add_datasample(
+            self._inferencer.visualizer.add_datasample(
                 'results',
                 img,
-                data_sample=results,
+                data_sample=results['predictions'][0],
                 draw_gt=False,
                 show=False,
                 wait_time=0,
