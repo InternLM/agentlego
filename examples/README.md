@@ -25,6 +25,7 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 pip install openmim
 mim install mmcv
 mim install mmocr
+mim install mmdet
 
 git clone https://github.com/open-mmlab/mmagic.git
 cd mmagic
@@ -36,10 +37,6 @@ cd mmpretrain
 pip install -e .
 cd ..
 
-git clone https://github.com/open-mmlab/mmdetection.git -b dev-3.x
-cd mmdetection
-pip install -e .
-cd ..
 
 git clone https://github.com/open-mmlab/mmpose.git -b dev-1.x
 cd mmpose
