@@ -6,9 +6,11 @@ from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import OCRTool
 from .pose_estimation import HumanBodyPoseTool
 from .semseg_tool import SemSegTool
+from .text_qa import TextQuestionAnsweringTool
 
 __all__ = [
     'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
     'HumanBodyPoseTool', 'SemSegTool', 'ObjectDetectionTool',
-    'Image2CannyTool', 'Canny2ImageTool', 'Seg2ImageTool', 'Pose2ImageTool'
+    'Image2CannyTool', 'Canny2ImageTool', 'Seg2ImageTool', 'Pose2ImageTool',
+    'TextQuestionAnsweringTool'
 ]
