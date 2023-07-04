@@ -182,3 +182,65 @@ class Canny2ImageTool(BaseTool):
             return outputs
         else:
             raise NotImplementedError
+
+
+class Pose2ImageTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        name='Generate Image Condition On Pose Image',
+        model={
+            'model_name': 'controlnet',
+            'model_setting': 2
+        },
+        description='This is a useful tool '
+        'when you want to generate a new real image from a human pose image and '
+        'the user description. like: generate a real image of a human from this human pose image. '
+        'or generate a new real image of a human from this pose. ',
+        input_description='The input to this tool should be a comma separated '
+        'string of two, representing the image_path of a human pose '
+        'image and the text description of objects to generate.')
+
+    def __init__(self,
+                 toolmeta: ToolMeta = None,
+                 input_style: str = 'image_path, text',
+                 output_style: str = 'image_path',
+                 remote: bool = False,
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
+
+        self._inferencer = None
+
+    def setup(self):
+        if self._inferencer is None:
+            self._inferencer = MMagicInferencer(
+                model_name=self.toolmeta.model['model_name'],
+                model_setting=self.toolmeta.model['model_setting'],
+                device=self.device)
+
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path, text':
+            splited_inputs = inputs.split(',')
+            image_path = splited_inputs[0]
+            text = ','.join(splited_inputs[1:])
+        return image_path, text
+
+    def apply(self, inputs):
+        image_path, prompt = inputs
+        if self.remote:
+            raise NotImplementedError
+        else:
+            out_path = get_new_image_name(
+                'image/controlnet-res.png',
+                func_name='generate-image-from-pose')
+            self._inferencer.infer(
+                text=prompt, control=image_path, result_out_dir=out_path)
+        return out_path
+
+    def convert_outputs(self, outputs):
+        if self.output_style == 'image_path':
+            return outputs
+        elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
