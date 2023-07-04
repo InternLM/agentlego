@@ -1,17 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
+from typing import Any
 
 
 class BaseParser(metaclass=ABCMeta):
 
     @abstractmethod
-    def parser_input(self, inputs) -> tuple:
+    def parse_inputs(self, inputs: Any, input_types: tuple[str]) -> tuple:
         raise NotImplementedError
 
     @abstractmethod
-    def parser_output(self, outputs) -> tuple:
+    def parse_outputs(self, outputs: Any, output_types: tuple[str]) -> Any:
         raise NotImplementedError
 
     @abstractmethod
     def refine_description(self, description: str) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def description_to_input_types(self, description: str) -> tuple[str]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def description_to_output_types(self, description: str) -> tuple[str]:
         raise NotImplementedError

@@ -21,3 +21,5 @@ class ToolMeta:
     model: Optional[dict] = None
     input_description: Optional[str] = None
     output_description: Optional[str] = None
+    input_types: Optional[tuple[str]] = None
+    output_types: Optional[tuple[str]] = None
