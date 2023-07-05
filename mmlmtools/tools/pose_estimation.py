@@ -46,6 +46,12 @@ class HumanBodyPoseTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model import inference
+
+            predict = inference('mmpose/human_body', ['./demo_text_ocr.jpg'])
+            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             image_path = get_new_image_name(

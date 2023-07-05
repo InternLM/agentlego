@@ -115,6 +115,12 @@ class ObjectDetectionTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model import inference
+
+            predict = inference('mmdetection/RTMDet', ['./demo_text_ocr.jpg'])
+            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(
