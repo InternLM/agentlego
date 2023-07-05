@@ -63,11 +63,6 @@ class Audio2ImageTool(BaseTool):
             self.model = self._inferencer.model
             self.device = self._inferencer.device
             self.e_mode = self._inferencer.e_mode
-            self.a_prompt = 'best quality, extremely detailed'
-            self.n_prompt = ('longbody, lowres, bad anatomy, bad hands,'
-                             'missing fingers, extra digit, '
-                             'fewer digits, cropped, worst quality, '
-                             'low quality')
 
     def convert_inputs(self, inputs):
         if self.input_style == 'audio_path':  # visual chatgpt style
@@ -147,11 +142,6 @@ class Thermal2ImageTool(BaseTool):
             self.model = self._inferencer.model
             self.device = self._inferencer.device
             self.e_mode = self._inferencer.e_mode
-            self.a_prompt = 'best quality, extremely detailed'
-            self.n_prompt = ('longbody, lowres, bad anatomy, bad hands,'
-                             'missing fingers, extra digit, '
-                             'fewer digits, cropped, worst quality, '
-                             'low quality')
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -215,7 +205,7 @@ class AudioImage2ImageTool(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = 'audio_path',
+                 input_style: str = 'image_path, audio_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):
@@ -236,11 +226,6 @@ class AudioImage2ImageTool(BaseTool):
             self.model = self._inferencer.model
             self.device = self._inferencer.device
             self.e_mode = self._inferencer.e_mode
-            self.a_prompt = 'best quality, extremely detailed'
-            self.n_prompt = ('longbody, lowres, bad anatomy, bad hands,'
-                             'missing fingers, extra digit, '
-                             'fewer digits, cropped, worst quality, '
-                             'low quality')
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, audio_path':  # visual chatgpt style  # noqa
@@ -338,11 +323,6 @@ class AudioText2ImageTool(BaseTool):
             self.model = self._inferencer.model
             self.device = self._inferencer.device
             self.e_mode = self._inferencer.e_mode
-            self.a_prompt = 'best quality, extremely detailed'
-            self.n_prompt = ('longbody, lowres, bad anatomy, bad hands,'
-                             'missing fingers, extra digit, '
-                             'fewer digits, cropped, worst quality, '
-                             'low quality')
 
     def convert_inputs(self, inputs):
         if self.input_style == 'audio_path, text':  # visual chatgpt style  # noqa
