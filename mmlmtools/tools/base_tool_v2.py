@@ -70,9 +70,9 @@ class BaseToolv2(metaclass=ABCMeta):
             self.setup()
             self._is_setup = True
 
-        parsed_inputs = self.parser.parse_inputs(inputs)
+        parsed_inputs = self.parser.parse_inputs(inputs, self.input_types)
         outputs = self.apply(*parsed_inputs)
-        results = self.parser.parse_outputs(outputs)
+        results = self.parser.parse_outputs(outputs, self.output_types)
         return results
 
     @abstractmethod
