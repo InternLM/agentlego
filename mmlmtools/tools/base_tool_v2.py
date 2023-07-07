@@ -64,11 +64,16 @@ class BaseToolv2(metaclass=ABCMeta):
         first call of ```apply()```, for example loading the model."""
         pass
 
-    def __call__(self, inputs: Any) -> Any:
+    def __call__(self, *args: Any, **kwargs) -> Any:
+
+        if kwargs:
+            raise ValueError('Keyword arguments are not supported.')
 
         if not self._is_setup:
             self.setup()
             self._is_setup = True
+
+        inputs = args
 
         parsed_inputs = self.parser.parse_inputs(inputs, self.input_types)
         outputs = self.apply(*parsed_inputs)

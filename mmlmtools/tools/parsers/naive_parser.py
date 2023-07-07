@@ -26,14 +26,7 @@ class NaiveParser(BaseParser):
             str: The refined tool description.
         '''
 
-        def _remove_brackets(matched: re.Match) -> str:
-            return matched.group(2).strip()
+        def _reformat(match: re.Match) -> str:
+            return match.group(2).strip()
 
-        return re.sub(r'{{{(input|output): (.*?)}}}', _remove_brackets,
-                      description)
-
-    def description_to_input_types(self, description: str) -> tuple[str]:
-        return tuple(re.findall(r'{{{input:[ ]*(.*?)[ ]*}}}', description))
-
-    def description_to_output_types(self, description: str) -> tuple[str]:
-        return tuple(re.findall(r'{{{output:[ ]*(.*?)[ ]*}}}', description))
+        return re.sub(r'{{{(input|output): (.*?)}}}', _reformat, description)
