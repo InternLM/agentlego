@@ -2,4 +2,5 @@ mmpretrain>=1.0.0rc8
 modelindex
 numpy
 opencv-python
+thefuzz
 torch>=1.8.0

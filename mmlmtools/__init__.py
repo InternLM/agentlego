@@ -2,6 +2,7 @@
 import warnings
 
 from .api import custom_tool, list_tools, load_tool
+from .search import search_tool
 
 try:
     import mmagic  # noqa
@@ -33,4 +34,4 @@ except Exception:
     warnings.warn('Import mmpretrain failed. '
                   'Please check whether it is installed properly.')
 
-__all__ = ['load_tool', 'custom_tool', 'list_tools']
+__all__ = ['load_tool', 'custom_tool', 'list_tools', 'search_tool']
