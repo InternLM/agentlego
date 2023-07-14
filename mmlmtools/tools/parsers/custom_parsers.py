@@ -6,14 +6,14 @@ from .type_mapping_parser import TypeMappingParser
 
 
 class VisualChatGPTParser(TypeMappingParser):
-    TypeMapping: dict[str, str] = {
+    _default_type_mapping: dict[str, str] = {
         'image': 'path',
         'text': 'str',
     }
 
 
 class HuggingFaceAgentParser(TypeMappingParser):
-    TypeMapping: dict[str, str] = {
+    _default_type_mapping: dict[str, str] = {
         'image': 'PIL Image',
         'text': 'str',
     }
