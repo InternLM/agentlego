@@ -11,9 +11,9 @@ class TextQuestionAnsweringTool(BaseTool):
         model={'model_name': 'google/flan-t5-base'},
         description='This is a useful tool that answers questions related to '
         'given texts.',
-        input_description='It takes two strings as the input, the first one '
-        'is the text where to find the answer, and the second one is the '
-        'question',
+        input_description='It takes a strings as the input, which contains '
+        'the text and the question. The question should be ended with a '
+        'question mark',
         output_description='It returns a string as the output, representing '
         'the answer to the question.')
 
@@ -22,7 +22,7 @@ class TextQuestionAnsweringTool(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = 'text, text',
+                 input_style: str = 'text',
                  output_style: str = 'text',
                  remote: bool = False,
                  device: str = 'cuda'):
@@ -48,7 +48,7 @@ class TextQuestionAnsweringTool(BaseTool):
             self._model.to(self.device)
 
     def convert_inputs(self, inputs):
-        if self.input_style == 'text, text':
+        if self.input_style == 'text':
             if isinstance(inputs, str):
                 match = re.search(r'([^.;]*?\?)', inputs)
                 if match is None:
