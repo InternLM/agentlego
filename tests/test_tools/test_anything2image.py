@@ -10,7 +10,7 @@ from mmlmtools.testing import ToolTestCase
 class TestAudio2ImageTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('Audio2ImageTool', device='cuda')
+        tool = load_tool('Audio2ImageTool', device='cpu')
         res = tool('tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
@@ -19,7 +19,7 @@ class TestAudio2ImageTool(ToolTestCase):
 class TestThermal2ImageTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('Thermal2ImageTool', device='cuda')
+        tool = load_tool('Thermal2ImageTool', device='cpu')
         res = tool('tests/data/thermal/030419.jpg')
         assert isinstance(res, str)
 
@@ -28,7 +28,7 @@ class TestThermal2ImageTool(ToolTestCase):
 class TestAudioImage2ImageTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('AudioImage2ImageTool', device='cuda')
+        tool = load_tool('AudioImage2ImageTool', device='cpu')
         res = tool('tests/data/images/dog_image.jpg, tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
@@ -37,7 +37,7 @@ class TestAudioImage2ImageTool(ToolTestCase):
 class TestAudioText2ImageTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('AudioText2ImageTool', device='cuda')
+        tool = load_tool('AudioText2ImageTool', device='cpu')
         res = tool(
             'tests/data/audio/cat.wav, generate a cat flying in the sky')
         assert isinstance(res, str)
