@@ -1,49 +1,50 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# coding: utf-8
-import os
-import gradio as gr
-import random
-import torch
-import cv2
-import re
-import uuid
-from PIL import Image, ImageDraw, ImageOps, ImageFont
-import math
-import numpy as np
 import argparse
 import inspect
+import math
+
+# coding: utf-8
+import os
+import random
+import re
 import tempfile
-from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
-from transformers import pipeline, BlipProcessor, BlipForConditionalGeneration, BlipForQuestionAnswering
-from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
+import uuid
 
-from diffusers import StableDiffusionPipeline, StableDiffusionInpaintPipeline, StableDiffusionInstructPix2PixPipeline
-from diffusers import EulerAncestralDiscreteScheduler
-from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler
-from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
-
-from controlnet_aux import OpenposeDetector, MLSDdetector, HEDdetector
-
-from langchain.agents.initialize import initialize_agent
-from langchain.agents.tools import Tool
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.llms.openai import OpenAI
+import cv2
+import gradio as gr
 
 # Grounding DINO
 import groundingdino.datasets.transforms as T
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import wget
+from controlnet_aux import HEDdetector, MLSDdetector, OpenposeDetector
+from diffusers import (ControlNetModel, EulerAncestralDiscreteScheduler,
+                       StableDiffusionControlNetPipeline,
+                       StableDiffusionInpaintPipeline,
+                       StableDiffusionInstructPix2PixPipeline,
+                       StableDiffusionPipeline, UniPCMultistepScheduler,)
+from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 from groundingdino.models import build_model
 from groundingdino.util import box_ops
 from groundingdino.util.slconfig import SLConfig
 from groundingdino.util.utils import clean_state_dict, get_phrases_from_posmap
+from langchain.agents.initialize import initialize_agent
+from langchain.agents.tools import Tool
+from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.llms.openai import OpenAI
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # segment anything
-from segment_anything import build_sam, SamPredictor, SamAutomaticMaskGenerator
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-import wget
+from segment_anything import SamAutomaticMaskGenerator, SamPredictor, build_sam
+from transformers import (AutoImageProcessor, BlipForConditionalGeneration,
+                          BlipForQuestionAnswering, BlipProcessor,
+                          CLIPSegForImageSegmentation, CLIPSegProcessor,
+                          UperNetForSemanticSegmentation, pipeline,)
+
 from mmlmtools.adapter.visual_chatgpt import convert_tools_for_visualchatgpt
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
@@ -1542,7 +1543,7 @@ class ConversationBot:
         img = img.convert('RGB')
         img.save(image_filename, "PNG")
         print(f"Resize image form {width}x{height} to {width_new}x{height_new}")
-        ; description = self.models['ImageCaptioning'].inference(image_filename)
+        # description = self.models['ImageCaptioning'].inference(image_filename)
         description = self.models['ImageCaptionTool'].inference(image_filename)
         if lang == 'Chinese':
             Human_prompt = f'\nHuman: 提供一张名为 {image_filename}的图片。它的描述是: {description}。 这些信息帮助你理解这个图像，但是你应该使用工具来完成下面的任务，而不是直接从我的描述中想象。 如果你明白了, 说 \"收到\". \n'
