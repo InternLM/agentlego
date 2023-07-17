@@ -14,7 +14,7 @@ from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from segment_anything.modeling import Sam
 from segment_anything.utils.transforms import ResizeLongestSide
 
-from mmlmtools.api import CACHED_TOOLS
+from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
