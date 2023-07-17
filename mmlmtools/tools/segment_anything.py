@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import random
-from pickle import dumps
 from typing import Optional, Tuple
 
 import cv2
@@ -290,7 +289,7 @@ class SamPredictor:
 
 def load_sam_and_predictor(model, model_ckpt_path):
     if CACHED_TOOLS.get('sam', None) is not None:
-        sam = CACHED_TOOLS['sam']
+        sam = CACHED_TOOLS['sam'][model]
     else:
         url = ('https://dl.fbaipublicfiles.com/segment_anything/'
                f'{model}')
@@ -299,15 +298,13 @@ def load_sam_and_predictor(model, model_ckpt_path):
 
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
 
-        tool_id = dumps(sam)
-        CACHED_TOOLS['sam'][tool_id] = sam
+        CACHED_TOOLS['sam'][model] = sam
 
     if CACHED_TOOLS.get('sam_predictor', None) is not None:
-        sam_predictor = CACHED_TOOLS['sam_predictor']
+        sam_predictor = CACHED_TOOLS['sam_predictor'][model]
     else:
         sam_predictor = SamPredictor(sam)
-        tool_id = dumps(sam_predictor)
-        CACHED_TOOLS['sam'][tool_id] = sam_predictor
+        CACHED_TOOLS['sam_predictor'][model] = sam_predictor
     return sam, sam_predictor
 
 
