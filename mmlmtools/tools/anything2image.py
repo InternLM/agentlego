@@ -4,8 +4,8 @@ from diffusers import StableUnCLIPImg2ImgPipeline
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from . import imagebind_huge as ib
 from .base_tool import BaseTool
+from .imagebind.models.imagebind_model import imagebind_huge as ib
 
 
 class Anything2Image:
