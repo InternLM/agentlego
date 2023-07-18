@@ -4,6 +4,7 @@ import random
 from typing import Optional, Tuple
 
 import cv2
+import mmengine
 # from segment_anything import SamPredictor as SamPredictorBase
 import numpy as np
 import torch
@@ -293,6 +294,7 @@ def load_sam_and_predictor(model, model_ckpt_path):
     else:
         url = ('https://dl.fbaipublicfiles.com/segment_anything/'
                f'{model}')
+        mmengine.mkdir_or_exist('model_zoo')
         if not os.path.exists(model_ckpt_path):
             wget.download(url, out=model_ckpt_path)
 
