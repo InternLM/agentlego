@@ -12,7 +12,7 @@ class TestSegmentAnything(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('SegmentAnything', device='cpu')
-        res = tool('tests/data/images/test_image.png')
+        res = tool('tests/data/images/test-image.png')
         assert isinstance(res, str)
 
 
@@ -22,6 +22,6 @@ class TestSegmentClicked(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('SegmentClicked', device='cpu')
-        res = tool('tests/data/images/test_image.png, '
-                   'tests/data/images/test_mask.png')
+        res = tool('tests/data/images/test-image.png, '
+                   'tests/data/images/test-mask.png')
         assert isinstance(res, str)

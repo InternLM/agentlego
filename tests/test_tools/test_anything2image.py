@@ -29,7 +29,7 @@ class TestAudioImage2ImageTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('AudioImage2ImageTool', device='cpu')
-        res = tool('tests/data/images/dog_image.jpg, tests/data/audio/cat.wav')
+        res = tool('tests/data/images/dog-image.jpg, tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
 
