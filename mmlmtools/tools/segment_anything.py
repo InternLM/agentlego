@@ -288,7 +288,7 @@ class SamPredictor:
     #     self.input_w = None
 
 
-def load_sam_and_predictor(model, model_ckpt_path):
+def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     if CACHED_TOOLS.get('sam', None) is not None:
         sam = CACHED_TOOLS['sam'][model]
     else:
@@ -299,7 +299,8 @@ def load_sam_and_predictor(model, model_ckpt_path):
             wget.download(url, out=model_ckpt_path)
 
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
-
+        if e_mode is not True:
+            sam.to(device=device)
         CACHED_TOOLS['sam'][model] = sam
 
     if CACHED_TOOLS.get('sam_predictor', None) is not None:
@@ -341,9 +342,10 @@ class SegmentAnything(BaseTool):
 
     def setup(self):
         if self._predictor is None:
-            self.sam, self._predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'], self.model_ckpt_path)
             self.e_mode = True
+            self.sam, self._predictor = load_sam_and_predictor(
+                self.toolmeta.model['model'], self.model_ckpt_path,
+                self.e_mode, self.device)
 
     def apply(self, inputs):
         if self.remote:
@@ -370,6 +372,32 @@ class SegmentAnything(BaseTool):
             self.sam.to(device='cpu')
             print('Current allocated memory:', torch.cuda.memory_allocated())
         return annos
+
+    def show_annos(self, anns):
+        # From https://github.com/sail-sg/EditAnything/blob/main/sam2image.py#L91  # noqa
+        if len(anns) == 0:
+            return
+        sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
+        full_img = None
+
+        # for ann in sorted_anns:
+        for i in range(len(sorted_anns)):
+            ann = anns[i]
+            m = ann['segmentation']
+            if full_img is None:
+                full_img = np.zeros((m.shape[0], m.shape[1], 3))
+                map = np.zeros((m.shape[0], m.shape[1]), dtype=np.uint16)
+            map[m != 0] = i + 1
+            color_mask = np.random.random((1, 3)).tolist()[0]
+            full_img[m != 0] = color_mask
+        full_img = full_img * 255
+        # anno encoding from https://github.com/LUSSeg/ImageNet-S
+        res = np.zeros((map.shape[0], map.shape[1], 3))
+        res[:, :, 0] = map % 256
+        res[:, :, 1] = map // 256
+        res.astype(np.float32)
+        full_img = Image.fromarray(np.uint8(full_img))
+        return full_img, res
 
 
 class SegmentClicked(BaseTool):
@@ -404,8 +432,8 @@ class SegmentClicked(BaseTool):
     def setup(self):
         if self._predictor is None:
             self.sam, self._predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'], self.model_ckpt_path)
-            self.e_mode = True
+                self.toolmeta.model['model'], self.model_ckpt_path,
+                self.e_mode, self.device)
 
     def apply(self, inputs):
         if self.remote:
