@@ -431,6 +431,7 @@ class SegmentClicked(BaseTool):
 
     def setup(self):
         if self._predictor is None:
+            self.e_mode = True
             self.sam, self._predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
@@ -441,14 +442,19 @@ class SegmentClicked(BaseTool):
         else:
             img_path, mask_path = inputs.split(',')[0], inputs.split(',')[1]
             img_path = img_path.strip()
+            img = Image.open(img_path).convert('RGB')
+            img = np.array(img, dtype=np.uint8)
+            features = self.get_image_embedding(img)
+
             mask_path = mask_path.strip()
             clicked_mask = Image.open(mask_path).convert('L')
             clicked_mask = np.array(clicked_mask, dtype=np.uint8)
             # mask = np.array(Image.open(mask_path).convert('L'))
-            res_mask = self.segment_by_mask(clicked_mask)
+
+            res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_image_name(self.img_path, 'sam-mask')
+            filaname = get_new_image_name(img_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
             return filaname
@@ -468,7 +474,7 @@ class SegmentClicked(BaseTool):
         points = np.array(new_mask).reshape(2, -1).transpose(1, 0)[:, ::-1]
         labels = np.array([1] * num_points)
 
-        res_masks, scores, _ = self.predictor.predict(
+        res_masks, scores, _ = self._predictor.predict(
             features=features,
             point_coords=points,
             point_labels=labels,
@@ -479,3 +485,14 @@ class SegmentClicked(BaseTool):
             self.sam.to(device='cpu')
             print('Current allocated memory:', torch.cuda.memory_allocated())
         return res_masks[np.argmax(scores), :, :]
+
+    def get_image_embedding(self, img):
+        # to device
+        if self.e_mode:
+            self.sam.to(device=self.device)
+        embedding = self._predictor.set_image(img)
+        # to cpu
+        if self.e_mode:
+            self.sam.to(device='cpu')
+            print('Current allocated memory:', torch.cuda.memory_allocated())
+        return embedding
