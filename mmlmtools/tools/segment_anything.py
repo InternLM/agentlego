@@ -496,3 +496,168 @@ class SegmentClicked(BaseTool):
             self.sam.to(device='cpu')
             print('Current allocated memory:', torch.cuda.memory_allocated())
         return embedding
+
+
+class ObjectSegmenting(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        name='Segment The Given Object In The Image',
+        model={
+            'model': 'sam_vit_h_4b8939.pth',
+            'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'
+        },
+        description='This is a useful tool '
+        'when you want to segment the certain objects in the image according '
+        'to the given object name, like: segment the cat in this image, '
+        'or can you segment an object for me. ',
+        input_description='The input to this tool should be '
+        'a comma separated string of two, '
+        'representing the image_path and the text description of objects. ',
+        output_description='It returns a string as the output, '
+        'representing the mask_path of the segmented object. ')
+
+    def __init__(self,
+                 toolmeta: ToolMeta = None,
+                 input_style: str = None,
+                 output_style: str = None,
+                 remote: bool = False,
+                 device: str = 'cuda'):
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device,
+        )
+        self.grounding = None
+        self.sam = None
+
+    def setup(self):
+        if self.grounding is None:
+            from mmdet.apis import DetInferencer
+
+            from mmlmtools.cached_tools import CACHED_TOOLS
+
+            if CACHED_TOOLS.get('grounding', None) is not None:
+                self.grounding = CACHED_TOOLS['grounding']
+            else:
+                self.grounding = DetInferencer(
+                    model=self.toolmeta.model['grounding'], device=self.device)
+                CACHED_TOOLS['grounding'] = self.grounding
+
+            self.e_mode = True
+            self.sam, self.sam_predictor = load_sam_and_predictor(
+                self.toolmeta.model['model'], self.model_ckpt_path,
+                self.e_mode, self.device)
+
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path, text':
+            splited_inputs = inputs.split(',')
+            image_path = splited_inputs[0]
+            text = ','.join(splited_inputs[1:])
+        return image_path, text
+
+    def apply(self, inputs):
+        image_path, text = inputs
+        if self.remote:
+            raise NotImplementedError
+        else:
+            results = self.grounding(
+                inputs=image_path,
+                texts=text,
+                no_save_vis=True,
+                return_datasample=True)
+
+            image_pil = Image.open(image_path).convert('RGB')
+
+            bbxes_filt = results['bbxes_filt']
+            pred_phrases = results['pred_phrases']
+            updated_image_path = self.segment_image_with_boxes(
+                image_pil, image_path, bbxes_filt, pred_phrases)
+            return updated_image_path
+
+    def get_mask_with_boxes(self, image_pil, image, boxes_filt):
+        size = image_pil.size
+        H, W = size[1], size[0]
+        for i in range(boxes_filt.size(0)):
+            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+            boxes_filt[i][2:] += boxes_filt[i][:2]
+
+        boxes_filt = boxes_filt.cpu()
+        transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(
+            boxes_filt, image.shape[:2]).to(self.device)
+
+        masks, _, _ = self.sam_predictor.predict_torch(
+            point_coords=None,
+            point_labels=None,
+            boxes=transformed_boxes.to(self.device),
+            multimask_output=False,
+        )
+        return masks
+
+    def segment_image_with_boxes(self, image_pil, image_path, boxes_filt,
+                                 pred_phrases):
+
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.sam_predictor.set_image(image)
+
+        masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
+
+        # draw output image
+
+        for mask in masks:
+            image = self.show_mask(
+                mask[0].cpu().numpy(),
+                image,
+                random_color=True,
+                transparency=0.3)
+
+        updated_image_path = get_new_image_name(
+            image_path, func_name='segmentation')
+
+        new_image = Image.fromarray(image)
+        new_image.save(updated_image_path)
+
+        return updated_image_path
+
+    def show_mask(self,
+                  mask: np.ndarray,
+                  image: np.ndarray,
+                  random_color: bool = False,
+                  transparency=1) -> np.ndarray:
+        """Visualize a mask on top of an image.
+
+        Args:
+            mask (np.ndarray): A 2D array of shape (H, W).
+            image (np.ndarray): A 3D array of shape (H, W, 3).
+            random_color (bool): Whether to use a random color for the mask.
+        Outputs:
+            np.ndarray: A 3D array of shape (H, W, 3) with the mask
+            visualized on top of the image.
+            transparenccy: the transparency of the segmentation mask
+        """
+
+        if random_color:
+            color = np.concatenate([np.random.random(3)], axis=0)
+        else:
+            color = np.array([30 / 255, 144 / 255, 255 / 255])
+        h, w = mask.shape[-2:]
+        mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1) * 255
+
+        image = cv2.addWeighted(image, 0.7, mask_image.astype('uint8'),
+                                transparency, 0)
+        return image
+
+    def show_box(self, box, ax, label):
+        import matplotlib.pyplot as plt
+        x0, y0 = box[0], box[1]
+        w, h = box[2] - box[0], box[3] - box[1]
+        ax.add_patch(
+            plt.Rectangle((x0, y0),
+                          w,
+                          h,
+                          edgecolor='green',
+                          facecolor=(0, 0, 0, 0),
+                          lw=2))
+        ax.text(x0, y0, label)

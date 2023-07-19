@@ -33,8 +33,13 @@ class Text2BoxTool(BaseTool):
 
     def setup(self):
         if self._inferencer is None:
-            self._inferencer = DetInferencer(
-                model=self.toolmeta.model['model'], device=self.device)
+            from mmlmtools.cached_tools import CACHED_TOOLS
+            if CACHED_TOOLS.get('grounding', None) is not None:
+                self._inferencer = CACHED_TOOLS['grounding']
+            else:
+                self._inferencer = DetInferencer(
+                    model=self.toolmeta.model['model'], device=self.device)
+                CACHED_TOOLS['grounding'] = self._inferencer
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, text':
@@ -48,10 +53,11 @@ class Text2BoxTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            results = self._inferencer(inputs=image_path,
-                                       texts=text,
-                                       no_save_vis=True,
-                                       return_datasample=True)
+            results = self._inferencer(
+                inputs=image_path,
+                texts=text,
+                no_save_vis=True,
+                return_datasample=True)
             output_path = get_new_image_name(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
