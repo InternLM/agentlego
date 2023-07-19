@@ -1,8 +1,5 @@
-import os.path as osp
 from unittest import skipIf
 
-import cv2
-import numpy as np
 from mmengine import is_installed
 
 from mmlmtools.api import load_tool
@@ -14,8 +11,6 @@ class TestInstructPix2PixTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('InstructPix2PixTool', device='cuda')
-        img = np.ones([224, 224, 3]).astype(np.uint8)
-        img_path = osp.join(self.tempdir.name, 'temp.jpg')
-        cv2.imwrite(img_path, img)
-        res = tool(f'{img_path}, prompt')
+        img_path = 'tests/data/images/dog-image.jpg'
+        res = tool(f'{img_path}, watercolor painting')
         assert isinstance(res, str)
