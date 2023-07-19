@@ -9,7 +9,7 @@ class ToolMeta:
 
     Args:
         name (str): tool name for agent to identify the tool.
-        description (str, optional): Description for tool. Defaults to None
+        description (str): Description for tool.
         model (dict, optional): Model dict for tool. Defaults to None
         input_description (str, optional): Input description for tool.
             Defaults to None
@@ -17,9 +17,9 @@ class ToolMeta:
             Defaults to None
     """
     name: str
-    description: Optional[str] = None
+    description: str
     model: Optional[dict] = None
     input_description: Optional[str] = None
     output_description: Optional[str] = None
-    input_types: Optional[tuple[str]] = None
-    output_types: Optional[tuple[str]] = None
+    input_types: Optional[tuple[str, ...]] = None
+    output_types: Optional[tuple[str, ...]] = None

@@ -37,23 +37,24 @@ class BaseToolv2(metaclass=ABCMeta):
 
         self.parser = parser if parser is not None else NaiveParser()
 
+        # assign input_types and output_types before binding the parser
+        if self.toolmeta.input_types is None:
+            self.input_types = self.parser.description_to_input_types(
+                self.toolmeta.description)
+        else:
+            self.input_types = self.toolmeta.input_types
+
+        if self.toolmeta.output_types is None:
+            self.output_types = self.parser.description_to_output_types(
+                self.toolmeta.description)
+        else:
+            self.output_types = self.toolmeta.output_types
+
+        self.parser.bind_tool(self)
+
     @property
     def name(self) -> str:
         return self.toolmeta.name
-
-    @property
-    def input_types(self) -> tuple[str]:
-        if self.toolmeta.input_types is None:
-            return self.parser.description_to_input_types(
-                self.toolmeta.description)
-        return self.toolmeta.input_types
-
-    @property
-    def output_types(self) -> tuple[str]:
-        if self.toolmeta.output_types is None:
-            return self.parser.description_to_output_types(
-                self.toolmeta.description)
-        return self.toolmeta.output_types
 
     @property
     def description(self) -> str:
@@ -75,9 +76,9 @@ class BaseToolv2(metaclass=ABCMeta):
 
         inputs = args
 
-        parsed_inputs = self.parser.parse_inputs(inputs, self.input_types)
+        parsed_inputs = self.parser.parse_inputs(inputs)
         outputs = self.apply(*parsed_inputs)
-        results = self.parser.parse_outputs(outputs, self.output_types)
+        results = self.parser.parse_outputs(outputs)
         return results
 
     @abstractmethod
