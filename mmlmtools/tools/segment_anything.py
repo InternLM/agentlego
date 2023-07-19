@@ -290,7 +290,7 @@ class SamPredictor:
 
 def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     if CACHED_TOOLS.get('sam', None) is not None:
-        sam = CACHED_TOOLS['sam'][model]
+        sam = CACHED_TOOLS['sam']
     else:
         url = ('https://dl.fbaipublicfiles.com/segment_anything/'
                f'{model}')
@@ -301,13 +301,13 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
         if e_mode is not True:
             sam.to(device=device)
-        CACHED_TOOLS['sam'][model] = sam
+        CACHED_TOOLS['sam'] = sam
 
     if CACHED_TOOLS.get('sam_predictor', None) is not None:
-        sam_predictor = CACHED_TOOLS['sam_predictor'][model]
+        sam_predictor = CACHED_TOOLS['sam_predictor']
     else:
         sam_predictor = SamPredictor(sam)
-        CACHED_TOOLS['sam_predictor'][model] = sam_predictor
+        CACHED_TOOLS['sam_predictor'] = sam_predictor
     return sam, sam_predictor
 
 
