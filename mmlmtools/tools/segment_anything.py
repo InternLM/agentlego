@@ -336,13 +336,13 @@ class SegmentAnything(BaseTool):
             remote,
             device,
         )
-
+        self.sam = None
         self.sam_predictor = None
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        self.e_mode = True
 
     def setup(self):
         if self.sam_predictor is None:
-            self.e_mode = True
             self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
@@ -359,6 +359,8 @@ class SegmentAnything(BaseTool):
             return seg_all_image_path
 
     def segment_anything(self, img_path):
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -372,6 +374,32 @@ class SegmentAnything(BaseTool):
             self.sam.to(device='cpu')
             print('Current allocated memory:', torch.cuda.memory_allocated())
         return annos
+
+    def segment_by_mask(self, mask, features):
+        random.seed(GLOBAL_SEED)
+        idxs = np.nonzero(mask)
+        num_points = min(max(1, int(len(idxs[0]) * 0.01)), 16)
+        sampled_idx = random.sample(range(0, len(idxs[0])), num_points)
+        new_mask = []
+        for i in range(len(idxs)):
+            new_mask.append(idxs[i][sampled_idx])
+        points = np.array(new_mask).reshape(2, -1).transpose(1, 0)[:, ::-1]
+        labels = np.array([1] * num_points)
+
+        res_masks, scores, _ = self.sam_predictor.predict(
+            features=features,
+            point_coords=points,
+            point_labels=labels,
+            multimask_output=True,
+        )
+
+        return res_masks[np.argmax(scores), :, :]
+
+    def get_detection_map(self, img_path):
+        annos = self.segment_anything(img_path)
+        _, detection_map = self.show_anns(annos)
+
+        return detection_map
 
     def show_annos(self, anns):
         # From https://github.com/sail-sg/EditAnything/blob/main/sam2image.py#L91  # noqa
@@ -399,6 +427,19 @@ class SegmentAnything(BaseTool):
         full_img = Image.fromarray(np.uint8(full_img))
         return full_img, res
 
+    def get_image_embedding(self, img):
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
+        # to device
+        if self.e_mode:
+            self.sam.to(device=self.device)
+        embedding = self.sam_predictor.set_image(img)
+        # to cpu
+        if self.e_mode:
+            self.sam.to(device='cpu')
+            print('Current allocated memory:', torch.cuda.memory_allocated())
+        return embedding
+
 
 class SegmentClicked(BaseTool):
     DEFAULT_TOOLMETA = dict(
@@ -425,13 +466,13 @@ class SegmentClicked(BaseTool):
             remote,
             device,
         )
-
+        self.sam = None
         self.sam_predictor = None
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        self.e_mode = True
 
     def setup(self):
         if self.sam_predictor is None:
-            self.e_mode = True
             self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
@@ -460,6 +501,8 @@ class SegmentClicked(BaseTool):
             return filaname
 
     def segment_by_mask(self, mask, features):
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
@@ -487,6 +530,8 @@ class SegmentClicked(BaseTool):
         return res_masks[np.argmax(scores), :, :]
 
     def get_image_embedding(self, img):
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
@@ -530,6 +575,8 @@ class ObjectSegmenting(BaseTool):
         )
         self.grounding = None
         self.sam = None
+        self.sam_predictor = None
+        self.e_mode = True
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
 
     def setup(self):
@@ -579,6 +626,8 @@ class ObjectSegmenting(BaseTool):
             return updated_image_path
 
     def get_mask_with_boxes(self, image_pil, image, boxes_filt):
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
         size = image_pil.size
         H, W = size[1], size[0]
         for i in range(boxes_filt.size(0)):
@@ -603,7 +652,8 @@ class ObjectSegmenting(BaseTool):
 
     def segment_image_with_boxes(self, image_pil, image_path, boxes_filt,
                                  pred_phrases):
-
+        if self.sam is None or self.sam_predictor is None:
+            self.setup()
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         self.sam_predictor.set_image(image)
