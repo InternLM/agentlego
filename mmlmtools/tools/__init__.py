@@ -6,25 +6,17 @@ from .image_caption import ImageCaptionTool
 from .image_generation import (Canny2ImageTool, Pose2ImageTool, Seg2ImageTool,
                                Text2ImageTool)
 from .object_detection import ObjectDetectionTool, Text2BoxTool
-from .ocr import OCRTool
+from .ocr import ImageMaskOCRTool, OCRTool
 from .pose_estimation import HumanBodyPoseTool
-from .segment_anything import SegmentAnything, SegmentClicked
+from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
+from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
 
 __all__ = [
-    'ImageCaptionTool',
-    'Text2BoxTool',
-    'Text2ImageTool',
-    'OCRTool',
-    'HumanBodyPoseTool',
-    'SemSegTool',
-    'ObjectDetectionTool',
-    'Image2CannyTool',
-    'Canny2ImageTool',
-    'Seg2ImageTool',
-    'SegmentAnything',
-    'SegmentClicked',
-    'TextQuestionAnsweringTool',
-    'Pose2ImageTool',
+    'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
+    'HumanBodyPoseTool', 'SemSegTool', 'ObjectDetectionTool',
+    'Image2CannyTool', 'Canny2ImageTool', 'Seg2ImageTool', 'SegmentAnything',
+    'SegmentClicked', 'TextQuestionAnsweringTool', 'Pose2ImageTool',
+    'ImageMaskOCRTool', 'ObjectSegmenting', 'InstructPix2PixTool'
 ]
