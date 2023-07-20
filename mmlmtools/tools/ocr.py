@@ -36,13 +36,13 @@ class OCRTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-                self._inferecner = CACHED_TOOLS['mmocr_inferencer']
+                self._inferencer = CACHED_TOOLS['mmocr_inferencer']
             else:
-                self._inferecner = MMOCRInferencer(
+                self._inferencer = MMOCRInferencer(
                     det=self.toolmeta.model['det'],
                     rec=self.toolmeta.model['rec'],
                     device=self.device)
-                CACHED_TOOLS['mmocr_inferencer'] = self._inferecner
+                CACHED_TOOLS['mmocr_inferencer'] = self._inferencer
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -75,7 +75,10 @@ class OCRTool(BaseTool):
 class ImageMaskOCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize The Optical Characters On Image With Mask',
-        model=None,
+        model={
+            'det': 'dbnetpp',
+            'rec': 'svtr-small'
+        },
         description='This is a useful tool '
         'when you want to  recognize the characters or words in the masked '
         'region of the image. '
@@ -87,7 +90,7 @@ class ImageMaskOCRTool(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path, audio_path',
+                 input_style: str = 'image_path, mask_path',
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):
@@ -104,13 +107,13 @@ class ImageMaskOCRTool(BaseTool):
     def setup(self):
         if self._inferencer is None:
             if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-                self._inferecner = CACHED_TOOLS['mmocr_inferencer']
+                self._inferencer = CACHED_TOOLS['mmocr_inferencer']
             else:
-                self._inferecner = MMOCRInferencer(
+                self._inferencer = MMOCRInferencer(
                     det=self.toolmeta.model['det'],
                     rec=self.toolmeta.model['rec'],
                     device=self.device)
-                CACHED_TOOLS['mmocr_inferencer'] = self._inferecner
+                CACHED_TOOLS['mmocr_inferencer'] = self._inferencer
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, mask_path':  # visual chatgpt style  # noqa
@@ -129,7 +132,7 @@ class ImageMaskOCRTool(BaseTool):
             mask_path = mask_path.strip()
             mask = Image.open(mask_path).convert('L')
             mask = np.array(mask, dtype=np.uint8)
-            ocr_results = self._inferencer(inputs, show=False)
+            ocr_results = self._inferencer(image_path, show=False)
             ocr_results = ocr_results['predictions'][0]
             seleted_ocr_text = self.get_ocr_by_mask(mask, ocr_results)
 
@@ -159,8 +162,8 @@ class ImageMaskOCRTool(BaseTool):
         return ocr_text
 
     def search(self, coord, ocr_res):
-        det_bboxes = ocr_res['det_bboxes']
-        rec_texts = ocr_res['rec_texts']
+        det_bboxes = ocr_res.get('det_bboxes', [])
+        rec_texts = ocr_res.get('rec_texts', [])
         for i, item in det_bboxes:
             left_top = item[:2]
             right_bottom = item[2:]
