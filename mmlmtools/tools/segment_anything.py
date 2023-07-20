@@ -337,13 +337,13 @@ class SegmentAnything(BaseTool):
             device,
         )
 
-        self._predictor = None
+        self.sam_predictor = None
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
 
     def setup(self):
-        if self._predictor is None:
+        if self.sam_predictor is None:
             self.e_mode = True
-            self.sam, self._predictor = load_sam_and_predictor(
+            self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
 
@@ -426,13 +426,13 @@ class SegmentClicked(BaseTool):
             device,
         )
 
-        self._predictor = None
+        self.sam_predictor = None
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
 
     def setup(self):
-        if self._predictor is None:
+        if self.sam_predictor is None:
             self.e_mode = True
-            self.sam, self._predictor = load_sam_and_predictor(
+            self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
 
@@ -474,7 +474,7 @@ class SegmentClicked(BaseTool):
         points = np.array(new_mask).reshape(2, -1).transpose(1, 0)[:, ::-1]
         labels = np.array([1] * num_points)
 
-        res_masks, scores, _ = self._predictor.predict(
+        res_masks, scores, _ = self.sam_predictor.predict(
             features=features,
             point_coords=points,
             point_labels=labels,
@@ -490,7 +490,7 @@ class SegmentClicked(BaseTool):
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
-        embedding = self._predictor.set_image(img)
+        embedding = self.sam_predictor.set_image(img)
         # to cpu
         if self.e_mode:
             self.sam.to(device='cpu')
@@ -517,7 +517,7 @@ class ObjectSegmenting(BaseTool):
 
     def __init__(self,
                  toolmeta: ToolMeta = None,
-                 input_style: str = None,
+                 input_style: str = 'image_path, text',
                  output_style: str = None,
                  remote: bool = False,
                  device: str = 'cuda'):
@@ -530,6 +530,7 @@ class ObjectSegmenting(BaseTool):
         )
         self.grounding = None
         self.sam = None
+        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
 
     def setup(self):
         if self.grounding is None:
@@ -552,6 +553,8 @@ class ObjectSegmenting(BaseTool):
             splited_inputs = inputs.split(',')
             image_path = splited_inputs[0]
             text = ','.join(splited_inputs[1:])
+        else:
+            raise NotImplementedError
         return image_path, text
 
     def apply(self, inputs):
@@ -559,18 +562,20 @@ class ObjectSegmenting(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
+            image_pil = Image.open(image_path).convert('RGB')
+
             results = self.grounding(
                 inputs=image_path,
                 texts=text,
                 no_save_vis=True,
                 return_datasample=True)
+            results = results['predictions'][0].pred_instances
 
-            image_pil = Image.open(image_path).convert('RGB')
+            boxes_filt = results.bboxes
+            pred_phrases = results.label_names
 
-            bbxes_filt = results['bbxes_filt']
-            pred_phrases = results['pred_phrases']
             updated_image_path = self.segment_image_with_boxes(
-                image_pil, image_path, bbxes_filt, pred_phrases)
+                image_pil, image_path, boxes_filt, pred_phrases)
             return updated_image_path
 
     def get_mask_with_boxes(self, image_pil, image, boxes_filt):
@@ -585,7 +590,10 @@ class ObjectSegmenting(BaseTool):
         transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(
             boxes_filt, image.shape[:2]).to(self.device)
 
+        features = self.sam_predictor.get_image_embedding(image)
+
         masks, _, _ = self.sam_predictor.predict_torch(
+            features=features,
             point_coords=None,
             point_labels=None,
             boxes=transformed_boxes.to(self.device),
