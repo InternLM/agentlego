@@ -25,3 +25,14 @@ class TestSegmentClicked(ToolTestCase):
         res = tool('tests/data/images/test-image.png, '
                    'tests/data/images/test-mask.png')
         assert isinstance(res, str)
+
+
+@skipIf(
+    not is_installed('segment_anything'), reason='requires segment_anything')
+class TestObjectSegmenting(ToolTestCase):
+
+    def test_call(self):
+        tool = load_tool('ObjectSegmenting', device='cpu')
+        res = tool('tests/data/images/test-image.png, '
+                   'water cup')
+        assert isinstance(res, str)

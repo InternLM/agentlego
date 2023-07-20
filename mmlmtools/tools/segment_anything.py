@@ -535,8 +535,6 @@ class ObjectSegmenting(BaseTool):
         if self.grounding is None:
             from mmdet.apis import DetInferencer
 
-            from mmlmtools.cached_tools import CACHED_TOOLS
-
             if CACHED_TOOLS.get('grounding', None) is not None:
                 self.grounding = CACHED_TOOLS['grounding']
             else:

@@ -25,3 +25,13 @@ class TestOCRTool(ToolTestCase):
         tool = load_tool('OCRTool', input_style='pil image', device='cuda')
         res = tool(img)
         assert isinstance(res, str)
+
+
+@skipIf(not is_installed('mmocr'), reason='requires mmocr')
+class TestImageMaskOCRTool(ToolTestCase):
+
+    def test_call(self):
+        tool = load_tool('ImageMaskOCRTool', device='cuda')
+        res = tool('tests/data/images/test-image.png, '
+                   'tests/data/images/test-mask.png')
+        assert isinstance(res, str)

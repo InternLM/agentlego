@@ -33,7 +33,7 @@ class Text2BoxTool(BaseTool):
 
     def setup(self):
         if self._inferencer is None:
-            from mmlmtools.cached_tools import CACHED_TOOLS
+            from mmlmtools.cached_dict import CACHED_TOOLS
             if CACHED_TOOLS.get('grounding', None) is not None:
                 self._inferencer = CACHED_TOOLS['grounding']
             else:
