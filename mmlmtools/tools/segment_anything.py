@@ -628,12 +628,12 @@ class ObjectSegmenting(BaseTool):
     def get_mask_with_boxes(self, image_pil, image, boxes_filt):
         if self.sam is None or self.sam_predictor is None:
             self.setup()
-        size = image_pil.size
-        H, W = size[1], size[0]
-        for i in range(boxes_filt.size(0)):
-            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-            boxes_filt[i][2:] += boxes_filt[i][:2]
+        # size = image_pil.size
+        # H, W = size[1], size[0]
+        # for i in range(boxes_filt.size(0)):
+        #     boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+        #     boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+        #     boxes_filt[i][2:] += boxes_filt[i][:2]
 
         boxes_filt = boxes_filt.cpu()
         transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(
@@ -656,12 +656,11 @@ class ObjectSegmenting(BaseTool):
             self.setup()
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        self.sam_predictor.set_image(image)
+        # self.sam_predictor.set_image(image)
 
         masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
 
         # draw output image
-
         for mask in masks:
             image = self.show_mask(
                 mask[0].cpu().numpy(),
