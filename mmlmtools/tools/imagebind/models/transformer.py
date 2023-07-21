@@ -6,13 +6,13 @@
 # LICENSE file in the root directory of this source tree.
 
 # Code modified from
-# https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py ;
+# https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py ;     # noqa
 # https://github.com/facebookresearch/deit/blob/main/models.py
-# and https://github.com/facebookresearch/vissl/blob/main/vissl/models/trunks/vision_transformer.py
+# and https://github.com/facebookresearch/vissl/blob/main/vissl/models/trunks/vision_transformer.py     # noqa
 
-import copy
-import fnmatch
-import logging
+# import copy
+# import fnmatch
+# import logging
 from functools import partial
 from typing import Callable, List
 
@@ -125,7 +125,7 @@ class BlockWithMasking(nn.Module):
 
         assert not isinstance(
             attn_target, nn.Module
-        ), 'attn_target should be a Callable. Otherwise attn_target is shared across blocks!'
+        ), 'attn_target should be a Callable. Otherwise attn_target is shared across blocks!'  # noqa
         self.attn = attn_target()
         if drop_path > 0.0:
             self.drop_path = DropPath(drop_path)
@@ -194,7 +194,7 @@ class SimpleTransformer(nn.Module):
             mlp_ratio: int = 4,
             ffn_dropout_rate: float = 0.0,
             layer_scale_type:
-        str = None,  # from cait; possible values are None, "per_channel", "scalar"
+        str = None,  # from cait; possible values are None, "per_channel", "scalar"  # noqa
             layer_scale_init_value: float = 1e-4,  # from cait; float
             weight_init_style: str = 'jax',  # possible values jax or pytorch
     ):
@@ -258,11 +258,11 @@ class SimpleTransformer(nn.Module):
     ):
         """Inputs.
 
-        - tokens: data of shape N x L x D (or L x N x D depending on the attention implementation)
+        - tokens: data of shape N x L x D (or L x N x D depending on the attention implementation)  # noqa
         - attn: mask of shape L x L
 
         Output
-        - x: data of shape N x L x D (or L x N x D depending on the attention implementation)
+        - x: data of shape N x L x D (or L x N x D depending on the attention implementation)  # noqa
         """
         if self.pre_transformer_layer:
             tokens = self.pre_transformer_layer(tokens)

@@ -46,7 +46,7 @@ def interpolate_pos_encoding_2d(target_spatial_size, pos_embed):
     if N == target_spatial_size:
         return pos_embed
     dim = pos_embed.shape[-1]
-    # nn.functional.interpolate doesn't work with bfloat16 so we cast to float32
+    # nn.functional.interpolate doesn't work with bfloat16 so we cast to float32  # noqa
     pos_embed, updated = cast_if_src_dtype(pos_embed, torch.bfloat16,
                                            torch.float32)
     pos_embed = nn.functional.interpolate(
@@ -69,8 +69,9 @@ def interpolate_pos_encoding(
     input_shape=None,
     first_patch_idx=1,
 ):
-    assert first_patch_idx == 0 or first_patch_idx == 1, 'there is 1 CLS token or none'
-    N = pos_embed.shape[1] - first_patch_idx  # since it's 1 if cls_token exists
+    assert first_patch_idx == 0 or first_patch_idx == 1, 'there is 1 CLS token or none'  # noqa
+    N = pos_embed.shape[
+        1] - first_patch_idx  # since it's 1 if cls_token exists  # noqa
     if npatch_per_img == N:
         return pos_embed
 
@@ -282,7 +283,7 @@ class RGBDTPreprocessor(VerboseNNModule):
         if vision is not None and depth is not None:
             final_tokens = vision_tokens + depth_tokens
         else:
-            final_tokens = vision_tokens if vision is not None else depth_tokens
+            final_tokens = vision_tokens if vision is not None else depth_tokens  # noqa
         return_dict = {
             'trunk': {
                 'tokens': final_tokens,
@@ -311,7 +312,7 @@ class ThermalPreprocessor(RGBDTPreprocessor):
 
 
 def build_causal_attention_mask(context_length):
-    # lazily create causal attention mask, with full attention between the vision tokens
+    # lazily create causal attention mask, with full attention between the vision tokens  # noqa
     # pytorch uses additive attention mask; fill with -inf
     mask = torch.empty(context_length, context_length, requires_grad=False)
     mask.fill_(float('-inf'))
@@ -340,14 +341,14 @@ class TextPreprocessor(VerboseNNModule):
         self.causal_masking = causal_masking
         if self.causal_masking:
             mask = build_causal_attention_mask(self.context_length)
-            # register the mask as a buffer so it can be moved to the right device
+            # register the mask as a buffer so it can be moved to the right device  # noqa
             self.register_buffer('mask', mask)
 
         self.supply_seq_len_to_head = supply_seq_len_to_head
         self.num_cls_tokens = num_cls_tokens
         self.embed_dim = embed_dim
         if num_cls_tokens > 0:
-            assert self.causal_masking is False, "Masking + CLS token isn't implemented"
+            assert self.causal_masking is False, "Masking + CLS token isn't implemented"  # noqa
             self.cls_token = nn.Parameter(
                 torch.zeros(1, self.num_cls_tokens, embed_dim))
 
@@ -518,7 +519,7 @@ class SimpleTokenizer(object):
             '<|endoftext|>': '<|endoftext|>',
         }
         self.pat = re.compile(
-            r"""<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+""",
+            r"""<\|startoftext\|>|<\|endoftext\|>|'s|'t|'re|'ve|'m|'ll|'d|[\p{L}]+|[\p{N}]|[^\s\p{L}\p{N}]+""",  # noqa
             re.IGNORECASE,
         )
         self.context_length = context_length
@@ -545,7 +546,8 @@ class SimpleTokenizer(object):
                     j = word.index(first, i)
                     new_word.extend(word[i:j])
                     i = j
-                except:
+                except Exception as e:
+                    print(str(e))
                     new_word.extend(word[i:])
                     break
 
@@ -619,7 +621,7 @@ class IMUPreprocessor(VerboseNNModule):
         init_param_style: str = 'openclip',
     ) -> None:
         super().__init__()
-        stem = imu_stem
+        # stem = imu_stem
         self.imu_stem = imu_stem
         self.embed_dim = embed_dim
         self.use_pos_embed = pos_embed_fn is not None

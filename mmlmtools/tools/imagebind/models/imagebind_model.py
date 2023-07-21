@@ -491,7 +491,7 @@ def imagebind_huge(pretrained=False):
     if pretrained:
         if not os.path.exists('checkpoints/imagebind_huge.pth'):
             print(
-                'Downloading imagebind weights to .checkpoints/imagebind_huge.pth ...'
+                'Downloading imagebind weights to .checkpoints/imagebind_huge.pth ...'  # noqa
             )
             os.makedirs('checkpoints', exist_ok=True)
             torch.hub.download_url_to_file(

@@ -5,7 +5,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-import math
+# import math
 
 import einops
 import numpy as np
@@ -46,7 +46,9 @@ class LearnableLogitScaling(nn.Module):
             self.log_logit_scale.exp(), max=self.max_logit_scale) * x
 
     def extra_repr(self):
-        st = f'logit_scale_init={self.logit_scale_init},learnable={self.learnable}, max_logit_scale={self.max_logit_scale}'
+        st = (f'logit_scale_init={self.logit_scale_init},'
+              f'learnable={self.learnable}, '
+              f'max_logit_scale={self.max_logit_scale}')
         return st
 
 
@@ -101,7 +103,7 @@ def cast_if_src_dtype(tensor: torch.Tensor, src_dtype: torch.dtype,
 
 
 class QuickGELU(nn.Module):
-    # From https://github.com/openai/CLIP/blob/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1/clip/model.py#L166
+    # From https://github.com/openai/CLIP/blob/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1/clip/model.py#L166  # noqa
     def forward(self, x: torch.Tensor):
         return x * torch.sigmoid(1.702 * x)
 
@@ -127,7 +129,7 @@ class SelectEOSAndProject(nn.Module):
     def forward(self, x, seq_len):
         assert x.ndim == 3
         # x is of shape B x L x D
-        # take features from the eot embedding (eot_token is the highest number in each sequence)
+        # take features from the eot embedding (eot_token is the highest number in each sequence)  # noqa
         x = x[torch.arange(x.shape[0]), seq_len]
         x = self.proj(x)
         return x
