@@ -5,6 +5,14 @@ from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
+import torch
+import random
+from diffusers import ControlNetModel
+from diffusers import StableDiffusionControlNetPipeline
+from diffusers import UniPCMultistepScheduler
+from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
+from PIL import Image
+
 
 class Text2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
@@ -192,8 +200,9 @@ class Pose2ImageTool(BaseTool):
             'model_setting': 2
         },
         description='This is a useful tool '
-        'when you want to generate a new real image from a human pose image and '
-        'the user description. like: generate a real image of a human from this human pose image. '
+        'when you want to generate a new real image from a human '
+        'pose image and the user description. '
+        'like: generate a real image of a human from this human pose image. '
         'or generate a new real image of a human from this pose. ',
         input_description='The input to this tool should be a comma separated '
         'string of two, representing the image_path of a human pose '
@@ -239,6 +248,161 @@ class Pose2ImageTool(BaseTool):
         if self.output_style == 'image_path':
             return outputs
         elif self.output_style == 'pil image':  # transformer agent style
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
+
+
+class ScribbleText2ImageTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        name='Generate Image Condition On Scribble Image',
+        model=None,
+        description='This is a useful tool '
+        'when you want to generate a new real image from both the user '
+        'description and a scribble image or a sketch image. ',
+        input_description='The input to this tool should be a comma separated '
+        'string of two, representing the image_path of a scribble image '
+        'and the text description of objects to generate.')
+
+    def __init__(self,
+                 toolmeta: ToolMeta = None,
+                 input_style: str = 'image_path, text',
+                 output_style: str = 'image_path',
+                 remote: bool = False,
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
+
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained(
+            'fusing/stable-diffusion-v1-5-controlnet-scribble',
+            torch_dtype=self.torch_dtype
+        )
+        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
+            'runwayml/stable-diffusion-v1-5', controlnet=self.controlnet,
+            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
+                'CompVis/stable-diffusion-safety-checker'
+            ),
+            torch_dtype=self.torch_dtype
+        )
+        self.pipe.scheduler = UniPCMultistepScheduler.from_config(
+            self.pipe.scheduler.config
+        )
+        self.pipe.to(device)
+        self.seed = -1
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'
+
+    def setup(self):
+        pass
+
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path, text':
+            splited_inputs = inputs.split(',')
+            image_path = splited_inputs[0]
+            text = ','.join(splited_inputs[1:])
+        return image_path, text
+
+    def apply(self, inputs):
+        image_path, prompt = inputs
+        if self.remote:
+            raise NotImplementedError
+        else:
+            image = Image.open(image_path)
+            self.seed = random.randint(0, 65535)
+            prompt = f'{prompt}, {self.a_prompt}'
+            image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0,
+                              negative_prompt=self.n_prompt, guidance_scale=9.0
+                              ).images[0]
+            out_path = get_new_image_name(
+                image_path, func_name='generate-image-from-scribble'
+            )
+            image.save(out_path)
+        return out_path
+
+    def convert_outputs(self, outputs):
+        if self.output_style == 'image_path':
+            return outputs
+        elif self.output_style == 'pil image':
+            from PIL import Image
+            outputs = Image.open(outputs)
+            return outputs
+        else:
+            raise NotImplementedError
+
+
+class DepthText2ImageTool(BaseTool):
+    DEFAULT_TOOLMETA = dict(
+        name='Generate Image Condition On Depth Text',
+        model=None,
+        description='This is a useful tool '
+        'when you want to generate a new real image from both the user '
+        'description and a depth image or. ',
+        input_description='The input to this tool should be a comma separated '
+        'string of two, representing the image_path of a scribble image '
+        'and the text description of objects to generate.')
+
+    def __init__(self,
+                 toolmeta: ToolMeta = None,
+                 input_style: str = 'image_path, text',
+                 output_style: str = 'image_path',
+                 remote: bool = False,
+                 device: str = 'cuda'):
+        super().__init__(toolmeta, input_style, output_style, remote, device)
+
+        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        self.controlnet = ControlNetModel.from_pretrained(
+            'fusing/stable-diffusion-v1-5-controlnet-depth',
+            torch_dtype=self.torch_dtype)
+        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
+           'runwayml/stable-diffusion-v1-5', controlnet=self.controlnet,
+           safety_checker=StableDiffusionSafetyChecker.from_pretrained(
+                'CompVis/stable-diffusion-safety-checker'
+                ), torch_dtype=self.torch_dtype
+        )
+
+        self.pipe.scheduler = UniPCMultistepScheduler.from_config(
+            self.pipe.scheduler.config)
+        self.pipe.to(device)
+        self.seed = -1
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'
+
+    def setup(self):
+        pass
+
+    def convert_inputs(self, inputs):
+        if self.input_style == 'image_path, text':
+            splited_inputs = inputs.split(',')
+            image_path = splited_inputs[0]
+            text = ','.join(splited_inputs[1:])
+        return image_path, text
+
+    def apply(self, inputs):
+        image_path, prompt = inputs
+        if self.remote:
+            raise NotImplementedError
+        else:
+            image = Image.open(image_path)
+            self.seed = random.randint(0, 65535)
+            prompt = f'{prompt}, {self.a_prompt}'
+            image = self.pipe(prompt, image, num_inference_steps=20,
+                              eta=0.0, negative_prompt=self.n_prompt,
+                              guidance_scale=9.0).images[0]
+            out_path = get_new_image_name(
+                image_path, func_name='generate-image-from-depth')
+            image.save(out_path)
+        return out_path
+
+    def convert_outputs(self, outputs):
+        if self.output_style == 'image_path':
+            return outputs
+        elif self.output_style == 'pil image':
             from PIL import Image
             outputs = Image.open(outputs)
             return outputs
