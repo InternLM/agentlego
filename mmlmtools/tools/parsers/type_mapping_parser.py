@@ -116,7 +116,8 @@ class TypeMappingParser(BaseParser):
         if 'return' not in tool_argspec.annotations:
             raise ValueError(
                 f'The `apply` method of the tool `{tool.name}` should have '
-                f'return type annotation.')
+                f'return type annotation. '
+                'e.g. `def apply(self, input: str) -> str: ...`')
 
         returns = tool_argspec.annotations['return']
         if not isinstance(returns, tuple):
@@ -171,12 +172,9 @@ class TypeMappingParser(BaseParser):
             return lambda x: x
         return getattr(self, self._formatters[(type, source, target)])
 
-    def parse_inputs(self, inputs: Any) -> tuple:
+    def parse_inputs(self, inputs: tuple) -> tuple:
         if self._input_formatters is None:
             raise RuntimeError('The parser is not bound to a tool yet.')
-
-        if not isinstance(inputs, tuple):
-            inputs = (inputs, )
 
         if len(inputs) != len(self._input_formatters):
             raise ValueError(

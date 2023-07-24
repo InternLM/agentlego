@@ -7,7 +7,7 @@ from typing import Any
 class BaseParser(metaclass=ABCMeta):
 
     @abstractmethod
-    def parse_inputs(self, inputs: Any) -> tuple:
+    def parse_inputs(self, inputs: tuple) -> tuple:
         raise NotImplementedError
 
     @abstractmethod
