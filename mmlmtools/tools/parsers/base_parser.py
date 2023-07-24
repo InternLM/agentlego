@@ -18,10 +18,10 @@ class BaseParser(metaclass=ABCMeta):
         pass
 
     def description_to_input_types(self, description: str) -> tuple[str]:
-        return tuple(re.findall(r'{{{\s*input:\s*(.*?)[ ]*}}}', description))
+        return tuple(re.findall(r'{{{\s*input:\s*(.*?)\s*}}}', description))
 
     def description_to_output_types(self, description: str) -> tuple[str]:
-        return tuple(re.findall(r'{{{\s*output:\s*(.*?)[ ]*}}}', description))
+        return tuple(re.findall(r'{{{\s*output:\s*(.*?)\s*}}}', description))
 
     def refine_description(self, description: str) -> str:
         return description

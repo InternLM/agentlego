@@ -47,5 +47,4 @@ class HuggingFaceAgentParser(TypeMappingParser):
         def _reformat(match: re.Match) -> str:
             return match.group(2).strip()
 
-        return re.sub(r'{{{(input|output):[ ]*(.*?)}}}', _reformat,
-                      description)
+        return re.sub(r'{{{(input|output):\s*(.*?)}}}', _reformat, description)

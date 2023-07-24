@@ -213,12 +213,11 @@ class TypeMappingParser(BaseParser):
 
             return f'{data_type} represented in {data_format}'
 
-        return re.sub(r'{{{(input|output):[ ]*(.*?)}}}', _reformat,
-                      description)
+        return re.sub(r'{{{(input|output):\s*(.*?)}}}', _reformat, description)
 
     def description_to_input_types(self, description: str) -> tuple[str]:
         input_types = tuple(
-            re.findall(r'{{{input:[ ]*(.*?)[ ]*}}}', description))
+            re.findall(r'{{{input:\s*(.*?)\s*}}}', description))
         for t in input_types:
             if t not in self._allowed_toolarg2format:
                 raise ValueError(f'Unknown input type `{t}`')
@@ -226,7 +225,7 @@ class TypeMappingParser(BaseParser):
 
     def description_to_output_types(self, description: str) -> tuple[str]:
         output_types = tuple(
-            re.findall(r'{{{output:[ ]*(.*?)[ ]*}}}', description))
+            re.findall(r'{{{output:\s*(.*?)\s*}}}', description))
         for t in output_types:
             if t not in self._allowed_toolarg2format:
                 raise ValueError(f'Unknown input type `{t}`')
