@@ -67,17 +67,12 @@ class BaseToolv2(metaclass=ABCMeta):
 
     def __call__(self, *args: Any, **kwargs) -> Any:
 
-        if kwargs:
-            raise ValueError('Keyword arguments are not supported.')
-
         if not self._is_setup:
             self.setup()
             self._is_setup = True
 
-        inputs = args
-
-        parsed_inputs = self.parser.parse_inputs(inputs)
-        outputs = self.apply(*parsed_inputs)
+        inputs, kwinputs = self.parser.parse_inputs(*args, **kwargs)
+        outputs = self.apply(*inputs, **kwinputs)
         results = self.parser.parse_outputs(outputs)
         return results
 

@@ -6,10 +6,8 @@ from .base_parser import BaseParser
 
 class NaiveParser(BaseParser):
 
-    def parse_inputs(self, inputs: str | tuple) -> tuple:
-        if isinstance(inputs, str):
-            return inputs,
-        return inputs
+    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
+        return args, kwargs
 
     def parse_outputs(self, outputs):
         return outputs

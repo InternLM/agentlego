@@ -11,13 +11,14 @@ class VisualChatGPTParser(TypeMappingParser):
         'text': 'str',
     }
 
-    def parse_inputs(self, inputs: tuple) -> tuple:
+    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
 
         # split single string into multiple inputs
-        if len(inputs) == 1 and isinstance(inputs[0], str):
-            inputs = tuple(s.strip() for s in inputs[0].split(','))
+        if len(args) == 1 and isinstance(args[0], str):
+            args = tuple(s.strip() for s in args[0].split(','))
+            kwargs = {}
 
-        return super().parse_inputs(inputs)
+        return super().parse_inputs(*args, **kwargs)
 
     def parse_outputs(self, outputs: Any) -> str:
         outputs = super().parse_outputs(outputs)

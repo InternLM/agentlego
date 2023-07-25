@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import re
-from types import FunctionType
+from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 import cv2
@@ -13,9 +13,10 @@ from mmlmtools.utils import get_new_image_name
 from .base_parser import BaseParser
 
 
-class formatter:
+class formatter():
 
-    __get__ = FunctionType.__get__
+    def __get__(self, instance: Any, owner: Any) -> Callable:
+        return self
 
     def __init__(self, type: str, source: str, target: str):
         self.type = type
@@ -41,6 +42,12 @@ class formatter:
                 f'`{self.source}` and target `{self.target}` already exists.')
 
         formatters[key] = name
+
+
+@dataclass
+class ToolInputInfo:
+    name: str
+    required: bool
 
 
 class TypeMappingParser(BaseParser):
@@ -69,9 +76,11 @@ class TypeMappingParser(BaseParser):
         else:
             self._agent_type2format = self._default_agent_type2format.copy()
 
-        # The input/output formatters will be determined when bound to a tool
+        # The input/output formatters and tool argument information will be
+        # determined when bound to a tool
         self._input_formatters: Optional[list[Callable]] = None
         self._output_formatters: Optional[list[Callable]] = None
+        self._input_info: Optional[list[ToolInputInfo]] = None
 
     def bind_tool(self, tool: Any) -> None:
         assert hasattr(tool, 'apply') and callable(tool.apply)
@@ -90,6 +99,11 @@ class TypeMappingParser(BaseParser):
 
         # parser tool input formats
         tool_argspec = inspect.getfullargspec(tool.apply)
+        if tool_argspec.kwonlyargs:
+            raise ValueError('The `apply` method of the tool '
+                             f'`{tool.name}` should not have keyword-only '
+                             'arguments.')
+
         if len(tool_argspec.args) != len(input_types) + 1:
             raise ValueError(
                 f'The `apply` method of the tool `{tool.name}` should have '
@@ -139,6 +153,7 @@ class TypeMappingParser(BaseParser):
 
             tool_output_formats.append(retformat)
 
+        # assign formatting functions to each input/output
         self._input_formatters = []
         for t, source, target in zip(input_types, agent_input_formats,
                                      tool_input_formats):
@@ -167,22 +182,41 @@ class TypeMappingParser(BaseParser):
                 self._output_formatters.append(
                     getattr(self, self._formatters[(t, source, target)]))
 
-    def _get_formatter(self, type: str, source: str, target: str) -> Callable:
-        if source == target:
-            return lambda x: x
-        return getattr(self, self._formatters[(type, source, target)])
+        # record necessary information (input name, required, etc) to help
+        # process kwargs inputs
+        self._input_info = [
+            ToolInputInfo(name=arg, required=True)
+            for arg in tool_argspec.args[1:]
+        ]
 
-    def parse_inputs(self, inputs: tuple) -> tuple:
-        if self._input_formatters is None:
+        if tool_argspec.defaults is not None:
+            # mark optional inputs
+            for i in range(len(tool_argspec.defaults)):
+                self._input_info[-1 - i].required = False
+
+    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
+        if self._input_formatters is None or self._input_info is None:
             raise RuntimeError('The parser is not bound to a tool yet.')
 
-        if len(inputs) != len(self._input_formatters):
-            raise ValueError(
-                f'Failed to parse {len(self._input_formatters)} inputs')
-
-        return tuple(
+        inputs = tuple(
             formatter(input)
-            for input, formatter in zip(inputs, self._input_formatters))
+            for input, formatter in zip(args, self._input_formatters))
+
+        kwinputs = {}
+        if len(inputs) < len(self._input_formatters):
+            # process kwargs inputs
+            for i, info in enumerate(
+                    self._input_info[len(inputs):], start=len(inputs)):
+                if info.name in kwargs:
+                    # process kwinput with corresponding formatter
+                    kwinputs[info.name] = self._input_formatters[i](
+                        kwargs[info.name])
+                elif info.required:
+                    # raise error if required kwinput is missing
+                    raise ValueError(
+                        f'Required input `{info.name}` is missing.')
+
+        return inputs, kwinputs
 
     def parse_outputs(self, outputs: Any) -> Any:
         if self._output_formatters is None:
