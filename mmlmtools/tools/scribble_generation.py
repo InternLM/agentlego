@@ -12,7 +12,8 @@ class Image2ScribbleTool(BaseTool):
         name='Generate Scribble Conditioned On Image',
         model=None,
         description='This is a useful tool '
-        'when you want to do the sketch detection on the image.',
+        'when you want to do the sketch detection on the image'
+        'and generate the scribble. ',
         input_description='It takes a string as the input, '
         'representing the image_path. ',
         output_description='It returns a string as the output, '

@@ -8,7 +8,7 @@ from mmlmtools.api import load_tool
 from mmlmtools.testing import ToolTestCase
 
 
-class TestImageDepth(ToolTestCase):
+class TestImage2DepthTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('Image2DepthTool')

@@ -79,6 +79,7 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
 
 
 class Inpainting:
+
     def __init__(self, device):
         self.device = device
         self.revision = 'fp16' if 'cuda' in self.device else None
@@ -86,14 +87,29 @@ class Inpainting:
             if 'cuda' in self.device else torch.float32
         self.inpaint = StableDiffusionInpaintPipeline.from_pretrained(
             'runwayml/stable-diffusion-inpainting',
-            revision=self.revision, torch_dtype=self.torch_dtype).to(device)
-    def __call__(self, prompt, image, mask_image, 
-                 height=512, width=512, num_inference_steps=50):
+            revision=self.revision,
+            torch_dtype=self.torch_dtype).to(device)
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'\
+                        'bad lighting, bad background, bad color, '\
+                        'bad aliasing, bad distortion, bad motion blur '\
+                        'bad consistency with the background '
+
+    def __call__(self,
+                 prompt,
+                 image,
+                 mask_image,
+                 height=512,
+                 width=512,
+                 num_inference_steps=50):
         update_image = self.inpaint(
             prompt=prompt,
+            negative_prompt=self.n_prompt,
             image=image.resize((width, height)),
             mask_image=mask_image.resize((width, height)),
-            height=height, width=width,
+            height=height,
+            width=width,
             num_inference_steps=num_inference_steps).images[0]
         return update_image
 
@@ -103,8 +119,9 @@ class ImageExtensionTool(BaseTool):
         name='Image Extension Tool',
         model={},
         description='This is a useful tool '
-        'when you only want to extend the picture or extend all '
-        'objects in the picture. like: extend all objects. ',
+        'when you want to extend the picture into a larger image '
+        'like: extend the image into a resolution of 2048x1024 '
+        'attention: you must let the image to be a "large" image ',
         input_description='The input to this tool should be a comma separated '
         'string of two, representing the image_path of the image '
         'and the resolution of widthxheight.',
@@ -129,7 +146,10 @@ class ImageExtensionTool(BaseTool):
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
-                        'cropped, worst quality, low quality'
+                        'cropped, worst quality, low quality'\
+                        'bad lighting, bad background, bad color, '\
+                        'bad aliasing, bad distortion, bad motion blur '\
+                        'bad consistency with the background '
 
     def get_BLIP_vqa(self, image_path, question):
         return self.ImageVQA.apply((image_path, question))
@@ -169,7 +189,7 @@ class ImageExtensionTool(BaseTool):
             new_height - (new_height % multiple)
         return image.resize((new_width, new_height))
 
-    def dowhile(self, original_img_path, tosize, 
+    def dowhile(self, original_img_path, tosize,
                 expand_ratio, imagine, usr_prompt):
         old_img = Image.open(original_img_path)
         old_img = ImageOps.crop(old_img, (10, 10, 10, 10))

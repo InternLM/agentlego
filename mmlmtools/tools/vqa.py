@@ -23,7 +23,13 @@ class VisualQuestionAnsweringTool(BaseTool):
                  output_style: str = 'text',
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, input_style, output_style, remote, device)
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device
+        )
 
         self._inferencer = None
 

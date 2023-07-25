@@ -17,14 +17,17 @@ from segment_anything.modeling import Sam
 from segment_anything.utils.transforms import ResizeLongestSide
 from diffusers import StableDiffusionInpaintPipeline
 
-# from mmlmtools.cached_dict import CACHED_TOOLS
-
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
+from .vqa import VisualQuestionAnsweringTool
 
-GLOBAL_SEED = 1912
+# from mmlmtools.cached_dict import CACHED_TOOLS
 CACHED_TOOLS = defaultdict(dict)
+'''
+    These two lines above will be modified in the future.
+'''
+GLOBAL_SEED = 1912
 
 
 class SamPredictor:
@@ -457,6 +460,12 @@ class Inpainting:
             'runwayml/stable-diffusion-inpainting',
             revision=self.revision,
             torch_dtype=self.torch_dtype).to(device)
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'\
+                        'bad lighting, bad background, bad color, '\
+                        'bad aliasing, bad distortion, bad motion blur '\
+                        'bad consistency with the background '
 
     def __call__(self,
                  prompt,
@@ -467,6 +476,7 @@ class Inpainting:
                  num_inference_steps=50):
         update_image = self.inpaint(
             prompt=prompt,
+            negative_prompt=self.n_prompt,
             image=image.resize((width, height)),
             mask_image=mask_image.resize((width, height)),
             height=height,
@@ -477,14 +487,14 @@ class Inpainting:
 
 class ObjectReplaceTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        name='Segment The Given Object In The Image',
+        name='Replace The Given Object In The Image',
         model={
             'model': 'sam_vit_h_4b8939.pth',
             'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'
         },
         description='This is a useful tool '
-        'when you want to segment the certain objects in the image according '
-        'and replace it with another object, '
+        'when you want to replace the certain objects in the image '
+        'with another object, '
         'like: replace the cat in this image with a dog, '
         'or can you replace the dog with a cat for me. ',
         input_description='The input to this tool should be '
@@ -513,7 +523,7 @@ class ObjectReplaceTool(BaseTool):
         self.sam_predictor = None
         self.e_mode = True
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
-        self.impainting = None
+        self.inpaint = None
 
     def setup(self):
         if self.grounding is None:
@@ -531,13 +541,14 @@ class ObjectReplaceTool(BaseTool):
                 self.toolmeta.model['model'], self.model_ckpt_path,
                 self.e_mode, self.device)
 
+        if self.inpaint is None:
             self.inpaint = Inpainting(device=self.device)
 
     def convert_inputs(self, inputs):
-        if self.input_style == 'image_path, \
-             to_be_replaced_text, replace_with_text':
-            image_path, to_be_replaced_text, replace_with_text = inputs.split(
-                ',')
+        if self.input_style == 'image_path, to_be_replaced_text, ' + \
+                               'replace_with_text':
+            image_path, to_be_replaced_text, replace_with_text = \
+                inputs.split(',')
         else:
             raise NotImplementedError
         return image_path, to_be_replaced_text, replace_with_text
@@ -715,6 +726,8 @@ class ObjectRemoveTool(BaseTool):
                  device: str = 'cuda'):
         super().__init__(toolmeta, input_style, output_style, remote, device)
         self.objreplace = None
+        self.ImageVQA = VisualQuestionAnsweringTool(device=self.device)
+        self.ImageVQA.setup()
 
     def setup(self):
         if self.objreplace is None:
@@ -742,6 +755,9 @@ class ObjectRemoveTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
+            replace_with_text = self.ImageVQA.apply(
+                (image_path, 'tell me what is the background in the picture '))
+            print(replace_with_text)
             updated_image_path = self.objreplace.apply(
-                (image_path, to_be_removed_text, ' background'))
-        return updated_image_path
+                (image_path, to_be_removed_text, replace_with_text))
+            return updated_image_path

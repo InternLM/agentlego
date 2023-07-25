@@ -1,17 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmagic.apis import MMagicInferencer
-
-from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
-
 import torch
 import random
+
 from diffusers import ControlNetModel
 from diffusers import StableDiffusionControlNetPipeline
 from diffusers import UniPCMultistepScheduler
 from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 from PIL import Image
+
+from mmagic.apis import MMagicInferencer
+from mmlmtools.toolmeta import ToolMeta
+from ..utils.utils import get_new_image_name
+from .base_tool import BaseTool
 
 
 class Text2ImageTool(BaseTool):
@@ -280,7 +280,8 @@ class ScribbleText2ImageTool(BaseTool):
             torch_dtype=self.torch_dtype
         )
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            'runwayml/stable-diffusion-v1-5', controlnet=self.controlnet,
+            'runwayml/stable-diffusion-v1-5',
+            controlnet=self.controlnet,
             safety_checker=StableDiffusionSafetyChecker.from_pretrained(
                 'CompVis/stable-diffusion-safety-checker'
             ),
@@ -314,11 +315,16 @@ class ScribbleText2ImageTool(BaseTool):
             image = Image.open(image_path)
             self.seed = random.randint(0, 65535)
             prompt = f'{prompt}, {self.a_prompt}'
-            image = self.pipe(prompt, image, num_inference_steps=20, eta=0.0,
-                              negative_prompt=self.n_prompt, guidance_scale=9.0
+            image = self.pipe(prompt,
+                              image,
+                              num_inference_steps=20,
+                              eta=0.0,
+                              negative_prompt=self.n_prompt,
+                              guidance_scale=9.0
                               ).images[0]
             out_path = get_new_image_name(
-                image_path, func_name='generate-image-from-scribble'
+                image_path,
+                func_name='generate-image-from-scribble'
             )
             image.save(out_path)
         return out_path
@@ -340,7 +346,7 @@ class DepthText2ImageTool(BaseTool):
         model=None,
         description='This is a useful tool '
         'when you want to generate a new real image from both the user '
-        'description and a depth image or. ',
+        'description and a depth image. ',
         input_description='The input to this tool should be a comma separated '
         'string of two, representing the image_path of a scribble image '
         'and the text description of objects to generate.')
@@ -358,7 +364,8 @@ class DepthText2ImageTool(BaseTool):
             'fusing/stable-diffusion-v1-5-controlnet-depth',
             torch_dtype=self.torch_dtype)
         self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-           'runwayml/stable-diffusion-v1-5', controlnet=self.controlnet,
+           'runwayml/stable-diffusion-v1-5',
+           controlnet=self.controlnet,
            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
                 'CompVis/stable-diffusion-safety-checker'
                 ), torch_dtype=self.torch_dtype
@@ -391,11 +398,16 @@ class DepthText2ImageTool(BaseTool):
             image = Image.open(image_path)
             self.seed = random.randint(0, 65535)
             prompt = f'{prompt}, {self.a_prompt}'
-            image = self.pipe(prompt, image, num_inference_steps=20,
-                              eta=0.0, negative_prompt=self.n_prompt,
-                              guidance_scale=9.0).images[0]
+            image = self.pipe(prompt,
+                              image,
+                              num_inference_steps=20,
+                              eta=0.0,
+                              negative_prompt=self.n_prompt,
+                              guidance_scale=9.0
+                              ).images[0]
             out_path = get_new_image_name(
-                image_path, func_name='generate-image-from-depth')
+                image_path,
+                func_name='generate-image-from-depth')
             image.save(out_path)
         return out_path
 

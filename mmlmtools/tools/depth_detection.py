@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 from PIL import Image
-from transformers import pipeline
 
 from mmlmtools.toolmeta import ToolMeta
+from transformers import pipeline
+
 from ..utils.utils import get_new_image_name
 from .base_tool import BaseTool
 
@@ -13,7 +14,7 @@ class Image2DepthTool(BaseTool):
         name='Generate Depth Image On Image',
         model=None,
         description='This is a useful tool '
-        'when you want to generate the depth image of the image. ',
+        'when you want to generate the depth image of an image. ',
         input_description='It takes a string as the input, '
         'representing the image_path. ',
         output_description='It returns a string as the output, '
@@ -25,8 +26,13 @@ class Image2DepthTool(BaseTool):
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, input_style, output_style, remote, device)
-
+        super().__init__(
+            toolmeta,
+            input_style,
+            output_style,
+            remote,
+            device
+        )
         self.depth_estimator = pipeline('depth-estimation')
 
     def setup(self):

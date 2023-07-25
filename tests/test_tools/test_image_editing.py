@@ -12,7 +12,7 @@ class TestObjectReplaceTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('ObjectReplaceTool', device='cpu')
-        res = tool('tests/data/images/test-image.jpeg, dog, cat')
+        res = tool('tests/data/images/test-image.jpeg, dog, lush green field')
         assert isinstance(res, str)
 
 
