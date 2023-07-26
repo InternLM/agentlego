@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# import mmcv
 from mmpose.apis import MMPoseInferencer
 
 from mmlmtools.toolmeta import ToolMeta
@@ -30,8 +31,29 @@ class HumanBodyPoseTool(BaseTool):
 
     def setup(self):
         if self._inferencer is None:
-            self._inferencer = MMPoseInferencer(
-                pose2d=self.toolmeta.model['pose2d'], device=self.device)
+            if self.remote:
+                from mmpose.datasets.datasets.utils import parse_pose_metainfo
+                from mmpose.registry import DATASETS, VISUALIZERS
+                self._inferencer = True
+                visualizer_cfg = {
+                    'type': 'PoseLocalVisualizer',
+                    'vis_backends': [{
+                        'type': 'LocalVisBackend'
+                    }],
+                    'name': 'visualzier',
+                    '_scope_': 'mmpose',
+                    'radius': 3,
+                    'alpha': 0.8,
+                    'line_width': 1,
+                }
+                metainfo = DATASETS.get('CocoDataset').METAINFO
+                dataset_meta = parse_pose_metainfo(metainfo)
+                self.visualizer = VISUALIZERS.build(visualizer_cfg)
+                self.visualizer.set_dataset_meta(
+                    dataset_meta, skeleton_style='openpose')
+            else:
+                self._inferencer = MMPoseInferencer(
+                    pose2d=self.toolmeta.model['pose2d'], device=self.device)
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path':  # visual chatgpt style
@@ -45,11 +67,28 @@ class HumanBodyPoseTool(BaseTool):
             raise NotImplementedError
 
     def apply(self, inputs):
+        image_path = get_new_image_name(inputs, func_name='pose-estimation')
         if self.remote:
             raise NotImplementedError
+            # import json
+
+            # from openxlab.model import inference
+            # res = inference('mmpose/human_body', [image_path])
+            # # print(f'json result:{json.loads(predict)}')
+            # preds = json.loads(res)['predictions'][0][0]
+            # keypoints, bbox = preds['keypoints'], preds['bbox']
+            # img = mmcv.imread(inputs, channel_order='rgb')
+            # self.visualizer.add_datasample(
+            #     'result',
+            #     img,
+            #     data_sample=data_samples,
+            #     draw_gt=False,
+            #     skeleton_style='openpose',
+            #     kpt_thr=0.3,
+            #     out_file=image_path
+            #     )
         else:
-            image_path = get_new_image_name(
-                inputs, func_name='pose-estimation')
+
             next(
                 self._inferencer(
                     inputs,
