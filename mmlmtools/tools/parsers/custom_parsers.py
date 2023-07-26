@@ -6,9 +6,9 @@ from .type_mapping_parser import TypeMappingParser
 
 
 class VisualChatGPTParser(TypeMappingParser):
-    _default_agent_type2format = {
+    _default_agent_cat2type = {
         'image': 'path',
-        'text': 'str',
+        'text': 'string',
     }
 
     def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
@@ -29,7 +29,7 @@ class VisualChatGPTParser(TypeMappingParser):
 
     def refine_description(self, description: str) -> str:
         refined = super().refine_description(description)
-        num_inputs = len(self.description_to_input_types(description))
+        num_inputs = len(self.description_to_inputs(description))
 
         if num_inputs > 1:
             refined += ' Inputs should be separated by comma.'
@@ -38,9 +38,9 @@ class VisualChatGPTParser(TypeMappingParser):
 
 
 class HuggingFaceAgentParser(TypeMappingParser):
-    _default_agent_type2format: dict[str, str] = {
+    _default_agent_cat2type: dict[str, str] = {
         'image': 'pillow',
-        'text': 'str',
+        'text': 'string',
     }
 
     def refine_description(self, description: str) -> str:

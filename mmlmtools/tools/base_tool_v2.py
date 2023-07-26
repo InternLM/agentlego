@@ -37,18 +37,20 @@ class BaseToolv2(metaclass=ABCMeta):
 
         self.parser = parser if parser is not None else NaiveParser()
 
-        # assign input_types and output_types before binding the parser
-        if self.toolmeta.input_types is None:
-            self.input_types = self.parser.description_to_input_types(
+        # Parse data categories of inputs and outputs from description
+        # if not specified in toolmeta. This should be done before
+        # binding a parser to the tool.
+        if self.toolmeta.inputs is None:
+            self.inputs = self.parser.description_to_inputs(
                 self.toolmeta.description)
         else:
-            self.input_types = self.toolmeta.input_types
+            self.inputs = self.toolmeta.inputs
 
-        if self.toolmeta.output_types is None:
-            self.output_types = self.parser.description_to_output_types(
+        if self.toolmeta.outputs is None:
+            self.outputs = self.parser.description_to_outputs(
                 self.toolmeta.description)
         else:
-            self.output_types = self.toolmeta.output_types
+            self.outputs = self.toolmeta.outputs
 
         self.parser.bind_tool(self)
 

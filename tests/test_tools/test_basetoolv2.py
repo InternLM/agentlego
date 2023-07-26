@@ -15,10 +15,9 @@ class DummyTool(BaseToolv2):
         model=None,
         description='This is a dummy tool. '
         'It takes an {{{input:image}}} and a {{{input:text}}} as the inputs, '
-        'and outputs a {{{output:image}}}.')
+        'and outputs an {{{output:image}}}.')
 
     def apply(self, image: Image.Image, query: str) -> Image.Image:
-        print(query)
         return image
 
 
@@ -27,10 +26,15 @@ class TestBaseToolv2(ToolTestCase):
     def test_call_with_visual_chatgpt(self):
         tool = DummyTool(parser=VisualChatGPTParser())
 
-        print(tool.name)
-        print(tool.input_types)
-        print(tool.output_types)
-        print(tool.description)
+        expected_description = 'This is a dummy tool. It takes an image ' \
+            'represented by path and a text represented by string as the ' \
+            'inputs, and outputs an image represented by path. ' \
+            'Inputs should be separated by comma.'
+
+        self.assertEqual(tool.name, 'Dummy Tool')
+        self.assertEqual(tool.inputs, ('image', 'text'))
+        self.assertEqual(tool.outputs, ('image', ))
+        self.assertEqual(tool.description, expected_description)
 
         with tempfile.TemporaryDirectory() as tempdir:
             path = osp.join(tempdir, 'image.jpg')
@@ -40,19 +44,22 @@ class TestBaseToolv2(ToolTestCase):
 
             inputs = f'{path}, {query}'
             outputs = tool(inputs)
-            print(outputs)
+            self.assertIsInstance(outputs, str)
 
     def test_call_with_huggingface_agent(self):
         tool = DummyTool(parser=HuggingFaceAgentParser())
 
-        print(tool.name)
-        print(tool.input_types)
-        print(tool.output_types)
-        print(tool.description)
+        expected_description = 'This is a dummy tool. It takes an image ' \
+            'and a text as the inputs, and outputs an image.' \
+
+        self.assertEqual(tool.name, 'Dummy Tool')
+        self.assertEqual(tool.inputs, ('image', 'text'))
+        self.assertEqual(tool.outputs, ('image', ))
+        self.assertEqual(tool.description, expected_description)
 
         img = Image.fromarray(
             np.random.randint(0, 255, [224, 224, 3]).astype(np.uint8))
         query = 'What is the color of the car?'
 
         outputs = tool(img, query)
-        print(type(outputs))
+        self.assertIsInstance(outputs, Image.Image)

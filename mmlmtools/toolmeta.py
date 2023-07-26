@@ -15,11 +15,15 @@ class ToolMeta:
             Defaults to None
         output_description (str, optional): Output description for tool.
             Defaults to None
+        inputs (tuple[str, ...], optional): Input categories for tool.
+            Defaults to None
+        outputs (tuple[str, ...], optional): Output categories for tool.
+            Defaults to None
     """
     name: str
     description: str
     model: Optional[dict] = None
     input_description: Optional[str] = None
     output_description: Optional[str] = None
-    input_types: Optional[tuple[str, ...]] = None
-    output_types: Optional[tuple[str, ...]] = None
+    inputs: Optional[tuple[str, ...]] = None
+    outputs: Optional[tuple[str, ...]] = None
