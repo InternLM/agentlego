@@ -48,6 +48,13 @@ class SemSegTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model import inference
+
+            predict = inference('mmsegmentation/Mask2Former',
+                                ['./demo_text_ocr.jpg'])
+            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)

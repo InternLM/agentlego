@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import sys
-from collections import defaultdict
 from pickle import dumps
 from typing import Optional, Union
 
 import mmlmtools.tools as tools
+from .cached_dict import CACHED_TOOLS
 from .toolmeta import ToolMeta
 from .tools.base_tool import BaseTool
 
@@ -56,7 +56,7 @@ NAMES2TOOLS = {
     if inspect.isclass(v) and issubclass(v, BaseTool)
 }
 
-CACHED_TOOLS = defaultdict(dict)
+# CACHED_TOOLS = defaultdict(dict)
 
 
 def import_all_tools_to(target_dir):

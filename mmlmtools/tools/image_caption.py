@@ -51,6 +51,13 @@ class ImageCaptionTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model.handler.model_inference import inference
+
+            out = inference('mmpretrain/blip', ['./demo_text_ocr.jpg'])
+            print('json result: {0}'.format(json.loads(out)))
+
             raise NotImplementedError
         else:
             outputs = self._inferencer(inputs)[0]['pred_caption']
