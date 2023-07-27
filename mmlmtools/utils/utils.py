@@ -17,8 +17,10 @@ def get_new_image_name(org_img_name, func_name='update'):
     """
     dirname, basename = os.path.split(org_img_name)
     mmengine.mkdir_or_exist(dirname)
+    basename_splits = basename.split('.')
 
-    name_split = basename.split('.')[0].split('_')
+    img_format = basename_splits[-1]
+    name_split = basename_splits[0].split('_')
     this_new_uuid = str(uuid.uuid4())[:4]
     most_org_file_name = name_split[-1]
     recent_prev_file_name = name_split[0]
@@ -31,6 +33,6 @@ def get_new_image_name(org_img_name, func_name='update'):
             [recent_prev_file_name, this_new_uuid, most_org_file_name])
     else:
         raise NotImplementedError
-    new_file_name += '.png'
+    new_file_name += f'.{img_format}'
     new_image_path = os.path.join(dirname, new_file_name)
     return new_image_path
