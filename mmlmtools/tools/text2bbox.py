@@ -2,7 +2,7 @@
 from typing import Optional
 
 import mmcv
-from base_tool_v2 import BaseToolv2
+from .base_tool_v2 import BaseToolv2
 from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
