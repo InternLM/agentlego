@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import random
+from collections import defaultdict
 from typing import Optional, Tuple
 
 import cv2
@@ -9,13 +10,11 @@ import mmengine
 import numpy as np
 import torch
 import wget
-
-from collections import defaultdict
+from diffusers import StableDiffusionInpaintPipeline
 from PIL import Image
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from segment_anything.modeling import Sam
 from segment_anything.utils.transforms import ResizeLongestSide
-from diffusers import StableDiffusionInpaintPipeline
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
@@ -555,10 +554,8 @@ class ObjectReplaceTool(BaseTool):
 
     def apply(self, inputs):
         image_path, to_be_replaced_txt, replace_with_txt = inputs
-        print(
-            f"image_path: {image_path}, to_be_replaced_txt: \
-            {to_be_replaced_txt}, replace_with_txt: {replace_with_txt}"
-        )
+        print(f'image_path: {image_path}, to_be_replaced_txt: \
+            {to_be_replaced_txt}, replace_with_txt: {replace_with_txt}')
         if self.remote:
             raise NotImplementedError
         else:
@@ -748,10 +745,8 @@ class ObjectRemoveTool(BaseTool):
 
     def apply(self, inputs):
         image_path, to_be_removed_text = inputs
-        print(
-            f"image_path: {image_path}, \
-                to_be_removed_text: {to_be_removed_text}"
-        )
+        print(f'image_path: {image_path}, \
+                to_be_removed_text: {to_be_removed_text}')
         if self.remote:
             raise NotImplementedError
         else:

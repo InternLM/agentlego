@@ -2,7 +2,7 @@
 import inspect
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional, Tuple, Type
 
 import cv2
 import numpy as np
@@ -53,19 +53,19 @@ class ToolInputInfo:
 class TypeMappingParser(BaseParser):
     # mapping from data category to data type on the agent side
     # e.g. {'image': 'path', 'text': 'string'}
-    _agent_cat2type: dict[str, str]
+    _agent_cat2type: Dict[str, str]
 
     # default mapping from data category to data type on the agent side
-    _default_agent_cat2type: dict[str, str] = {}
+    _default_agent_cat2type: Dict[str, str] = {}
 
     # mapping from data mode (category, source_type, target_type) to converter
     # function name. Converters should be instance method decorated by
     # `@converter`.
-    _converters: dict[tuple[str, str, str], str]
+    _converters: Dict[Tuple[str, str, str], str]
 
     # mapping from tool argument (i.e. the argument of `apply` method) type
     # to data type for each data category
-    _toolarg2type: dict[str, dict[type, str]] = {
+    _toolarg2type: Dict[str, Dict[Type, str]] = {
         'image': {
             str: 'path',
             Image.Image: 'pillow',
@@ -76,7 +76,7 @@ class TypeMappingParser(BaseParser):
         }
     }
 
-    def __init__(self, agent_datacat2type: Optional[dict[str, str]] = None):
+    def __init__(self, agent_datacat2type: Optional[Dict[str, str]] = None):
 
         if agent_datacat2type is not None:
             self._agent_cat2type = agent_datacat2type.copy()
@@ -213,7 +213,7 @@ class TypeMappingParser(BaseParser):
             for i in range(len(tool_argspec.defaults)):
                 self._input_info[-1 - i].required = False
 
-    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
+    def parse_inputs(self, *args, **kwargs) -> Tuple[Tuple, Dict]:
         if self._input_converters is None or self._input_info is None:
             raise RuntimeError('The parser is not bound to a tool yet.')
 
@@ -266,14 +266,14 @@ class TypeMappingParser(BaseParser):
 
         return re.sub(r'{{{(input|output):\s*(.*?)}}}', _reformat, description)
 
-    def description_to_inputs(self, description: str) -> tuple[str]:
+    def description_to_inputs(self, description: str) -> Tuple[str]:
         inputs = tuple(re.findall(r'{{{input:\s*(.*?)\s*}}}', description))
         for cat in inputs:
             if cat not in self._toolarg2type:
                 raise ValueError(f'Unknown input data category `{cat}`')
         return inputs
 
-    def description_to_outputs(self, description: str) -> tuple[str]:
+    def description_to_outputs(self, description: str) -> Tuple[str]:
         outputs = tuple(re.findall(r'{{{output:\s*(.*?)\s*}}}', description))
         for cat in outputs:
             if cat not in self._toolarg2type:

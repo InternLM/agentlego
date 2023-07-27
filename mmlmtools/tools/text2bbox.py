@@ -2,11 +2,11 @@
 from typing import Optional
 
 import mmcv
-from .base_tool_v2 import BaseToolv2
 from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_name
+from .base_tool_v2 import BaseToolv2
 from .parsers import BaseParser
 
 
@@ -44,9 +44,5 @@ class Text2BboxToolv2(BaseToolv2):
                 image, func_name='detect-something')['predictions'][0]
             img = mmcv.imread(image, channel_order='rgb')
             self._inferencer.visualizer.add_datasample(
-                'results',
-                img,
-                results,
-                show=False,
-                out_file=output_path)
+                'results', img, results, show=False, out_file=output_path)
             return output_path

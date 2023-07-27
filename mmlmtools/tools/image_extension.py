@@ -1,12 +1,12 @@
-from langchain.llms.openai import OpenAI
+# Copyright (c) OpenMMLab. All rights reserved.
+import math
 
 import cv2
-import math
 import numpy as np
 import torch
-
-from PIL import Image, ImageOps
 from diffusers import StableDiffusionInpaintPipeline
+from langchain.llms.openai import OpenAI
+from PIL import Image, ImageOps
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
@@ -159,24 +159,29 @@ class ImageExtensionTool(BaseTool):
         return BLIP_caption
 
     def check_prompt(self, prompt):
-        check = f"Here is a paragraph with adjectives. " \
-                f"{prompt} " \
-                f"Please change all plural forms in \
-                    the adjectives to singular forms. "
+        check = f'Here is a paragraph with adjectives. ' \
+                f'{prompt} ' \
+                f'Please change all plural forms in \
+                    the adjectives to singular forms. '
+
         return self.llm(check)
 
     def get_imagine_caption(self, image_path, imagine):
         BLIP_caption = self.get_BLIP_caption(image_path)
         background_color = self.get_BLIP_vqa(
             image_path, 'what is the background color of this image')
-        style = self.get_BLIP_vqa(image_path, 'what is the style of this image')
-        imagine_prompt = f"let's pretend you are an excellent painter and now " \
-                         f"there is an incomplete painting with {BLIP_caption} in the center, " \
-                         f"please imagine the complete painting and describe it" \
-                         f"you should consider the background color is {background_color}, the style is {style}" \
-                         f"You should make the painting as vivid and realistic as possible" \
-                         f"You can not use words like painting or picture" \
-                         f"and you should use no more than 50 words to describe it"
+        style = self.get_BLIP_vqa(image_path,
+                                  'what is the style of this image')
+        imagine_prompt = f'let\'s pretend you are an excellent painter and ' \
+                         f'now there is an incomplete painting with ' \
+                         f'{BLIP_caption} in the center, please imagine the ' \
+                         f'complete painting and describe it ' \
+                         f'you should consider the background color is ' \
+                         f'{background_color}, the style is {style}' \
+                         f'You should make the painting as vivid and ' \
+                         f'realistic as possible You can not use words ' \
+                         f'like painting or picture and you should use no ' \
+                         f'more than 50 words to describe it'
         caption = self.llm(imagine_prompt) if imagine else BLIP_caption
         caption = self.check_prompt(caption)
         return caption
@@ -189,8 +194,8 @@ class ImageExtensionTool(BaseTool):
             new_height - (new_height % multiple)
         return image.resize((new_width, new_height))
 
-    def dowhile(self, original_img_path, tosize,
-                expand_ratio, imagine, usr_prompt):
+    def dowhile(self, original_img_path, tosize, expand_ratio, imagine,
+                usr_prompt):
         old_img = Image.open(original_img_path)
         old_img = ImageOps.crop(old_img, (10, 10, 10, 10))
         while (old_img.size != tosize):
@@ -200,22 +205,27 @@ class ImageExtensionTool(BaseTool):
             crop_w = 15 if old_img.size[0] != tosize[0] else 0
             crop_h = 15 if old_img.size[1] != tosize[1] else 0
             old_img = ImageOps.crop(old_img, (crop_w, crop_h, crop_w, crop_h))
-            temp_canvas_size = (expand_ratio * old_img.width if expand_ratio * old_img.width < tosize[0] else tosize[0],
-                                expand_ratio * old_img.height if expand_ratio * old_img.height < tosize[1] else tosize[
-                                    1])
+            temp_canvas_size = (expand_ratio * old_img.width if expand_ratio *
+                                old_img.width < tosize[0] else tosize[0],
+                                expand_ratio * old_img.height if expand_ratio *
+                                old_img.height < tosize[1] else tosize[1])
             temp_canvas, temp_mask = Image.new(
-                "RGB", temp_canvas_size, color="white"), Image.new("L", temp_canvas_size, color="white")
-            x, y = (temp_canvas.width - old_img.width) // 2, (temp_canvas.height - old_img.height) // 2
+                'RGB', temp_canvas_size, color='white'), Image.new(
+                    'L', temp_canvas_size, color='white')
+            x, y = (temp_canvas.width - old_img.width) // 2, (
+                temp_canvas.height - old_img.height) // 2
             temp_canvas.paste(old_img, (x, y))
             temp_mask.paste(0, (x, y, x + old_img.width, y + old_img.height))
             resized_temp_canvas, resized_temp_mask = \
                 self.resize_image(temp_canvas), self.resize_image(temp_mask)
-            image = self.inpaint(prompt=prompt, image=resized_temp_canvas,
-                                 mask_image=resized_temp_mask,
-                                 height=resized_temp_canvas.height,
-                                 width=resized_temp_canvas.width,
-                                 num_inference_steps=5).resize(
-                (temp_canvas.width, temp_canvas.height), Image.ANTIALIAS)
+            image = self.inpaint(
+                prompt=prompt,
+                image=resized_temp_canvas,
+                mask_image=resized_temp_mask,
+                height=resized_temp_canvas.height,
+                width=resized_temp_canvas.width,
+                num_inference_steps=5).resize(
+                    (temp_canvas.width, temp_canvas.height), Image.ANTIALIAS)
             image = blend_gt2pt(old_img, image)
             old_img = image
         return old_img
@@ -237,8 +247,8 @@ class ImageExtensionTool(BaseTool):
         else:
             width, height = prompt.split('x')
             tosize = (int(width), int(height))
-            out_painted_image = self.dowhile(
-                image_path, tosize, 4, True, False)
+            out_painted_image = self.dowhile(image_path, tosize, 4, True,
+                                             False)
             updated_image_path = get_new_image_name(image_path, 'extension')
             out_painted_image.save(updated_image_path)
         return updated_image_path

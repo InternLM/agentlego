@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, Dict, Tuple
 
 
 class BaseParser(metaclass=ABCMeta):
 
     @abstractmethod
-    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
+    def parse_inputs(self, *args, **kwargs) -> Tuple[Tuple, Dict]:
         raise NotImplementedError
 
     @abstractmethod
@@ -17,10 +17,10 @@ class BaseParser(metaclass=ABCMeta):
     def bind_tool(self, tool: Any) -> None:
         pass
 
-    def description_to_inputs(self, description: str) -> tuple[str]:
+    def description_to_inputs(self, description: str) -> Tuple[str]:
         return tuple(re.findall(r'{{{\s*input:\s*(.*?)\s*}}}', description))
 
-    def description_to_outputs(self, description: str) -> tuple[str]:
+    def description_to_outputs(self, description: str) -> Tuple[str]:
         return tuple(re.findall(r'{{{\s*output:\s*(.*?)\s*}}}', description))
 
     def refine_description(self, description: str) -> str:

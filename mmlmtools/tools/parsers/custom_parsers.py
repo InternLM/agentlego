@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import re
-from typing import Any
+from typing import Any, Dict, Tuple
 
 from .type_mapping_parser import TypeMappingParser
 
@@ -11,7 +11,7 @@ class VisualChatGPTParser(TypeMappingParser):
         'text': 'string',
     }
 
-    def parse_inputs(self, *args, **kwargs) -> tuple[tuple, dict]:
+    def parse_inputs(self, *args, **kwargs) -> Tuple[Tuple, Dict]:
 
         # split single string into multiple inputs
         if len(args) == 1 and isinstance(args[0], str):
@@ -38,7 +38,7 @@ class VisualChatGPTParser(TypeMappingParser):
 
 
 class HuggingFaceAgentParser(TypeMappingParser):
-    _default_agent_cat2type: dict[str, str] = {
+    _default_agent_cat2type = {
         'image': 'pillow',
         'text': 'string',
     }
