@@ -9,7 +9,7 @@ from langchain.llms.openai import OpenAI
 from PIL import Image, ImageOps
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 from .image_caption import ImageCaptionTool
 from .vqa import VisualQuestionAnsweringTool
@@ -248,7 +248,7 @@ class ImageExtensionTool(BaseToolv1):
             tosize = (int(width), int(height))
             out_painted_image = self.dowhile(image_path, tosize, 4, True,
                                              False)
-            updated_image_path = get_new_image_name(image_path, 'extension')
+            updated_image_path = get_new_image_path(image_path, 'extension')
             out_painted_image.save(updated_image_path)
         return updated_image_path
 

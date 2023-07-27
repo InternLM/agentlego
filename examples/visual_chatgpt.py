@@ -230,8 +230,8 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
     return '\n' + '\n'.join(paragraphs)
 
 
-def get_new_image_name(org_img_name, func_name='update'):
-    head_tail = os.path.split(org_img_name)
+def get_new_image_path(org_img_path, func_name='update'):
+    head_tail = os.path.split(org_img_path)
     head = head_tail[0]
     tail = head_tail[1]
     name_split = tail.split('.')[0].split('_')
@@ -282,7 +282,7 @@ class InstructPix2Pix:
             image=original_image,
             num_inference_steps=40,
             image_guidance_scale=1.2).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='pix2pix')
         image.save(updated_image_path)
         return updated_image_path
@@ -371,7 +371,7 @@ class Image2Canny:
         canny = canny[:, :, None]
         canny = np.concatenate([canny, canny, canny], axis=2)
         canny = Image.fromarray(canny)
-        updated_image_path = get_new_image_name(inputs, func_name='edge')
+        updated_image_path = get_new_image_path(inputs, func_name='edge')
         canny.save(updated_image_path)
         return updated_image_path
 
@@ -427,7 +427,7 @@ class CannyText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='canny2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -452,7 +452,7 @@ class Image2Line:
     def inference(self, inputs):
         image = Image.open(inputs)
         mlsd = self.detector(image)
-        updated_image_path = get_new_image_name(inputs, func_name='line-of')
+        updated_image_path = get_new_image_path(inputs, func_name='line-of')
         mlsd.save(updated_image_path)
         return updated_image_path
 
@@ -509,7 +509,7 @@ class LineText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='line2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -534,7 +534,7 @@ class Image2Hed:
     def inference(self, inputs):
         image = Image.open(inputs)
         hed = self.detector(image)
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             inputs, func_name='hed-boundary')
         hed.save(updated_image_path)
         return updated_image_path
@@ -592,7 +592,7 @@ class HedText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='hed2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -616,7 +616,7 @@ class Image2Scribble:
     def inference(self, inputs):
         image = Image.open(inputs)
         scribble = self.detector(image, scribble=True)
-        updated_image_path = get_new_image_name(inputs, func_name='scribble')
+        updated_image_path = get_new_image_path(inputs, func_name='scribble')
         scribble.save(updated_image_path)
         return updated_image_path
 
@@ -669,7 +669,7 @@ class ScribbleText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='scribble2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -693,7 +693,7 @@ class Image2Pose:
     def inference(self, inputs):
         image = Image.open(inputs)
         pose = self.detector(image)
-        updated_image_path = get_new_image_name(inputs, func_name='human-pose')
+        updated_image_path = get_new_image_path(inputs, func_name='human-pose')
         pose.save(updated_image_path)
         return updated_image_path
 
@@ -752,7 +752,7 @@ class PoseText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='pose2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -808,7 +808,7 @@ class SegText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segment2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -835,7 +835,7 @@ class Image2Depth:
         depth = depth[:, :, None]
         depth = np.concatenate([depth, depth, depth], axis=2)
         depth = Image.fromarray(depth)
-        updated_image_path = get_new_image_name(inputs, func_name='depth')
+        updated_image_path = get_new_image_path(inputs, func_name='depth')
         depth.save(updated_image_path)
         return updated_image_path
 
@@ -890,7 +890,7 @@ class DepthText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='depth2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -929,7 +929,7 @@ class Image2Normal:
         image = (image * 127.5 + 127.5).clip(0, 255).astype(np.uint8)
         image = Image.fromarray(image)
         image = image.resize(original_size)
-        updated_image_path = get_new_image_name(inputs, func_name='normal-map')
+        updated_image_path = get_new_image_path(inputs, func_name='normal-map')
         image.save(updated_image_path)
 
         return updated_image_path
@@ -985,7 +985,7 @@ class NormalText2Image:
             eta=0.0,
             negative_prompt=self.n_prompt,
             guidance_scale=9.0).images[0]
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='normal2image')
         image.save(updated_image_path)
         return updated_image_path
@@ -1126,7 +1126,7 @@ class Segmenting:
                 random_color=True,
                 transparency=0.3)
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segmentation')
 
         new_image = Image.fromarray(image)
@@ -1273,7 +1273,7 @@ class Segmenting:
                 img[:, :, i] = color_mask[i]
             ax.imshow(np.dstack((img, m)))
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segment-image')
         plt.axis('off')
         plt.savefig(
@@ -1432,7 +1432,7 @@ class Text2Box:
 
         image_with_box = self.plot_boxes_to_image(image_pil, pred_dict)[0]
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='detect-something')
         updated_image = image_with_box.resize(size)
         updated_image.save(updated_image_path)
@@ -1592,7 +1592,7 @@ class InfinityOutPainting:
         image = Image.open(image_path)
         image = ImageOps.crop(image, (10, 10, 10, 10))
         out_painted_image = self.dowhile(image, tosize, 4, True, False)
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='outpainting')
         out_painted_image.save(updated_image_path)
         return updated_image_path
@@ -1745,7 +1745,7 @@ class ImageEditing:
 
         updated_image = self.inpaint(
             prompt=replace_with_txt, image=image_pil, mask_image=mask_image)
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='replace-something')
         updated_image = updated_image.resize(image_pil.size)
         updated_image.save(updated_image_path)
@@ -1778,7 +1778,7 @@ class BackgroundRemoving:
         mask = Image.fromarray(mask)
         image.putalpha(mask)
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='detect-something')
         image.save(updated_image_path)
 

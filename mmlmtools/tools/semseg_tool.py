@@ -4,7 +4,7 @@ import mmcv
 from mmseg.apis import MMSegInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -39,7 +39,7 @@ class SemSegTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -58,7 +58,7 @@ class SemSegTool(BaseToolv1):
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 inputs, func_name='semseg-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

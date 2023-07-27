@@ -3,7 +3,7 @@
 from mmpose.apis import MMPoseInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -59,7 +59,7 @@ class HumanBodyPoseTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -67,7 +67,7 @@ class HumanBodyPoseTool(BaseToolv1):
             raise NotImplementedError
 
     def apply(self, inputs):
-        image_path = get_new_image_name(inputs, func_name='pose-estimation')
+        image_path = get_new_image_path(inputs, func_name='pose-estimation')
         if self.remote:
             raise NotImplementedError
             # import json
@@ -139,7 +139,7 @@ class HumanFaceLandmarkTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -150,7 +150,7 @@ class HumanFaceLandmarkTool(BaseToolv1):
         if self.remote:
             raise NotImplementedError
         else:
-            image_path = get_new_image_name(
+            image_path = get_new_image_path(
                 inputs, func_name='pose-estimation')
             next(
                 self._inferencer(

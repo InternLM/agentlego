@@ -2,21 +2,22 @@
 import os
 import uuid
 
-import mmengine
 
-
-def get_new_image_name(org_img_name, func_name='update'):
-    """create a temporary path for the image.
+def get_new_image_path(org_img_path:str, func_name:str='update'):
+    """Create a new image path for the tool output based on the original image
+    path and tool function. The image path is unique and can be identified by
+    the agent. The file name consists of uuid, function name of all appled
+    tools and the original file name.
 
     Args:
-        org_img_name (str): Original image path
-        func_name (str, optional): Descriptions. Defaults to 'update'.
+        org_img_path (str): Original image path
+        func_name (str, optional): Descriptions. Defaults to `'update'`
 
     Returns:
         new_image_path (str): The new image path
     """
-    dirname, basename = os.path.split(org_img_name)
-    mmengine.mkdir_or_exist(dirname)
+    dirname, basename = os.path.split(org_img_path)
+    os.makedirs(dirname, exist_ok=True)
     basename_splits = basename.split('.')
 
     img_format = basename_splits[-1]

@@ -4,7 +4,7 @@ import mmcv
 from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -58,7 +58,7 @@ class Text2BoxTool(BaseToolv1):
                 texts=text,
                 no_save_vis=True,
                 return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
@@ -112,7 +112,7 @@ class ObjectDetectionTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -131,7 +131,7 @@ class ObjectDetectionTool(BaseToolv1):
         else:
             results = self._inferencer(
                 inputs, no_save_vis=True, return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 inputs, func_name='detect-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

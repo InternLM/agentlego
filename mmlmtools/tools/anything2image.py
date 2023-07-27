@@ -3,7 +3,7 @@ import torch
 from diffusers import StableUnCLIPImg2ImgPipeline
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 from .imagebind.models.imagebind_model import imagebind_huge as ib
 
@@ -86,7 +86,7 @@ class Audio2ImageTool(BaseToolv1):
             embeddings = embeddings[ib.ModalityType.AUDIO]
             images = self.pipe(
                 image_embeds=embeddings.half(), width=512, height=512).images
-            new_img_name = get_new_image_name(audio_paths[0], 'Audio2Image')
+            new_img_name = get_new_image_path(audio_paths[0], 'Audio2Image')
             images[0].save(new_img_name)
 
             if self.e_mode:
@@ -147,7 +147,7 @@ class Thermal2ImageTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -170,7 +170,7 @@ class Thermal2ImageTool(BaseToolv1):
             embeddings = embeddings[ib.ModalityType.THERMAL]
             images = self.pipe(
                 image_embeds=embeddings.half(), width=512, height=512).images
-            new_img_name = get_new_image_name(thermal_data[0], 'Thermal2Image')
+            new_img_name = get_new_image_path(thermal_data[0], 'Thermal2Image')
             images[0].save(new_img_name)
 
             if self.e_mode:
@@ -266,7 +266,7 @@ class AudioImage2ImageTool(BaseToolv1):
             embeddings = (img_embeddings + audio_embeddings) / 2
             images = self.pipe(
                 image_embeds=embeddings.half(), width=512, height=512).images
-            new_img_name = get_new_image_name(audio_path, 'AudioImage2Image')
+            new_img_name = get_new_image_path(audio_path, 'AudioImage2Image')
             images[0].save(new_img_name)
 
             if self.e_mode:
@@ -358,7 +358,7 @@ class AudioText2ImageTool(BaseToolv1):
             embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5
             images = self.pipe(
                 image_embeds=embeddings.half(), width=512, height=512).images
-            new_img_name = get_new_image_name(audio_paths[0],
+            new_img_name = get_new_image_path(audio_paths[0],
                                               'AudioText2Image')
             images[0].save(new_img_name)
 

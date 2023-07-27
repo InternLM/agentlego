@@ -6,7 +6,7 @@ from diffusers import \
 from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -64,7 +64,7 @@ class InstructPix2PixTool(BaseToolv1):
                 image=original_image,
                 num_inference_steps=40,
                 image_guidance_scale=1.2).images[0]
-            updated_image_path = get_new_image_name(
+            updated_image_path = get_new_image_path(
                 image_path, func_name='stylization')
             image.save(updated_image_path)
         return updated_image_path
