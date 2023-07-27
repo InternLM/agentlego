@@ -5,10 +5,10 @@ from transformers import pipeline
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class Image2DepthTool(BaseTool):
+class Image2DepthTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Depth Image On Image',
         model=None,

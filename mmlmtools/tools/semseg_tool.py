@@ -5,10 +5,10 @@ from mmseg.apis import MMSegInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class SemSegTool(BaseTool):
+class SemSegTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment the Image',
         model={'model': 'mask2former_r50_8xb2-90k_cityscapes-512x1024'},

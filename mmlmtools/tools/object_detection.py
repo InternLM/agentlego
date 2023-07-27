@@ -5,10 +5,10 @@ from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class Text2BoxTool(BaseTool):
+class Text2BoxTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Give Object',
         model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},
@@ -85,7 +85,7 @@ class Text2BoxTool(BaseTool):
             raise NotImplementedError
 
 
-class ObjectDetectionTool(BaseTool):
+class ObjectDetectionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect All Objects',
         model={'model': 'rtmdet_l_8xb32-300e_coco'},

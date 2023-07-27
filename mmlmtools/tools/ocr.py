@@ -6,10 +6,10 @@ from PIL import Image
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class OCRTool(BaseTool):
+class OCRTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Recognize the Optical Characters On Image',
         model={
@@ -72,7 +72,7 @@ class OCRTool(BaseTool):
             raise NotImplementedError
 
 
-class ImageMaskOCRTool(BaseTool):
+class ImageMaskOCRTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Recognize The Optical Characters On Image With Mask',
         model={

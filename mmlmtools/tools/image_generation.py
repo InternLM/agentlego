@@ -10,10 +10,10 @@ from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class Text2ImageTool(BaseTool):
+class Text2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image From User Input Text',
         model={'model_name': 'stable_diffusion'},
@@ -65,7 +65,7 @@ class Text2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class Seg2ImageTool(BaseTool):
+class Seg2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Segmentations',
         model={
@@ -128,7 +128,7 @@ class Seg2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class Canny2ImageTool(BaseTool):
+class Canny2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Canny Image',
         model={
@@ -198,7 +198,7 @@ class Canny2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class Pose2ImageTool(BaseTool):
+class Pose2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Pose Image',
         model={
@@ -261,7 +261,7 @@ class Pose2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class ScribbleText2ImageTool(BaseTool):
+class ScribbleText2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Scribble Image',
         model=None,
@@ -340,7 +340,7 @@ class ScribbleText2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class DepthText2ImageTool(BaseTool):
+class DepthText2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Depth Text',
         model=None,

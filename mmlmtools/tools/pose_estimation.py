@@ -4,10 +4,10 @@ from mmpose.apis import MMPoseInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class HumanBodyPoseTool(BaseTool):
+class HumanBodyPoseTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Human Body Pose Detection On Image',
         model={'pose2d': 'human'},
@@ -108,7 +108,7 @@ class HumanBodyPoseTool(BaseTool):
             raise NotImplementedError
 
 
-class HumanFaceLandmarkTool(BaseTool):
+class HumanFaceLandmarkTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Human Face Landmark On Image',
         model={'pose2d': 'face'},

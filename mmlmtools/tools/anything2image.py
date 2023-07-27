@@ -4,7 +4,7 @@ from diffusers import StableUnCLIPImg2ImgPipeline
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 from .imagebind.models.imagebind_model import imagebind_huge as ib
 
 
@@ -27,7 +27,7 @@ class Anything2Image:
             self.model.to(device)
 
 
-class Audio2ImageTool(BaseTool):
+class Audio2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio',
         model=None,
@@ -106,7 +106,7 @@ class Audio2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class Thermal2ImageTool(BaseTool):
+class Thermal2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Thermal Image',
         model=None,
@@ -190,7 +190,7 @@ class Thermal2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class AudioImage2ImageTool(BaseTool):
+class AudioImage2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Image and Audio',
         model=None,
@@ -286,7 +286,7 @@ class AudioImage2ImageTool(BaseTool):
             raise NotImplementedError
 
 
-class AudioText2ImageTool(BaseTool):
+class AudioText2ImageTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio and Text',
         model=None,

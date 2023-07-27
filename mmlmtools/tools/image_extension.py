@@ -10,7 +10,7 @@ from PIL import Image, ImageOps
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 from .image_caption import ImageCaptionTool
 from .vqa import VisualQuestionAnsweringTool
 
@@ -114,7 +114,7 @@ class Inpainting:
         return update_image
 
 
-class ImageExtensionTool(BaseTool):
+class ImageExtensionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Image Extension Tool',
         model={},

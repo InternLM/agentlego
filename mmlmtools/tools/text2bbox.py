@@ -6,11 +6,11 @@ from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_name
-from .base_tool_v2 import BaseToolv2
+from .base_tool import BaseTool
 from .parsers import BaseParser
 
 
-class Text2BboxToolv2(BaseToolv2):
+class Text2BboxToolv2(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Given Object',
         model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},

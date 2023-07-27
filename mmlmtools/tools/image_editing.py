@@ -12,13 +12,18 @@ import torch
 import wget
 from diffusers import StableDiffusionInpaintPipeline
 from PIL import Image
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
-from segment_anything.modeling import Sam
-from segment_anything.utils.transforms import ResizeLongestSide
+
+try:
+    from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
+    from segment_anything.modeling import Sam
+    from segment_anything.utils.transforms import ResizeLongestSide
+    has_sam = True
+except ImportError:
+    has_sam = False
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 from .vqa import VisualQuestionAnsweringTool
 
 # from mmlmtools.cached_dict import CACHED_TOOLS
@@ -33,7 +38,7 @@ class SamPredictor:
 
     def __init__(
         self,
-        sam_model: Sam,
+        sam_model: 'Sam',
     ) -> None:
         """Uses SAM to calculate the image embedding for an image, and then
         allow repeated, efficient mask prediction given prompts.
@@ -41,6 +46,12 @@ class SamPredictor:
         Arguments:
           sam_model (Sam): The model to use for mask prediction.
         """
+
+        if not has_sam:
+            raise ImportError(
+                '`segment_anything` is required to use SamPredictor. '
+                'Please install it with `pip install segment_anything`.')
+
         super().__init__()
         self.model = sam_model
         self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
@@ -318,7 +329,7 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     return sam, sam_predictor
 
 
-class SegmentAnything(BaseTool):
+class SegmentAnything(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment Anything On Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
@@ -484,7 +495,7 @@ class Inpainting:
         return update_image
 
 
-class ObjectReplaceTool(BaseTool):
+class ObjectReplaceTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Replace The Given Object In The Image',
         model={
@@ -699,7 +710,7 @@ class ObjectReplaceTool(BaseTool):
         ax.text(x0, y0, label)
 
 
-class ObjectRemoveTool(BaseTool):
+class ObjectRemoveTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Given Object In The Image',
         model={

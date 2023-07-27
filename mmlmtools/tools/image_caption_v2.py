@@ -5,11 +5,11 @@ import numpy as np
 from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from .base_tool_v2 import BaseToolv2
+from .base_tool import BaseTool
 from .parsers import BaseParser
 
 
-class ImageCaptionTool(BaseToolv2):
+class ImageCaptionTool(BaseTool):
 
     DEFAULT_TOOLMETA = dict(
         name='Get Photo Description',

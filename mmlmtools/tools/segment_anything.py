@@ -17,7 +17,7 @@ from segment_anything.utils.transforms import ResizeLongestSide
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 GLOBAL_SEED = 1912
 
@@ -311,7 +311,7 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     return sam, sam_predictor
 
 
-class SegmentAnything(BaseTool):
+class SegmentAnything(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment Anything On Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
@@ -441,7 +441,7 @@ class SegmentAnything(BaseTool):
         return embedding
 
 
-class SegmentClicked(BaseTool):
+class SegmentClicked(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Clicked Region In The Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
@@ -543,7 +543,7 @@ class SegmentClicked(BaseTool):
         return embedding
 
 
-class ObjectSegmenting(BaseTool):
+class ObjectSegmenting(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Given Object In The Image',
         model={

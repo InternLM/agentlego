@@ -5,11 +5,11 @@ import numpy as np
 from PIL import Image
 
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.base_tool_v2 import BaseToolv2
+from mmlmtools.tools.base_tool import BaseTool
 from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
-class DummyTool(BaseToolv2):
+class DummyTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Dummy Tool',
         model=None,
@@ -21,7 +21,7 @@ class DummyTool(BaseToolv2):
         return image
 
 
-class TestBaseToolv2(ToolTestCase):
+class TestBaseTool(ToolTestCase):
 
     def test_call_with_visual_chatgpt(self):
         tool = DummyTool(parser=VisualChatGPTParser())

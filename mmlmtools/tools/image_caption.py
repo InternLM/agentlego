@@ -3,10 +3,10 @@ from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class ImageCaptionTool(BaseTool):
+class ImageCaptionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Get Photo Description',
         model={'model': 'blip-base_3rdparty_caption'},
