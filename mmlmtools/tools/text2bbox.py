@@ -41,13 +41,12 @@ class Text2BboxToolv2(BaseToolv2):
                 no_save_vis=True,
                 return_datasample=True)
             output_path = get_new_image_name(
-                image, func_name='detect-something')
+                image, func_name='detect-something')['predictions'][0]
             img = mmcv.imread(image, channel_order='rgb')
             self._inferencer.visualizer.add_datasample(
                 'results',
                 img,
                 results,
                 show=False,
-                out_file=output_path,
-                texts=text)
+                out_file=output_path)
             return output_path
