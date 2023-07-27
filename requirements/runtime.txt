@@ -2,5 +2,6 @@ mmpretrain>=1.0.0rc8
 modelindex
 numpy
 opencv-python
+sentence-transformers
 thefuzz
 torch>=1.8.0
