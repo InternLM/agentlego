@@ -112,3 +112,6 @@ venv.bak/
 
 # custom
 .vscode
+
+# generated image
+image/
