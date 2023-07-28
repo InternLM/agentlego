@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from dataclasses import dataclass
-from typing import Optional
+from typing import Dict, Optional, Tuple
 
 
 @dataclass
@@ -9,15 +9,21 @@ class ToolMeta:
 
     Args:
         name (str): tool name for agent to identify the tool.
-        description (str, optional): Description for tool. Defaults to None
+        description (str): Description for tool.
         model (dict, optional): Model dict for tool. Defaults to None
         input_description (str, optional): Input description for tool.
             Defaults to None
         output_description (str, optional): Output description for tool.
             Defaults to None
+        inputs (tuple[str, ...], optional): Input categories for tool.
+            Defaults to None
+        outputs (tuple[str, ...], optional): Output categories for tool.
+            Defaults to None
     """
     name: str
-    description: Optional[str] = None
-    model: Optional[dict] = None
+    description: str
+    model: Optional[Dict] = None
     input_description: Optional[str] = None
     output_description: Optional[str] = None
+    inputs: Optional[Tuple[str, ...]] = None
+    outputs: Optional[Tuple[str, ...]] = None

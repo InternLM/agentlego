@@ -4,10 +4,10 @@ from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
 from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class Image2ScribbleTool(BaseTool):
+class Image2ScribbleTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Scribble Conditioned On Image',
         model=None,
