@@ -46,12 +46,10 @@ cd ..
 mim install mmsegmentation
 ```
 
-3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件
+3. 启动
 
-4. 启动
+我们在 examples/ 下给了一个简化过的 visual chatgpt 代码，可以直接运行。在本例中，我们使用了 visual chatgpt 中原生支持的 `ImageCaptioning` 和 mmtools 提供的 `OCRTool` 两个工具，来演示如何将 mmtools 集成到已有的项目中。
 
 ```bash
-cd TaskMatrix
-
-python visual_chatgpt.py
+python visual_chatgpt.py --load "ImageCaptioning_cpu,OCRTool_cpu"
 ```
