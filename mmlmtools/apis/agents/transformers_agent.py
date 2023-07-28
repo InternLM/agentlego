@@ -5,7 +5,7 @@ from transformers.tools import Tool
 
 from mmlmtools.tools.base_tool import BaseTool
 from mmlmtools.tools.parsers import TransformersAgentParser
-from ..tools import list_tools, load_tool
+from ..tool import list_tools, load_tool
 
 
 class TFAgentTool(Tool):

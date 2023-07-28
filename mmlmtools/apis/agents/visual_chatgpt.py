@@ -1,30 +1,41 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
+import inspect
+import sys
 import weakref
-from typing import List
+from abc import ABCMeta
+from typing import Any, List
 
+from mmlmtools import tools
 from mmlmtools.tools.base_tool import BaseTool
 from mmlmtools.tools.parsers import VisualChatGPTParser
-from ..tools import list_tools, load_tool
+
+
+def wrapped_init(self, *args, parser=VisualChatGPTParser(), **kwargs):
+    return self.__class__.__bases__[0].__init__(
+        self, *args, parser=VisualChatGPTParser(), **kwargs) 
 
 
 class _Inference:
-
-    def __init__(self, tool: BaseTool):
-        self.tool = weakref.ref(tool)
+    def __get__(self, instance, owner):
+        if not hasattr(self, 'instance'):
+            self.tool = weakref.ref(instance)
+        return self
 
     @property
     def name(self):
         return self.tool().name
-
+    
     @property
     def description(self):
         return self.tool().description
+
 
     def __call__(self, *args, **kwargs):
         return self.tool()(*args, **kwargs)
 
 
-def load_tools_for_visual_chatgpt(tool_names: List[str], device: str = 'cpu'):
+def load_tools_for_visual_chatgpt():
     """Load a set of tools and adapt them to Visual ChatGPT style.
 
     Args:
@@ -34,13 +45,9 @@ def load_tools_for_visual_chatgpt(tool_names: List[str], device: str = 'cpu'):
     Returns:
     list(Tool): loaded tools
     """
-    all_tools = list_tools()
-    loaded_tools = []
-    for name in tool_names:
-        if name not in all_tools:
-            raise ValueError(f'{name} is not a valid tool name.')
-        tool = load_tool(name, device=device, parser=VisualChatGPTParser())
-        setattr(tool, 'inference', _Inference(tool))
-        loaded_tools.append(tool)
-
-    return loaded_tools
+    all_tools = inspect.getmembers(
+        tools, lambda x: inspect.isclass(x) and issubclass(x, BaseTool))
+    return {
+        name: type(tool_cls.__name__, (tool_cls, ), {
+            'inference': _Inference(), '__init__': wrapped_init})
+        for name, tool_cls in all_tools}
