@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmpretrain.apis import VisualQuestionAnsweringInferencer
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool_v1 import BaseToolv1
 
 

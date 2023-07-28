@@ -3,7 +3,7 @@
 import mmcv
 from mmdet.apis import DetInferencer
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
@@ -33,7 +33,7 @@ class Text2BoxTool(BaseToolv1):
 
     def setup(self):
         if self._inferencer is None:
-            from mmlmtools.cached_dict import CACHED_TOOLS
+            from mmlmtools.utils.cached_dict import CACHED_TOOLS
             if CACHED_TOOLS.get('grounding', None) is not None:
                 self._inferencer = CACHED_TOOLS['grounding']
             else:

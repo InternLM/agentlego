@@ -4,8 +4,8 @@ from typing import Optional
 import mmcv
 from mmdet.apis import DetInferencer
 
-from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
 
