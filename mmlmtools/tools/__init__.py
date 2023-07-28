@@ -4,11 +4,11 @@
 from .depth_detection import Image2DepthTool
 from .edge_detection import Image2CannyTool
 from .image_caption import ImageCaptionTool
-from .image_editing import ObjectReplaceTool, ObjectRemoveTool
+from .image_editing import ObjectRemoveTool, ObjectReplaceTool
 from .image_extension import ImageExtensionTool
-from .image_generation import (Canny2ImageTool, Pose2ImageTool,
-                               Seg2ImageTool, Text2ImageTool,
-                               ScribbleText2ImageTool, DepthText2ImageTool)
+from .image_generation import (Canny2ImageTool, DepthText2ImageTool,
+                               Pose2ImageTool, ScribbleText2ImageTool,
+                               Seg2ImageTool, Text2ImageTool)
 from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import ImageMaskOCRTool, OCRTool
 from .pose_estimation import HumanBodyPoseTool, HumanFaceLandmarkTool
@@ -18,7 +18,6 @@ from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
 from .vqa import VisualQuestionAnsweringTool
-
 
 __all__ = [
     'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',

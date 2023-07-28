@@ -16,8 +16,8 @@ from segment_anything.utils.transforms import ResizeLongestSide
 
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 GLOBAL_SEED = 1912
 
@@ -311,7 +311,7 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     return sam, sam_predictor
 
 
-class SegmentAnything(BaseTool):
+class SegmentAnything(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment Anything On Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
@@ -354,7 +354,7 @@ class SegmentAnything(BaseTool):
             img_path = inputs.strip()
             annos = self.segment_anything(img_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_image_name(img_path, 'sam')
+            seg_all_image_path = get_new_image_path(img_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
@@ -441,7 +441,7 @@ class SegmentAnything(BaseTool):
         return embedding
 
 
-class SegmentClicked(BaseTool):
+class SegmentClicked(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Clicked Region In The Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
@@ -495,7 +495,7 @@ class SegmentClicked(BaseTool):
             res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_image_name(img_path, 'sam-clicked')
+            filaname = get_new_image_path(img_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
             return filaname
@@ -543,7 +543,7 @@ class SegmentClicked(BaseTool):
         return embedding
 
 
-class ObjectSegmenting(BaseTool):
+class ObjectSegmenting(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Given Object In The Image',
         model={
@@ -668,7 +668,7 @@ class ObjectSegmenting(BaseTool):
                 random_color=True,
                 transparency=0.3)
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segmentation')
 
         new_image = Image.fromarray(image)

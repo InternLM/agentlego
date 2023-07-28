@@ -3,11 +3,11 @@
 from mmpose.apis import MMPoseInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class HumanBodyPoseTool(BaseTool):
+class HumanBodyPoseTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Human Body Pose Detection On Image',
         model={'pose2d': 'human'},
@@ -59,7 +59,7 @@ class HumanBodyPoseTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -67,7 +67,7 @@ class HumanBodyPoseTool(BaseTool):
             raise NotImplementedError
 
     def apply(self, inputs):
-        image_path = get_new_image_name(inputs, func_name='pose-estimation')
+        image_path = get_new_image_path(inputs, func_name='pose-estimation')
         if self.remote:
             raise NotImplementedError
             # import json
@@ -108,7 +108,7 @@ class HumanBodyPoseTool(BaseTool):
             raise NotImplementedError
 
 
-class HumanFaceLandmarkTool(BaseTool):
+class HumanFaceLandmarkTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Human Face Landmark On Image',
         model={'pose2d': 'face'},
@@ -139,7 +139,7 @@ class HumanFaceLandmarkTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -150,7 +150,7 @@ class HumanFaceLandmarkTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            image_path = get_new_image_name(
+            image_path = get_new_image_path(
                 inputs, func_name='pose-estimation')
             next(
                 self._inferencer(

@@ -1,15 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 from PIL import Image
-
-from mmlmtools.toolmeta import ToolMeta
 from transformers import pipeline
 
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from mmlmtools.toolmeta import ToolMeta
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class Image2DepthTool(BaseTool):
+class Image2DepthTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Generate Depth Image On Image',
         model=None,
@@ -26,13 +25,7 @@ class Image2DepthTool(BaseTool):
                  output_style: str = 'image_path',
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device
-        )
+        super().__init__(toolmeta, input_style, output_style, remote, device)
         self.depth_estimator = pipeline('depth-estimation')
 
     def setup(self):
@@ -42,7 +35,7 @@ class Image2DepthTool(BaseTool):
         if self.input_style == 'image_path':
             return inputs
         elif self.input_style == 'pil image':
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -59,7 +52,7 @@ class Image2DepthTool(BaseTool):
             depth = depth[:, :, None]
             depth = np.concatenate([depth, depth, depth], axis=2)
             depth = Image.fromarray(depth)
-            output_path = get_new_image_name(inputs, func_name="depth")
+            output_path = get_new_image_path(inputs, func_name="depth")
             depth.save(output_path)
             return output_path
 

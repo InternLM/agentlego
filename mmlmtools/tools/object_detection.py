@@ -4,11 +4,11 @@ import mmcv
 from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class Text2BoxTool(BaseTool):
+class Text2BoxTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Give Object',
         model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},
@@ -58,7 +58,7 @@ class Text2BoxTool(BaseTool):
                 texts=text,
                 no_save_vis=True,
                 return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
@@ -85,7 +85,7 @@ class Text2BoxTool(BaseTool):
             raise NotImplementedError
 
 
-class ObjectDetectionTool(BaseTool):
+class ObjectDetectionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect All Objects',
         model={'model': 'rtmdet_l_8xb32-300e_coco'},
@@ -112,7 +112,7 @@ class ObjectDetectionTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -131,7 +131,7 @@ class ObjectDetectionTool(BaseTool):
         else:
             results = self._inferencer(
                 inputs, no_save_vis=True, return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 inputs, func_name='detect-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

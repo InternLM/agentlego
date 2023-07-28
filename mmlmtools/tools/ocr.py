@@ -5,11 +5,11 @@ from PIL import Image
 
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class OCRTool(BaseTool):
+class OCRTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Recognize the Optical Characters On Image',
         model={
@@ -48,7 +48,7 @@ class OCRTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -72,7 +72,7 @@ class OCRTool(BaseTool):
             raise NotImplementedError
 
 
-class ImageMaskOCRTool(BaseTool):
+class ImageMaskOCRTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Recognize The Optical Characters On Image With Mask',
         model={

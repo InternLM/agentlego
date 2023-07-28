@@ -7,7 +7,7 @@ from typing import Optional, Union
 import mmlmtools.tools as tools
 from .cached_dict import CACHED_TOOLS
 from .toolmeta import ToolMeta
-from .tools.base_tool import BaseTool
+from .tools.base_tool_v1 import BaseToolv1
 
 # Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
 
@@ -47,13 +47,13 @@ from .tools.base_tool import BaseTool
 DEFAULT_TOOLS = {
     k: v.DEFAULT_TOOLMETA
     for k, v in tools.__dict__.items()
-    if inspect.isclass(v) and issubclass(v, BaseTool)
+    if inspect.isclass(v) and issubclass(v, BaseToolv1)
 }
 
 NAMES2TOOLS = {
     k: v
     for k, v in tools.__dict__.items()
-    if inspect.isclass(v) and issubclass(v, BaseTool)
+    if inspect.isclass(v) and issubclass(v, BaseToolv1)
 }
 
 # CACHED_TOOLS = defaultdict(dict)
@@ -62,7 +62,7 @@ NAMES2TOOLS = {
 def import_all_tools_to(target_dir):
     global_dict = sys.modules[target_dir].__dict__
     for k, v in tools.__dict__.items():
-        if inspect.isclass(v) and issubclass(v, BaseTool):
+        if inspect.isclass(v) and issubclass(v, BaseToolv1):
             global_dict[k] = v
 
 
@@ -78,7 +78,7 @@ def load_tool(tool_name: str,
               input_description: Optional[str] = None,
               output_description: Optional[str] = None,
               device: Optional[str] = 'cpu',
-              **kwargs) -> Union[callable, BaseTool]:
+              **kwargs) -> Union[callable, BaseToolv1]:
     """Load a configurable callable tool for different task.
 
     Args:

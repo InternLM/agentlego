@@ -2,14 +2,14 @@
 from functools import partial
 
 from mmlmtools.api import import_all_tools_to, list_tools
-from mmlmtools.tools.base_tool import BaseTool
+from mmlmtools.tools.base_tool_v1 import BaseToolv1
 
 
 class Adapter:
     """Adapter for mmtools to Visual ChatGPT style.
 
     Args:
-        tool (BaseTool): mmtool
+        tool (BaseToolv1): mmtool
     """
 
     def __init__(self, tool):
@@ -52,7 +52,7 @@ def convert_mmtools_for_visualchatgpt(models):
         models (dict): dict of mmtools
     """
     for k, v in models.items():
-        if isinstance(v, BaseTool):
+        if isinstance(v, BaseToolv1):
             v.inference = Adapter(v)
             v.inference.name = v.toolmeta.name
             v.inference.description = v.toolmeta.description
@@ -61,6 +61,6 @@ def convert_mmtools_for_visualchatgpt(models):
 
 # global_dict = sys.modules['__main__'].__dict__
 # for k, v in tools.__dict__.items():
-#     if inspect.isclass(v) and issubclass(v, BaseTool):
+#     if inspect.isclass(v) and issubclass(v, BaseToolv1):
 #         global_dict[k] = v
 import_all_tools_to('__main__')

@@ -2,10 +2,10 @@
 from mmpretrain.apis import VisualQuestionAnsweringInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from .base_tool import BaseTool
+from .base_tool_v1 import BaseToolv1
 
 
-class VisualQuestionAnsweringTool(BaseTool):
+class VisualQuestionAnsweringTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Visual Question Answering',
         model={'model': 'ofa-base_3rdparty-zeroshot_vqa'},
@@ -23,13 +23,7 @@ class VisualQuestionAnsweringTool(BaseTool):
                  output_style: str = 'text',
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device
-        )
+        super().__init__(toolmeta, input_style, output_style, remote, device)
 
         self._inferencer = None
 
