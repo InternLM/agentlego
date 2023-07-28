@@ -8,7 +8,7 @@ from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
 from mmagic.apis import MMagicInferencer
 from PIL import Image
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 

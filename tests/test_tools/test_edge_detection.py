@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from mmlmtools.api import load_tool
+from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
 
 

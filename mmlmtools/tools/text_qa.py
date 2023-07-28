@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import re
 
-from ..toolmeta import ToolMeta
+from ..utils.toolmeta import ToolMeta
 from .base_tool_v1 import BaseToolv1
 
 

@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 import torch
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from .parsers import BaseParser, NaiveParser
 
 

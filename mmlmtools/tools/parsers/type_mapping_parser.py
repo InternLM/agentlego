@@ -8,8 +8,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_parser import BaseParser
 
 
