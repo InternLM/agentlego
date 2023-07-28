@@ -22,7 +22,7 @@ except ImportError:
     has_sam = False
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 from .vqa import VisualQuestionAnsweringTool
 
@@ -372,7 +372,7 @@ class SegmentAnything(BaseToolv1):
             img_path = inputs.strip()
             annos = self.segment_anything(img_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_image_name(img_path, 'sam')
+            seg_all_image_path = get_new_image_path(img_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
@@ -598,7 +598,7 @@ class ObjectReplaceTool(BaseToolv1):
                 prompt=replace_with_txt,
                 image=image_pil,
                 mask_image=mask_image)
-            updated_image_path = get_new_image_name(
+            updated_image_path = get_new_image_path(
                 image_path, func_name='replace_something')
             updated_image = updated_image.resize(image_pil.size)
             updated_image.save(updated_image_path)
@@ -660,7 +660,7 @@ class ObjectReplaceTool(BaseToolv1):
                 random_color=True,
                 transparency=0.3)
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segmentation')
 
         new_image = Image.fromarray(image)
@@ -756,8 +756,6 @@ class ObjectRemoveTool(BaseToolv1):
 
     def apply(self, inputs):
         image_path, to_be_removed_text = inputs
-        print(f'image_path: {image_path}, \
-                to_be_removed_text: {to_be_removed_text}')
         if self.remote:
             raise NotImplementedError
         else:

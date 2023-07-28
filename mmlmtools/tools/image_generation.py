@@ -9,7 +9,7 @@ from mmagic.apis import MMagicInferencer
 from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -49,7 +49,7 @@ class Text2ImageTool(BaseToolv1):
         if self.remote:
             raise NotImplementedError
         else:
-            image_path = get_new_image_name(
+            image_path = get_new_image_path(
                 'image/sd-res.png', func_name='generate-image')
             self._inferencer.infer(text=inputs, result_out_dir=image_path)
         return image_path
@@ -110,7 +110,7 @@ class Seg2ImageTool(BaseToolv1):
         if self.remote:
             raise NotImplementedError
         else:
-            out_path = get_new_image_name(
+            out_path = get_new_image_path(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-seg')
             self._inferencer.infer(
@@ -171,7 +171,7 @@ class Canny2ImageTool(BaseToolv1):
     def apply(self, inputs):
         image_path, prompt = inputs
 
-        out_path = get_new_image_name(
+        out_path = get_new_image_path(
             'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:
@@ -243,7 +243,7 @@ class Pose2ImageTool(BaseToolv1):
         if self.remote:
             raise NotImplementedError
         else:
-            out_path = get_new_image_name(
+            out_path = get_new_image_path(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-pose')
             self._inferencer.infer(
@@ -324,7 +324,7 @@ class ScribbleText2ImageTool(BaseToolv1):
                 eta=0.0,
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
-            out_path = get_new_image_name(
+            out_path = get_new_image_path(
                 image_path, func_name='generate-image-from-scribble')
             image.save(out_path)
         return out_path
@@ -404,7 +404,7 @@ class DepthText2ImageTool(BaseToolv1):
                 eta=0.0,
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
-            out_path = get_new_image_name(
+            out_path = get_new_image_path(
                 image_path, func_name='generate-image-from-depth')
             image.save(out_path)
         return out_path

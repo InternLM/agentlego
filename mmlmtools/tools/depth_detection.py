@@ -4,7 +4,7 @@ from PIL import Image
 from transformers import pipeline
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -35,7 +35,7 @@ class Image2DepthTool(BaseToolv1):
         if self.input_style == 'image_path':
             return inputs
         elif self.input_style == 'pil image':
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -52,7 +52,7 @@ class Image2DepthTool(BaseToolv1):
             depth = depth[:, :, None]
             depth = np.concatenate([depth, depth, depth], axis=2)
             depth = Image.fromarray(depth)
-            output_path = get_new_image_name(inputs, func_name='depth')
+            output_path = get_new_image_path(inputs, func_name="depth")
             depth.save(output_path)
             return output_path
 

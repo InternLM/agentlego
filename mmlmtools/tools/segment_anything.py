@@ -16,7 +16,7 @@ from segment_anything.utils.transforms import ResizeLongestSide
 
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 GLOBAL_SEED = 1912
@@ -354,7 +354,7 @@ class SegmentAnything(BaseToolv1):
             img_path = inputs.strip()
             annos = self.segment_anything(img_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_image_name(img_path, 'sam')
+            seg_all_image_path = get_new_image_path(img_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
@@ -495,7 +495,7 @@ class SegmentClicked(BaseToolv1):
             res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_image_name(img_path, 'sam-clicked')
+            filaname = get_new_image_path(img_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
             return filaname
@@ -668,7 +668,7 @@ class ObjectSegmenting(BaseToolv1):
                 random_color=True,
                 transparency=0.3)
 
-        updated_image_path = get_new_image_name(
+        updated_image_path = get_new_image_path(
             image_path, func_name='segmentation')
 
         new_image = Image.fromarray(image)

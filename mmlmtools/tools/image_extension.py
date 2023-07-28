@@ -9,7 +9,7 @@ from langchain.llms.openai import OpenAI
 from PIL import Image, ImageOps
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 from .image_caption import ImageCaptionTool
 from .vqa import VisualQuestionAnsweringTool
@@ -172,16 +172,15 @@ class ImageExtensionTool(BaseToolv1):
             image_path, 'what is the background color of this image')
         style = self.get_BLIP_vqa(image_path,
                                   'what is the style of this image')
-        imagine_prompt = f'let\'s pretend you are an excellent painter and ' \
-                         f'now there is an incomplete painting with ' \
-                         f'{BLIP_caption} in the center, please imagine the ' \
-                         f'complete painting and describe it ' \
-                         f'you should consider the background color is ' \
-                         f'{background_color}, the style is {style}' \
-                         f'You should make the painting as vivid and ' \
-                         f'realistic as possible You can not use words ' \
-                         f'like painting or picture and you should use no ' \
-                         f'more than 50 words to describe it'
+        imagine_prompt = (
+            f"let's pretend you are an excellent painter and now "  # noqa
+            f'there is an incomplete painting with {BLIP_caption} in the center, '  # noqa
+            f'please imagine the complete painting and describe it'  # noqa
+            f'you should consider the background color is {background_color}, the style is {style}'  # noqa
+            f'You should make the painting as vivid and realistic as possible'  # noqa
+            f'You can not use words like painting or picture'  # noqa
+            f'and you should use no more than 50 words to describe it'  # noqa
+        )
         caption = self.llm(imagine_prompt) if imagine else BLIP_caption
         caption = self.check_prompt(caption)
         return caption
@@ -249,7 +248,7 @@ class ImageExtensionTool(BaseToolv1):
             tosize = (int(width), int(height))
             out_painted_image = self.dowhile(image_path, tosize, 4, True,
                                              False)
-            updated_image_path = get_new_image_name(image_path, 'extension')
+            updated_image_path = get_new_image_path(image_path, 'extension')
             out_painted_image.save(updated_image_path)
         return updated_image_path
 

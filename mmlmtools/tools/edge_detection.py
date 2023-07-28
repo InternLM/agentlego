@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
+from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
 
@@ -44,7 +44,7 @@ class Image2CannyTool(BaseToolv1):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -61,7 +61,7 @@ class Image2CannyTool(BaseToolv1):
                               self.high_threshold)[:, :, None]
             canny = np.concatenate([canny] * 3, axis=2)
             canny = Image.fromarray(canny)
-            output_path = get_new_image_name(inputs, func_name='edge')
+            output_path = get_new_image_path(inputs, func_name='edge')
             canny.save(output_path)
             return output_path
 
