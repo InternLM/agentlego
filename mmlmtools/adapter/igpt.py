@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from mmlmtools.api import import_all_tools_to
+from mmlmtools.apis.tool import import_all_tools_to
 from mmlmtools.tools import *  # noqa: F401, F403
 from .visual_chatgpt import (convert_mmtools_for_visualchatgpt,
                              load_mmtools_for_visualchatgpt)

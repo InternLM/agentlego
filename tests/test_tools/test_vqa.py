@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from mmengine import is_installed
 
-from mmlmtools.api import load_tool
+from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
 
 

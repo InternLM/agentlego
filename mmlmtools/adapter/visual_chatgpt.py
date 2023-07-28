@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
 
-from mmlmtools.api import import_all_tools_to, list_tools
+from mmlmtools.apis.tool import import_all_tools_to, list_tools
 from mmlmtools.tools.base_tool_v1 import BaseToolv1
 
 

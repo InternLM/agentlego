@@ -64,7 +64,7 @@ from mmlmtools.adapter.load_mmtools_for_langchain
 #         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 ```
 
-#### InterGPT
+#### InternGPT
 
 ```Python
 from mmlmtools.adapter.convert_tools_for_igpt

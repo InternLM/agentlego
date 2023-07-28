@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from .parsers import BaseParser, NaiveParser
 
 
