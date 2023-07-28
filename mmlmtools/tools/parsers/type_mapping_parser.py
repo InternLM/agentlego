@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 
 from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
 from .base_parser import BaseParser
 
 
@@ -286,7 +286,7 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='pillow', target_type='path')
     def _image_pil_to_path(self, image: Image.Image) -> str:
-        path = get_new_image_name('image/temp.jpg', func_name='temp')
+        path = get_new_image_path('image/temp.jpg', func_name='temp')
         image.save(path)
         return path
 
@@ -300,7 +300,7 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='ndarray', target_type='path')
     def _image_ndarray_to_path(self, image: np.ndarray) -> str:
-        path = get_new_image_name('image/temp.jpg', func_name='temp')
+        path = get_new_image_path('image/temp.jpg', func_name='temp')
         cv2.imwrite(path, image)
         return path
 

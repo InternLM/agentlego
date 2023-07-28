@@ -5,7 +5,7 @@ import mmcv
 from mmdet.apis import DetInferencer
 
 from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
 from .base_tool import BaseTool
 from .parsers import BaseParser
 
@@ -40,7 +40,7 @@ class Text2BboxToolv2(BaseTool):
                 texts=text,
                 no_save_vis=True,
                 return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 image, func_name='detect-something')['predictions'][0]
             img = mmcv.imread(image, channel_order='rgb')
             self._inferencer.visualizer.add_datasample(
