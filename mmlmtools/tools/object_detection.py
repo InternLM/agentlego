@@ -28,7 +28,10 @@ class ObjectDetectionTool(BaseTool):
         model={'model': 'rtmdet_l_8xb32-300e_coco'},
         description='This is a useful tool '
         'when you only want to detect the picture or detect all objects '
-        'in the picture. like: detect all object or object. ')
+        'in the picture. like: detect all object or object. '
+        'It takes an {{{input:image}}} as the input, and returns '
+        'a {{{output:image}}} as the output, representing the image with '
+        'bounding boxes of all objects. ')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -41,7 +44,7 @@ class ObjectDetectionTool(BaseTool):
         self._inferencer = load_object_detection(
             model=self.toolmeta.model['model'], device=self.device)
 
-    def apply(self, inputs):
+    def apply(self, image_path: str) -> str:
         if self.remote:
             import json
 
@@ -52,10 +55,10 @@ class ObjectDetectionTool(BaseTool):
             raise NotImplementedError
         else:
             results = self._inferencer(
-                inputs, no_save_vis=True, return_datasample=True)
+                image_path, no_save_vis=True, return_datasample=True)
             output_path = get_new_image_path(
-                inputs, func_name='detect-something')
-            img = mmcv.imread(inputs)
+                image_path, func_name='detect-something')
+            img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
             self._inferencer.visualizer.add_datasample(
                 'results',

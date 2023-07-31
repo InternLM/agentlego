@@ -19,7 +19,7 @@ class TestImageCaption(ToolTestCase):
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
-        res = tool(f'{img_path}')
+        res = tool(img_path)
         assert isinstance(res, str)
 
         img = Image.fromarray(img)

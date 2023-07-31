@@ -16,7 +16,7 @@ class TestText2BboxTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool(
-            'Text2BoxTool', parser=VisualChatGPTParser(), device='cuda')
+            'Text2BboxTool', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -25,6 +25,6 @@ class TestText2BboxTool(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'Text2BoxTool', parser=HuggingFaceAgentParser(), device='cuda')
-        res = tool(f'{img_path}, man')
+            'Text2BboxTool', parser=HuggingFaceAgentParser(), device='cuda')
+        res = tool(img, 'man')
         assert isinstance(res, Image.Image)
