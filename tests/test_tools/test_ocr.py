@@ -27,7 +27,7 @@ class TestOCRTool(ToolTestCase):
         tool = load_tool(
             'OCRTool', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img)
-        assert isinstance(res, str)
+        assert isinstance(res, list)
 
 
 @skipIf(not is_installed('mmocr'), reason='requires mmocr')

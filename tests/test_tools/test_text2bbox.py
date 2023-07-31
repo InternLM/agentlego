@@ -12,21 +12,19 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('mmdet'), reason='requires mmdet')
-class TestObjectDetectionTool(ToolTestCase):
+class TestText2BboxTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool(
-            'ObjectDetectionTool', parser=VisualChatGPTParser(), device='cuda')
+            'Text2BoxTool', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
-        res = tool(img_path)
+        res = tool(f'{img_path}, man')
         assert isinstance(res, str)
 
-        tool = load_tool(
-            'ObjectDetectionTool',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
         img = Image.fromarray(img)
-        res = tool(img)
+        tool = load_tool(
+            'Text2BoxTool', parser=HuggingFaceAgentParser(), device='cuda')
+        res = tool(f'{img_path}, man')
         assert isinstance(res, Image.Image)

@@ -8,6 +8,7 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('mmpretrain'), reason='requires mmpretrain')
