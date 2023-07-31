@@ -15,8 +15,8 @@ class ImageToCanny(BaseTool):
         model=None,
         description='This is a useful tool '
         'when you want to detect the edge of the image.'
-        'input should be a {{{input: image}}}'
-        'output should be a {{{output: image}}}')
+        'input should be a {{{input:image}}}'
+        'output should be a {{{output:image}}}')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,

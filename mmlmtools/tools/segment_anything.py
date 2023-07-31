@@ -309,7 +309,7 @@ class SegmentAnything(BaseTool):
         'when you want to segment anything in the image,'
         'like: segment anything from this image. '
         'It takes an {{{input:image}}} as the input, and returns an '
-        '{{{input:image}}} representing the segmented image. ')
+        '{{{output:image}}} representing the segmented image. ')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -433,7 +433,7 @@ class SegmentClicked(BaseTool):
         'when you want to segment the masked region or block in the image,'
         'like: segment the masked region in this image, '
         'The input to this tool should be an {{{input:image}}} representing '
-        'the image, and an {{{input:image}}} representing the mask. ')
+        'the image, and an {{{output:image}}} representing the mask. ')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -449,7 +449,7 @@ class SegmentClicked(BaseTool):
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.e_mode = True
 
-    def apply(self, image_path, mask_path):
+    def apply(self, image_path: str, mask_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
