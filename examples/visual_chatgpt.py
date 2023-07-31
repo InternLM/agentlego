@@ -38,7 +38,7 @@ from segment_anything import SamAutomaticMaskGenerator, SamPredictor, build_sam
 from transformers import (BlipForConditionalGeneration,
                           BlipForQuestionAnswering, BlipProcessor, pipeline)
 
-from mmlmtools.adapter.visual_chatgpt import convert_tools_for_visualchatgpt
+from mmlmtools.apis.agents.visual_chatgpt import load_tools_for_visual_chatgpt
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -1818,9 +1818,6 @@ class ConversationBot:
         for class_name, device in load_dict.items():
             self.models[class_name] = globals()[class_name](device=device)
 
-        # Convert MMLMTools into VisualChatGPT style
-        convert_tools_for_visualchatgpt(self.models)
-
         # Load Template Foundation Models
         for class_name, module in globals().items():
             if getattr(module, 'template_model', False):
@@ -1937,6 +1934,7 @@ class ConversationBot:
 
 
 if __name__ == '__main__':
+    globals().update(load_tools_for_visual_chatgpt())
     if not os.path.exists('checkpoints'):
         os.mkdir('checkpoints')
     parser = argparse.ArgumentParser()
