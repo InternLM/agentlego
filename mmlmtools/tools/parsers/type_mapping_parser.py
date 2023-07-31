@@ -75,6 +75,9 @@ class TypeMappingParser(BaseParser):
             str: 'string',
         }
     }
+    _file_suffix = {
+        'image': 'jpg',
+    }
 
     def __init__(self, agent_datacat2type: Optional[Dict[str, str]] = None):
 
@@ -286,7 +289,8 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='pillow', target_type='path')
     def _image_pil_to_path(self, image: Image.Image) -> str:
-        path = get_new_image_path('image/temp.jpg', func_name='temp')
+        path = get_new_image_path(
+            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
         image.save(path)
         return path
 
@@ -300,7 +304,8 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='ndarray', target_type='path')
     def _image_ndarray_to_path(self, image: np.ndarray) -> str:
-        path = get_new_image_path('image/temp.jpg', func_name='temp')
+        path = get_new_image_path(
+            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
         cv2.imwrite(path, image)
         return path
 

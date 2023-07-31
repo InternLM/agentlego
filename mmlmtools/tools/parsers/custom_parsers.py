@@ -10,6 +10,9 @@ class VisualChatGPTParser(TypeMappingParser):
         'image': 'path',
         'text': 'string',
     }
+    _file_suffix = {
+        'image': 'png',
+    }
 
     def parse_inputs(self, *args, **kwargs) -> Tuple[Tuple, Dict]:
 

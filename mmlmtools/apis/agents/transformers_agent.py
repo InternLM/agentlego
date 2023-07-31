@@ -4,8 +4,8 @@ from typing import List
 from transformers.tools import Tool
 
 from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import TransformersAgentParser
-from ..tools import list_tools, load_tool
+from mmlmtools.tools.parsers import HuggingFaceAgentParser
+from ..tool import list_tools, load_tool
 
 
 class TFAgentTool(Tool):
@@ -40,7 +40,7 @@ def load_tools_for_tf_agent(tool_names: List[str],
     for name in tool_names:
         if name not in all_tools:
             raise ValueError(f'{name} is not a valid tool name.')
-        tool = load_tool(name, device=device, parser=TransformersAgentParser())
+        tool = load_tool(name, device=device, parser=HuggingFaceAgentParser())
         loaded_tools.append(TFAgentTool(tool))
 
     return loaded_tools

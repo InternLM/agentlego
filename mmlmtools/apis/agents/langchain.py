@@ -3,7 +3,7 @@ from typing import List
 
 from langchain.agents.tools import Tool
 
-from ..tools import list_tools, load_tool
+from ..tool import list_tools, load_tool
 
 
 def load_tools_for_langchain(tool_names: List[str], device: str = 'cpu'):
