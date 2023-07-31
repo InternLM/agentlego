@@ -18,6 +18,7 @@ from .ocr import ImageMaskOCRTool, OCRTool
 from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
+from .text2bbox import Text2BboxTool
 from .text_qa import TextQuestionAnsweringTool
 from .translation import Translation
 from .vqa.visual_question_answering import VisualQuestionAnswering
