@@ -319,11 +319,11 @@ class SegmentAnything(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        self.e_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
             self.device)
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
-        self.e_mode = True
 
     def apply(self, image_path: str) -> str:
         if self.remote:
@@ -433,7 +433,8 @@ class SegmentClicked(BaseTool):
         'when you want to segment the masked region or block in the image,'
         'like: segment the masked region in this image, '
         'The input to this tool should be an {{{input:image}}} representing '
-        'the image, and an {{{output:image}}} representing the mask. ')
+        'the image, and an {{{input:image}}} representing the mask. '
+        'It returns a {{{output:image}}} representing the segmented image.')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -443,11 +444,11 @@ class SegmentClicked(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        self.e_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
             self.device)
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
-        self.e_mode = True
 
     def apply(self, image_path: str, mask_path: str) -> str:
         if self.remote:
