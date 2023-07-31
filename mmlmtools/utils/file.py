@@ -3,7 +3,7 @@ import os
 import uuid
 
 
-def get_new_image_path(org_img_path:str, func_name:str='update'):
+def get_new_image_path(org_img_path: str, func_name: str = 'update'):
     """Create a new image path for the tool output based on the original image
     path and tool function. The image path is unique and can be identified by
     the agent. The file name consists of uuid, function name of all appled

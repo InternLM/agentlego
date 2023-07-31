@@ -2,7 +2,7 @@
 import torch
 from diffusers import StableUnCLIPImg2ImgPipeline
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 from .imagebind.models.imagebind_model import imagebind_huge as ib

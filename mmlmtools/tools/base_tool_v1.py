@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 
 
 class BaseToolv1(metaclass=ABCMeta):

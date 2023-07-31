@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from transformers import pipeline
 
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 
@@ -52,7 +52,7 @@ class Image2DepthTool(BaseToolv1):
             depth = depth[:, :, None]
             depth = np.concatenate([depth, depth, depth], axis=2)
             depth = Image.fromarray(depth)
-            output_path = get_new_image_path(inputs, func_name="depth")
+            output_path = get_new_image_path(inputs, func_name='depth')
             depth.save(output_path)
             return output_path
 

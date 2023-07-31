@@ -2,7 +2,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Optional
 
-from mmlmtools.toolmeta import ToolMeta
+import torch
+
+from mmlmtools.utils.toolmeta import ToolMeta
 from .parsers import BaseParser, NaiveParser
 
 
@@ -74,7 +76,8 @@ class BaseTool(metaclass=ABCMeta):
             self._is_setup = True
 
         inputs, kwinputs = self.parser.parse_inputs(*args, **kwargs)
-        outputs = self.apply(*inputs, **kwinputs)
+        with torch.no_grad():
+            outputs = self.apply(*inputs, **kwinputs)
         results = self.parser.parse_outputs(outputs)
         return results
 
