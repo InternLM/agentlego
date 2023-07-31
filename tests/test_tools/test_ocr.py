@@ -8,7 +8,7 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('mmocr'), reason='requires mmocr')
@@ -24,7 +24,8 @@ class TestOCRTool(ToolTestCase):
         assert isinstance(res, str)
 
         img = Image.fromarray(img)
-        tool = load_tool('OCRTool', input_style='pil image', device='cuda')
+        tool = load_tool(
+            'OCRTool', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img)
         assert isinstance(res, str)
 
