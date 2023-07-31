@@ -14,10 +14,10 @@ from .parsers import BaseParser
 
 def load_object_detection(model, device):
     if CACHED_TOOLS.get('object_detection', None) is not None:
-        object_detection = CACHED_TOOLS['object_detection']
+        object_detection = CACHED_TOOLS['object_detection'][model]
     else:
         object_detection = DetInferencer(model=model, device=device)
-        CACHED_TOOLS['object_detection'] = object_detection
+        CACHED_TOOLS['object_detection'][model] = object_detection
 
     return object_detection
 

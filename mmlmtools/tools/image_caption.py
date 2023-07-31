@@ -10,6 +10,16 @@ from .base_tool import BaseTool
 from .parsers import BaseParser
 
 
+def load_caption_inferencer(model, device):
+    if CACHED_TOOLS.get('caption_inferencer', None) is not None:
+        caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
+    else:
+        caption_inferencer = ImageCaptionInferencer(model=model, device=device)
+        CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
+
+    return caption_inferencer
+
+
 class ImageCaptionTool(BaseTool):
 
     DEFAULT_TOOLMETA = dict(
@@ -29,12 +39,8 @@ class ImageCaptionTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if CACHED_TOOLS.get('caption_inferencer', None) is not None:
-            self._inferencer = CACHED_TOOLS['caption_inferencer']
-        else:
-            self._inferencer = ImageCaptionInferencer(
-                model=self.toolmeta.model['model'], device=self.device)
-            CACHED_TOOLS['caption_inferencer'] = self._inferencer
+        self._inferencer = load_caption_inferencer(
+            self.toolmeta.model['model'], self.device)
 
     def apply(self, image: np.ndarray) -> str:
         if self.remote:

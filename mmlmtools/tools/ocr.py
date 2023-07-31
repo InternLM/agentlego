@@ -12,12 +12,13 @@ from .parsers import BaseParser
 
 
 def load_ocr_inferencer(model, device):
+    model_id = f"{model['det']} {model['rec']}"
     if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-        mmocr_inferencer = CACHED_TOOLS['mmocr_inferencer']
+        mmocr_inferencer = CACHED_TOOLS['mmocr_inferencer'][model_id]
     else:
         mmocr_inferencer = MMOCRInferencer(
             det=model['det'], rec=model['rec'], device=device)
-        CACHED_TOOLS['mmocr_inferencer'] = mmocr_inferencer
+        CACHED_TOOLS['mmocr_inferencer'][model_id] = mmocr_inferencer
     return mmocr_inferencer
 
 

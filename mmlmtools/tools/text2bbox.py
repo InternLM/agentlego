@@ -13,10 +13,10 @@ from .parsers import BaseParser
 
 def load_grounding(model, device):
     if CACHED_TOOLS.get('grounding', None) is not None:
-        grounding = CACHED_TOOLS['grounding']
+        grounding = CACHED_TOOLS['grounding'][model]
     else:
         grounding = DetInferencer(model=model, device=device)
-        CACHED_TOOLS['grounding'] = grounding
+        CACHED_TOOLS['grounding'][model] = grounding
     return grounding
 
 

@@ -2,12 +2,34 @@
 from typing import Optional
 
 import torch
+from diffusers import EulerAncestralDiscreteScheduler as ea_scheduler
+from diffusers import \
+    StableDiffusionInstructPix2PixPipeline as sd_instruct_pix2pix
 from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
+
+
+def load_instruct_pix2pix(model, device):
+    if 'cuda' in device:
+        torch_dtype = torch.float16
+    else:
+        torch_dtype = torch.float32
+
+    if CACHED_TOOLS.get('instruct_pix2pix', None) is not None:
+        instruct_pix2pix = CACHED_TOOLS['instruct_pix2pix'][model]
+    else:
+        instruct_pix2pix = sd_instruct_pix2pix.from_pretrained(
+            model, safety_checker=None, torch_dtype=torch_dtype).to(device)
+        instruct_pix2pix.scheduler = ea_scheduler.from_config(
+            instruct_pix2pix.scheduler.config)
+        CACHED_TOOLS['instruct_pix2pix'][model] = instruct_pix2pix
+
+    return instruct_pix2pix
 
 
 class InstructPix2PixTool(BaseTool):
@@ -29,20 +51,8 @@ class InstructPix2PixTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        from diffusers import EulerAncestralDiscreteScheduler as ea_scheduler
-        from diffusers import \
-            StableDiffusionInstructPix2PixPipeline as sd_instruct_pix2pix
-        if 'cuda' in self.device:
-            torch_dtype = torch.float16
-        else:
-            torch_dtype = torch.float32
-
-        self._inferencer = sd_instruct_pix2pix.from_pretrained(
-            self.toolmeta.model['model'],
-            safety_checker=None,
-            torch_dtype=torch_dtype).to(self.device)
-        self._inferencer.scheduler = ea_scheduler.from_config(
-            self._inferencer.scheduler.config)
+        self._inferencer = load_instruct_pix2pix(self.toolmeta.model['model'],
+                                                 self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
