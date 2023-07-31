@@ -1,11 +1,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import torch
 from diffusers import StableUnCLIPImg2ImgPipeline
 
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from ..utils.file import get_new_image_path
-from .base_tool_v1 import BaseToolv1
+from .base_tool import BaseTool
 from .imagebind.models.imagebind_model import imagebind_huge as ib
+from .parsers import BaseParser
+
+
+def load_anything2image(device, e_mode):
+    if CACHED_TOOLS.get('anything2image', None) is not None:
+        anything2image = CACHED_TOOLS['anything2image']
+    else:
+        anything2image = Anything2Image(device, e_mode)
+        CACHED_TOOLS['anything2image'] = anything2image
+    return anything2image
 
 
 class Anything2Image:
@@ -27,50 +40,32 @@ class Anything2Image:
             self.model.to(device)
 
 
-class Audio2ImageTool(BaseToolv1):
+class Audio2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio',
         model=None,
         description='This is a useful tool '
         'when you want to  generate a real image from audio. '
         'like: generate a real image from audio, '
-        'or generate a new image based on the given audio. ',
-        input_description='It takes a string as the input, '
-        'representing the audio_path. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        'or generate a new image based on the given audio. '
+        'It takes an {{{input:audio}}} as the input, and returns '
+        'an {{{output:image}}} of the generated image.')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'audio_path',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            self._inferencer = Anything2Image(self.device, True)
-            self.pipe = self._inferencer.pipe
-            self.model = self._inferencer.model
-            self.device = self._inferencer.device
-            self.e_mode = self._inferencer.e_mode
+        self._inferencer = load_anything2image(self.device, True)
+        self.pipe = self._inferencer.pipe
+        self.model = self._inferencer.model
+        self.device = self._inferencer.device
+        self.e_mode = self._inferencer.e_mode
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'audio_path':  # visual chatgpt style
-            return inputs
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
+    def apply(self, audio_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
@@ -78,7 +73,7 @@ class Audio2ImageTool(BaseToolv1):
                 self.pipe.to(self.device)
                 self.model.to(self.device)
 
-            audio_paths = [inputs]
+            audio_paths = [audio_path]
             audio_data = ib.load_and_transform_audio_data(
                 audio_paths, self.device)
             embeddings = self.model.forward(
@@ -95,66 +90,33 @@ class Audio2ImageTool(BaseToolv1):
 
         return new_img_name
 
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError
 
-
-class Thermal2ImageTool(BaseToolv1):
+class Thermal2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Thermal Image',
         model=None,
         description='This is a useful tool '
         'when you want to  generate a real image from a thermal image. '
         'like: generate a real image from thermal image, '
-        'or generate a new image based on the given thermal image. ',
-        input_description='It takes a string as the input, '
-        'representing the image_path. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        'or generate a new image based on the given thermal image. '
+        'It takes an {{{input:image}}} as the input and returns '
+        'an {{{output:image}}} of the generated image.')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            self._inferencer = Anything2Image(self.device, True)
-            self.pipe = self._inferencer.pipe
-            self.model = self._inferencer.model
-            self.device = self._inferencer.device
-            self.e_mode = self._inferencer.e_mode
+        self._inferencer = load_anything2image(self.device, True)
+        self.pipe = self._inferencer.pipe
+        self.model = self._inferencer.model
+        self.device = self._inferencer.device
+        self.e_mode = self._inferencer.e_mode
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path':  # visual chatgpt style
-            return inputs
-        elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_path(
-                'image/temp.jpg', func_name='temp')
-            inputs.save(temp_image_path)
-            return temp_image_path
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
+    def apply(self, thermal_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
@@ -162,7 +124,7 @@ class Thermal2ImageTool(BaseToolv1):
                 self.pipe.to(self.device)
                 self.model.to(self.device)
 
-            thermal_paths = [inputs]
+            thermal_paths = [thermal_path]
             thermal_data = ib.load_and_transform_thermal_data(
                 thermal_paths, self.device)
             embeddings = self.model.forward(
@@ -179,72 +141,40 @@ class Thermal2ImageTool(BaseToolv1):
 
         return new_img_name
 
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError
 
-
-class AudioImage2ImageTool(BaseToolv1):
+class AudioImage2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Image and Audio',
         model=None,
         description='This is a useful tool '
         'when you want to  generate a real image from image and audio. '
         'like: generate a real image from image and audio, '
-        'or generate a new image based on the given image and audio. ',
-        input_description='The input to this tool should be a comma separated'
-        ' string of two, representing the image_path and audio_path. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        'or generate a new image based on the given image and audio. '
+        'The input to this tool should be an {{{input:image}}} and '
+        'a {{{input:audio}}}'
+        'It returns an {{{output:image}}} of the generated image.')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path, audio_path',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            self._inferencer = Anything2Image(self.device, True)
-            self.pipe = self._inferencer.pipe
-            self.model = self._inferencer.model
-            self.device = self._inferencer.device
-            self.e_mode = self._inferencer.e_mode
+        self._inferencer = load_anything2image(self.device, True)
+        self.pipe = self._inferencer.pipe
+        self.model = self._inferencer.model
+        self.device = self._inferencer.device
+        self.e_mode = self._inferencer.e_mode
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path, audio_path':  # visual chatgpt style  # noqa
-            image_path, audio_path = inputs.split(',')
-            image_path, audio_path = image_path.strip(), audio_path.strip()
-            return image_path, audio_path
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
-        image_path, audio_path = inputs
+    def apply(self, image_path: str, audio_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
             if self.e_mode:
                 self.pipe.to(self.device)
                 self.model.to(self.device)
-
-            print(f'AudioImage2Image: {inputs}')
 
             # process image data
             vision_data = ib.load_and_transform_vision_data([image_path],
@@ -275,18 +205,8 @@ class AudioImage2ImageTool(BaseToolv1):
 
         return new_img_name
 
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError
 
-
-class AudioText2ImageTool(BaseToolv1):
+class AudioText2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio and Text',
         model=None,
@@ -294,48 +214,26 @@ class AudioText2ImageTool(BaseToolv1):
         'when you want to  generate a real image from audio and text prompt. '
         "like: generate a real image from audio with user's prompt, "
         'or generate a new image based on the given image audio with '
-        "user's description. ",
-        input_description='The input to this tool should be a comma separated'
-        ' string of two, representing the audio_path and prompt. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        "user's description. "
+        'The input to this tool should be a {{{input:audio}}} and '
+        'a {{{input:text}}} as the prompt. '
+        'It returns an {{{output:image}}} of the generated image.')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'audio_path, text',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            self._inferencer = Anything2Image(self.device, True)
-            self.pipe = self._inferencer.pipe
-            self.model = self._inferencer.model
-            self.device = self._inferencer.device
-            self.e_mode = self._inferencer.e_mode
+        self._inferencer = load_anything2image(self.device, True)
+        self.pipe = self._inferencer.pipe
+        self.model = self._inferencer.model
+        self.device = self._inferencer.device
+        self.e_mode = self._inferencer.e_mode
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'audio_path, text':  # visual chatgpt style  # noqa
-            audio_path = inputs.split(',')[0]
-            prompt = ','.join(inputs.split(',')[1:])
-            audio_path = audio_path.strip()
-            prompt = prompt.strip()
-            return audio_path, prompt
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
-        audio_path, prompt = inputs
+    def apply(self, audio_path: str, prompt: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
@@ -367,13 +265,3 @@ class AudioText2ImageTool(BaseToolv1):
                 self.model.to('cpu')
 
         return new_img_name
-
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError

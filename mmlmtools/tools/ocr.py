@@ -1,130 +1,86 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import numpy as np
 from mmocr.apis import MMOCRInferencer
 from PIL import Image
 
-from mmlmtools.cached_dict import CACHED_TOOLS
-from mmlmtools.toolmeta import ToolMeta
-from ..utils.file import get_new_image_path
-from .base_tool_v1 import BaseToolv1
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.toolmeta import ToolMeta
+from .base_tool import BaseTool
+from .parsers import BaseParser
 
 
-class OCRTool(BaseToolv1):
+def load_ocr_inferencer(model, device):
+    if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
+        mmocr_inferencer = CACHED_TOOLS['mmocr_inferencer']
+    else:
+        mmocr_inferencer = MMOCRInferencer(
+            det=model['det'], rec=model['rec'], device=device)
+        CACHED_TOOLS['mmocr_inferencer'] = mmocr_inferencer
+    return mmocr_inferencer
+
+
+class OCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize the Optical Characters On Image',
         model={
             'det': 'dbnetpp',
             'rec': 'svtr-small'
         },
-        description='This is a useful tool '
-        'when you want to recognize the text from a photo.',
-        input_description='It takes a string as the input, '
-        'representing the image_path. ',
-        output_description='It returns a string as the output, '
-        'representing the characters or words in the image. ')
+        description='This is a useful tool when you want to '
+        'recognize the text from a photo. It takes an {{{input:image}}} as '
+        'the input, and returns a {{{output:text}}} as the output, '
+        'representing the characters or words in the image.')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path',
-                 output_style: str = 'text',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, input_style, output_style, remote, device)
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-                self._inferencer = CACHED_TOOLS['mmocr_inferencer']
-            else:
-                self._inferencer = MMOCRInferencer(
-                    det=self.toolmeta.model['det'],
-                    rec=self.toolmeta.model['rec'],
-                    device=self.device)
-                CACHED_TOOLS['mmocr_inferencer'] = self._inferencer
+        self._inferencer = load_ocr_inferencer(self.toolmeta.model,
+                                               self.device)
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path':  # visual chatgpt style
-            return inputs
-        elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_path(
-                'image/temp.jpg', func_name='temp')
-            inputs.save(temp_image_path)
-            return temp_image_path
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
+    def apply(self, image: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
-            ocr_results = self._inferencer(
-                inputs, show=False)['predictions'][0]
+            ocr_results = self._inferencer(image, show=False)['predictions'][0]
             outputs = ocr_results['rec_texts']
         return outputs
 
-    def convert_outputs(self, outputs):
-        if self.output_style == 'text':
-            outputs = '\n'.join(outputs)
-            return outputs
-        else:
-            raise NotImplementedError
 
-
-class ImageMaskOCRTool(BaseToolv1):
+class ImageMaskOCRTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize The Optical Characters On Image With Mask',
         model={
             'det': 'dbnetpp',
             'rec': 'svtr-small'
         },
-        description='This is a useful tool '
-        'when you want to  recognize the characters or words in the masked '
+        description='This is a useful tool when you want to '
+        'recognize the characters or words in the masked '
         'region of the image. '
-        'like: recognize the characters or words in the masked region. ',
-        input_description='The input to this tool should be a comma separated'
-        ' string of two, representing the image_path and mask_path. ',
-        output_description='It returns a string as the output, '
-        'representing the characters or words in the image. ')
+        'like: recognize the characters or words in the masked region. '
+        'The input to this tool should be an {{{input:image}}} representing '
+        'the image, and an {{{input:image}}} representing the mask. '
+        'It returns a {{{output:text}}} representing the characters or words '
+        'in the masked region. ')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path, mask_path',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-                self._inferencer = CACHED_TOOLS['mmocr_inferencer']
-            else:
-                self._inferencer = MMOCRInferencer(
-                    det=self.toolmeta.model['det'],
-                    rec=self.toolmeta.model['rec'],
-                    device=self.device)
-                CACHED_TOOLS['mmocr_inferencer'] = self._inferencer
+        self._inferencer = load_ocr_inferencer(self.toolmeta.model,
+                                               self.device)
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path, mask_path':  # visual chatgpt style  # noqa
-            image_path, mask_path = inputs.split(',')
-            image_path, mask_path = image_path.strip(), mask_path.strip()
-            return image_path, mask_path
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
-        image_path, mask_path = inputs
+    def apply(self, image_path: str, mask_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
@@ -141,9 +97,8 @@ class ImageMaskOCRTool(BaseToolv1):
     def get_ocr_by_mask(self, mask, ocr_res):
         inds = np.where(mask != 0)
         inds = (inds[0][::8], inds[1][::8])
-        # self.result = self.reader.readtext(self.image_path)
+
         if len(inds[0]) == 0:
-            # self.result = self.reader.readtext(image_path)
             return 'No characters in the image'
 
         ocr_text_list = []
@@ -172,13 +127,3 @@ class ImageMaskOCRTool(BaseToolv1):
                 return rec_texts[i]
 
         return ''
-
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError

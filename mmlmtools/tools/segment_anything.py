@@ -5,7 +5,6 @@ from typing import Optional, Tuple
 
 import cv2
 import mmengine
-# from segment_anything import SamPredictor as SamPredictorBase
 import numpy as np
 import torch
 import wget
@@ -17,9 +16,34 @@ from segment_anything.utils.transforms import ResizeLongestSide
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
-from .base_tool_v1 import BaseToolv1
+from .base_tool import BaseTool
+from .parsers import BaseParser
+from .text2bbox import load_grounding
 
 GLOBAL_SEED = 1912
+
+
+def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
+    if CACHED_TOOLS.get('sam', None) is not None:
+        sam = CACHED_TOOLS['sam']
+    else:
+        url = ('https://dl.fbaipublicfiles.com/segment_anything/'
+               f'{model}')
+        mmengine.mkdir_or_exist('model_zoo')
+        if not os.path.exists(model_ckpt_path):
+            wget.download(url, out=model_ckpt_path)
+
+        sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
+        if e_mode is not True:
+            sam.to(device=device)
+        CACHED_TOOLS['sam'] = sam
+
+    if CACHED_TOOLS.get('sam_predictor', None) is not None:
+        sam_predictor = CACHED_TOOLS['sam_predictor']
+    else:
+        sam_predictor = SamPredictor(sam)
+        CACHED_TOOLS['sam_predictor'] = sam_predictor
+    return sam, sam_predictor
 
 
 class SamPredictor:
@@ -37,7 +61,6 @@ class SamPredictor:
         super().__init__()
         self.model = sam_model
         self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
-        # self.reset_image()
 
     def set_image(
         self,
@@ -89,13 +112,12 @@ class SamPredictor:
                 == self.model.image_encoder.img_size), (
                     'set_torch_image input must be BCHW with long side'
                     f' {self.model.image_encoder.img_size}.')
-        # self.reset_image()
 
         original_size = original_image_size
         input_size = tuple(transformed_image.shape[-2:])
         input_image = self.model.preprocess(transformed_image)
         features = self.model.image_encoder(input_image)
-        # self.is_image_set = True
+
         res = {
             'features': features,
             'original_size': original_size,
@@ -278,101 +300,59 @@ class SamPredictor:
     def device(self) -> torch.device:
         return self.model.device
 
-    # def reset_image(self) -> None:
-    #     """Resets the currently set image."""
-    #     self.is_image_set = False
-    #     self.features = None
-    #     self.orig_h = None
-    #     self.orig_w = None
-    #     self.input_h = None
-    #     self.input_w = None
 
-
-def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
-    if CACHED_TOOLS.get('sam', None) is not None:
-        sam = CACHED_TOOLS['sam']
-    else:
-        url = ('https://dl.fbaipublicfiles.com/segment_anything/'
-               f'{model}')
-        mmengine.mkdir_or_exist('model_zoo')
-        if not os.path.exists(model_ckpt_path):
-            wget.download(url, out=model_ckpt_path)
-
-        sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
-        if e_mode is not True:
-            sam.to(device=device)
-        CACHED_TOOLS['sam'] = sam
-
-    if CACHED_TOOLS.get('sam_predictor', None) is not None:
-        sam_predictor = CACHED_TOOLS['sam_predictor']
-    else:
-        sam_predictor = SamPredictor(sam)
-        CACHED_TOOLS['sam_predictor'] = sam_predictor
-    return sam, sam_predictor
-
-
-class SegmentAnything(BaseToolv1):
+class SegmentAnything(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Segment Anything On Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
         description='This is a useful tool '
         'when you want to segment anything in the image,'
-        'like: segment anything from this image, ',
-        input_description='It takes a string as the input, '
-        'representing the image_path. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        'like: segment anything from this image. '
+        'It takes an {{{input:image}}} as the input, and returns an '
+        '{{{input:image}}} representing the segmented image. ')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = None,
-                 output_style: str = None,
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-        self.sam = None
-        self.sam_predictor = None
+        super().__init__(toolmeta, parser, remote, device)
+
+    def setup(self):
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.device)
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.e_mode = True
 
-    def setup(self):
-        if self.sam_predictor is None:
-            self.sam, self.sam_predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'], self.model_ckpt_path,
-                self.e_mode, self.device)
-
-    def apply(self, inputs):
+    def apply(self, image_path: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
-            img_path = inputs.strip()
-            annos = self.segment_anything(img_path)
+            annos = self.segment_anything(image_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_image_path(img_path, 'sam')
+            seg_all_image_path = get_new_image_path(image_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
     def segment_anything(self, img_path):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
+            self._is_setup = True
+
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
+
         mask_generator = SamAutomaticMaskGenerator(self.sam)
         annos = mask_generator.generate(img)
+
         # to cpu
         if self.e_mode:
             self.sam.to(device='cpu')
-            print('Current allocated memory:', torch.cuda.memory_allocated())
         return annos
 
     def segment_by_mask(self, mask, features):
@@ -405,6 +385,7 @@ class SegmentAnything(BaseToolv1):
         # From https://github.com/sail-sg/EditAnything/blob/main/sam2image.py#L91  # noqa
         if len(anns) == 0:
             return
+
         sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
         full_img = None
 
@@ -428,81 +409,71 @@ class SegmentAnything(BaseToolv1):
         return full_img, res
 
     def get_image_embedding(self, img):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
+            self._is_setup = True
+
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
+
         embedding = self.sam_predictor.set_image(img)
+
         # to cpu
         if self.e_mode:
             self.sam.to(device='cpu')
-            print('Current allocated memory:', torch.cuda.memory_allocated())
         return embedding
 
 
-class SegmentClicked(BaseToolv1):
+class SegmentClicked(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Clicked Region In The Image',
         model={'model': 'sam_vit_h_4b8939.pth'},
         description='This is a useful tool '
         'when you want to segment the masked region or block in the image,'
-        'like: segment the masked region in this image, ',
-        input_description='The input to this tool should be a comma separated'
-        'string of two, representing the image_path and the mask_path. ',
-        output_description='It returns a string as the output, '
-        'representing the mask_path. ')
+        'like: segment the masked region in this image, '
+        'The input to this tool should be an {{{input:image}}} representing '
+        'the image, and an {{{input:image}}} representing the mask. ')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = None,
-                 output_style: str = None,
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-        self.sam = None
-        self.sam_predictor = None
+        super().__init__(toolmeta, parser, remote, device)
+
+    def setup(self):
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.device)
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.e_mode = True
 
-    def setup(self):
-        if self.sam_predictor is None:
-            self.sam, self.sam_predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'], self.model_ckpt_path,
-                self.e_mode, self.device)
-
-    def apply(self, inputs):
+    def apply(self, image_path, mask_path):
         if self.remote:
             raise NotImplementedError
         else:
-            img_path, mask_path = inputs.split(',')[0], inputs.split(',')[1]
-            img_path = img_path.strip()
-            img = Image.open(img_path).convert('RGB')
+            img = Image.open(image_path).convert('RGB')
             img = np.array(img, dtype=np.uint8)
             features = self.get_image_embedding(img)
 
-            mask_path = mask_path.strip()
             clicked_mask = Image.open(mask_path).convert('L')
             clicked_mask = np.array(clicked_mask, dtype=np.uint8)
-            # mask = np.array(Image.open(mask_path).convert('L'))
 
             res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_image_path(img_path, 'sam-clicked')
+            filaname = get_new_image_path(image_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
+
             return filaname
 
     def segment_by_mask(self, mask, features):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
+            self._is_setup = True
+
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
@@ -523,27 +494,32 @@ class SegmentClicked(BaseToolv1):
             point_labels=labels,
             multimask_output=True,
         )
+
         # to cpu
         if self.e_mode:
             self.sam.to(device='cpu')
-            print('Current allocated memory:', torch.cuda.memory_allocated())
+
         return res_masks[np.argmax(scores), :, :]
 
     def get_image_embedding(self, img):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
+            self._is_setup = True
+
         # to device
         if self.e_mode:
             self.sam.to(device=self.device)
+
         embedding = self.sam_predictor.set_image(img)
+
         # to cpu
         if self.e_mode:
             self.sam.to(device='cpu')
-            print('Current allocated memory:', torch.cuda.memory_allocated())
+
         return embedding
 
 
-class ObjectSegmenting(BaseToolv1):
+class ObjectSegmenting(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Segment The Given Object In The Image',
         model={
@@ -553,59 +529,29 @@ class ObjectSegmenting(BaseToolv1):
         description='This is a useful tool '
         'when you want to segment the certain objects in the image according '
         'to the given object name, like: segment the cat in this image, '
-        'or can you segment an object for me. ',
-        input_description='The input to this tool should be '
-        'a comma separated string of two, '
-        'representing the image_path and the text description of objects. ',
-        output_description='It returns a string as the output, '
-        'representing the mask_path of the segmented object. ')
+        'or can you segment an object for me. '
+        'The input to this tool should be an {{{input:image}}} '
+        'and a {{{input:text}}} representing the object description. '
+        'It returns a {{{output:image}}} with the segmented objects. ')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path, text',
-                 output_style: str = None,
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(
-            toolmeta,
-            input_style,
-            output_style,
-            remote,
-            device,
-        )
-        self.grounding = None
-        self.sam = None
-        self.sam_predictor = None
-        self.e_mode = True
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self.grounding is None:
-            from mmdet.apis import DetInferencer
+        self.grounding = load_grounding(
+            model=self.toolmeta.model['grounding'], device=self.device)
 
-            if CACHED_TOOLS.get('grounding', None) is not None:
-                self.grounding = CACHED_TOOLS['grounding']
-            else:
-                self.grounding = DetInferencer(
-                    model=self.toolmeta.model['grounding'], device=self.device)
-                CACHED_TOOLS['grounding'] = self.grounding
+        self.e_mode = True
+        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.device)
 
-            self.e_mode = True
-            self.sam, self.sam_predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'], self.model_ckpt_path,
-                self.e_mode, self.device)
-
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path, text':
-            splited_inputs = inputs.split(',')
-            image_path = splited_inputs[0]
-            text = ','.join(splited_inputs[1:])
-        else:
-            raise NotImplementedError
-        return image_path, text
-
-    def apply(self, inputs):
-        image_path, text = inputs
+    def apply(self, image_path: str, text: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
@@ -626,14 +572,9 @@ class ObjectSegmenting(BaseToolv1):
             return updated_image_path
 
     def get_mask_with_boxes(self, image_pil, image, boxes_filt):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
-        # size = image_pil.size
-        # H, W = size[1], size[0]
-        # for i in range(boxes_filt.size(0)):
-        #     boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-        #     boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-        #     boxes_filt[i][2:] += boxes_filt[i][:2]
+            self._is_setup = True
 
         boxes_filt = boxes_filt.cpu()
         transformed_boxes = self.sam_predictor.transform.apply_boxes_torch(
@@ -652,11 +593,12 @@ class ObjectSegmenting(BaseToolv1):
 
     def segment_image_with_boxes(self, image_pil, image_path, boxes_filt,
                                  pred_phrases):
-        if self.sam is None or self.sam_predictor is None:
+        if not self._is_setup:
             self.setup()
+            self._is_setup = True
+
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # self.sam_predictor.set_image(image)
 
         masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
 
