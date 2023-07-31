@@ -4,9 +4,9 @@ from typing import Optional
 import torch
 from diffusers import StableUnCLIPImg2ImgPipeline
 
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from ..cached_dict import CACHED_TOOLS
-from ..utils.file import get_new_image_path
 from .base_tool import BaseTool
 from .imagebind.models.imagebind_model import imagebind_huge as ib
 from .parsers import BaseParser

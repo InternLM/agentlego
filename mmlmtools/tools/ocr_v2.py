@@ -5,8 +5,8 @@ import numpy as np
 from mmocr.apis import MMOCRInferencer
 from PIL import Image
 
-from mmlmtools.cached_dict import CACHED_TOOLS
-from mmlmtools.toolmeta import ToolMeta
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
 

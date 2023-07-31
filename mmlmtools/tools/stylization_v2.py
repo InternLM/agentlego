@@ -4,8 +4,8 @@ from typing import Optional
 import torch
 from PIL import Image
 
+from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from ..utils.file import get_new_image_path
 from .base_tool import BaseTool
 from .parsers import BaseParser
 

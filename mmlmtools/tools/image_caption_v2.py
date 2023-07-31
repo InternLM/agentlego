@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 from mmpretrain.apis import ImageCaptionInferencer
 
-from mmlmtools.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
