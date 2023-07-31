@@ -3,8 +3,8 @@ import numpy as np
 from mmocr.apis import MMOCRInferencer
 from PIL import Image
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
-from mmlmtools.utils.toolmeta import ToolMeta
+from mmlmtools.cached_dict import CACHED_TOOLS
+from mmlmtools.toolmeta import ToolMeta
 from ..utils.file import get_new_image_path
 from .base_tool_v1 import BaseToolv1
 

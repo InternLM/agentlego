@@ -4,6 +4,7 @@ from typing import Optional
 import numpy as np
 from mmpretrain.apis import ImageCaptionInferencer
 
+from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
@@ -28,8 +29,12 @@ class ImageCaptionTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = ImageCaptionInferencer(
-            model=self.toolmeta.model['model'], device=self.device)
+        if CACHED_TOOLS.get('caption_inferencer', None) is not None:
+            self._inferencer = CACHED_TOOLS['caption_inferencer']
+        else:
+            self._inferencer = ImageCaptionInferencer(
+                model=self.toolmeta.model['model'], device=self.device)
+            CACHED_TOOLS['caption_inferencer'] = self._inferencer
 
     def apply(self, image: np.ndarray) -> str:
         if self.remote:
