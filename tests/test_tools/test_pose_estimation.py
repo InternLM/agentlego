@@ -8,13 +8,15 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('mmpose'), reason='requires mmpose')
 class TestHumanBodyPoseTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('HumanBodyPoseTool', device='cuda')
+        tool = load_tool(
+            'HumanBodyPoseTool', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -24,8 +26,7 @@ class TestHumanBodyPoseTool(ToolTestCase):
         img = Image.fromarray(img)
         tool = load_tool(
             'HumanBodyPoseTool',
-            output_style='pil image',
-            input_style='pil image',
+            parser=HuggingFaceAgentParser(),
             device='cuda')
         res = tool(img)
         assert isinstance(res, Image.Image)
@@ -35,7 +36,10 @@ class TestHumanBodyPoseTool(ToolTestCase):
 class TestHumanFaceLandmarkTool(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('HumanFaceLandmarkTool', device='cuda')
+        tool = load_tool(
+            'HumanFaceLandmarkTool',
+            parser=VisualChatGPTParser(),
+            device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -44,9 +48,8 @@ class TestHumanFaceLandmarkTool(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'HumanBodyPoseTool',
-            output_style='pil image',
-            input_style='pil image',
+            'HumanFaceLandmarkTool',
+            parser=HuggingFaceAgentParser(),
             device='cuda')
         res = tool(img)
         assert isinstance(res, Image.Image)

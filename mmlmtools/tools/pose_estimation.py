@@ -3,8 +3,8 @@ from typing import Optional
 
 from mmpose.apis import MMPoseInferencer
 
-from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
 
@@ -51,15 +51,14 @@ class HumanBodyPoseTool(BaseTool):
             self._inferencer = MMPoseInferencer(
                 pose2d=self.toolmeta.model['pose2d'], device=self.device)
 
-    def apply(self, image_path: str) -> str:
-        output_path = get_new_image_name(
-            image_path, func_name='pose-estimation')
+    def apply(self, image: str) -> str:
+        output_path = get_new_image_path(image, func_name='pose-estimation')
         if self.remote:
             raise NotImplementedError
         else:
             next(
                 self._inferencer(
-                    image_path=image_path,
+                    inputs=image,
                     vis_out_dir=output_path,
                     skeleton_style='openpose',
                 ))
@@ -86,15 +85,14 @@ class HumanFaceLandmarkTool(BaseTool):
         self._inferencer = MMPoseInferencer(
             pose2d=self.toolmeta.model['pose2d'], device=self.device)
 
-    def apply(self, image_path: str) -> str:
+    def apply(self, image: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_name(
-                image_path, func_name='face-landmark')
+            output_path = get_new_image_path(image, func_name='face-landmark')
             next(
                 self._inferencer(
-                    image_path=image_path,
+                    inputs=image,
                     vis_out_dir=output_path,
                     skeleton_style='mmpose',
                 ))
