@@ -2,13 +2,14 @@
 import inspect
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
 
 import cv2
 import numpy as np
+import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_parser import BaseParser
 
@@ -50,6 +51,13 @@ class ToolInputInfo:
     required: bool
 
 
+class NdArrayAudioType(TypedDict, total=False):
+    """Huggingface style audio input."""
+    path: str
+    array: np.ndarray
+    sampling_rate: str
+
+
 class TypeMappingParser(BaseParser):
     # mapping from data category to data type on the agent side
     # e.g. {'image': 'path', 'text': 'string'}
@@ -73,10 +81,15 @@ class TypeMappingParser(BaseParser):
         },
         'text': {
             str: 'string',
-        }
+        },
+        'audio': {
+            str: 'path',
+            NdArrayAudioType: 'ndarray',
+        },
     }
     _file_suffix = {
         'image': 'jpg',
+        'audio': 'wav',
     }
 
     def __init__(self, agent_datacat2type: Optional[Dict[str, str]] = None):
@@ -289,7 +302,7 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='pillow', target_type='path')
     def _image_pil_to_path(self, image: Image.Image) -> str:
-        path = get_new_image_path(
+        path = get_new_file_path(
             f'image/temp.{self._file_suffix["image"]}', func_name='temp')
         image.save(path)
         return path
@@ -304,7 +317,7 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='ndarray', target_type='path')
     def _image_ndarray_to_path(self, image: np.ndarray) -> str:
-        path = get_new_image_path(
+        path = get_new_file_path(
             f'image/temp.{self._file_suffix["image"]}', func_name='temp')
         cv2.imwrite(path, image)
         return path
@@ -312,3 +325,29 @@ class TypeMappingParser(BaseParser):
     @converter(category='image', source_type='path', target_type='ndarray')
     def _image_path_to_ndarray(self, path: str) -> np.ndarray:
         return cv2.imread(path)
+
+    @converter(category='audio', source_type='path', target_type='ndarray')
+    def _audio_path_to_ndarray(self, path: str) -> np.ndarray:
+        import torchaudio
+        audio = torchaudio.load(path)
+        return {
+            'path': path,
+            'array': audio[0].reshape(-1).numpy(),
+            'sampling_rate': audio[1],
+        }
+
+    @converter(category='audio', source_type='ndarray', target_type='path')
+    def _ndarray_to_audio_path(self, audio: NdArrayAudioType) -> str:
+        # TODO: Only support audio with one channel: [1, N] now.
+        try:
+            import torchaudio
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool: {e} '
+                              '`torchaudio` is not installed correctly')
+        saved_path = get_new_file_path(
+            f'audio/temp.{self._file_suffix["audio"]}', func_name='temp')
+        torchaudio.save(
+            saved_path,
+            torch.from_numpy(audio['array']).reshape(1, -1).float(),
+            audio['sampling_rate'])
+        return saved_path

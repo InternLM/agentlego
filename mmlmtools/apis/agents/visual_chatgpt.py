@@ -4,12 +4,12 @@ import weakref
 
 from mmlmtools import tools
 from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import VisualChatGPTParser
+from mmlmtools.tools.parsers import LangchainParser
 
 
-def wrapped_init(self, *args, parser=VisualChatGPTParser(), **kwargs):
+def wrapped_init(self, *args, parser=LangchainParser(), **kwargs):
     return self.__class__.__bases__[0].__init__(
-        self, *args, parser=VisualChatGPTParser(), **kwargs)
+        self, *args, parser=LangchainParser(), **kwargs)
 
 
 class _Inference:
