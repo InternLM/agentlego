@@ -3,9 +3,20 @@ from typing import Optional
 
 from mmpretrain.apis import VisualQuestionAnsweringInferencer
 
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
+
+
+def load_vqa_inferencer(model, device):
+    if CACHED_TOOLS.get('vqa_inferencer', None) is not None:
+        vqa_inferencer = CACHED_TOOLS['vqa_inferencer'][model]
+    else:
+        vqa_inferencer = VisualQuestionAnsweringInferencer(
+            model=model, device=device)
+        CACHED_TOOLS['vqa_inferencer'][model] = vqa_inferencer
+    return vqa_inferencer
 
 
 class VisualQuestionAnsweringTool(BaseTool):
@@ -28,8 +39,8 @@ class VisualQuestionAnsweringTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = VisualQuestionAnsweringInferencer(
-            model=self.toolmeta.model['model'], device=self.device)
+        self._inferencer = load_vqa_inferencer(self.toolmeta.model['model'],
+                                               self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
