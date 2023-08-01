@@ -116,7 +116,10 @@ class Canny2ImageTool(BaseTool):
             'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:
-            raise NotImplementedError
+            from openxlab.model import inference
+            out = inference('mmagic/controlnet_canny', [image_path, text])
+            with open(output_path, 'wb') as file:
+                file.write(out)
 
         else:
             self._inferencer.infer(
