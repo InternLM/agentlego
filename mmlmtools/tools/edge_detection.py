@@ -18,8 +18,7 @@ class Image2CannyTool(BaseTool):
                  *args,
                  low_threshold: int = 100,
                  high_threshold: int = 200,
-                 **kwargs
-                 ):
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.low_threshold = low_threshold
         self.high_threshold = high_threshold
