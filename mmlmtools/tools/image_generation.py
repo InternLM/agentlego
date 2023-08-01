@@ -32,8 +32,7 @@ class Text2ImageTool(BaseTool):
     def setup(self):
         self.aux_prompt = 'best quality, extremely detailed'
         self._inferencer = MMagicInferencer(
-            model_name=self.toolmeta.model['model'],
-            device=self.device)
+            model_name=self.toolmeta.model['model'], device=self.device)
 
     def apply(self, text: str) -> str:
         text += self.aux_prompt
@@ -114,8 +113,7 @@ class Canny2ImageTool(BaseTool):
 
     def apply(self, image_path: str, text: str) -> str:
         output_path = get_new_image_name(
-            'image/controlnet-res.png',
-            func_name='generate-image-from-canny')
+            'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:
             raise NotImplementedError
@@ -188,7 +186,8 @@ class ScribbleText2Image(BaseTool):
         from diffusers import (ControlNetModel,
                                StableDiffusionControlNetPipeline,
                                UniPCMultistepScheduler)
-        from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker  # noqa
+        from diffusers.pipelines.stable_diffusion import \
+            StableDiffusionSafetyChecker  # noqa
         self.torch_dtype = torch.float16 \
             if 'cuda' in self.device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(
@@ -249,7 +248,8 @@ class DepthText2ImageTool(BaseTool):
         from diffusers import (ControlNetModel,
                                StableDiffusionControlNetPipeline,
                                UniPCMultistepScheduler)
-        from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker  # noqa
+        from diffusers.pipelines.stable_diffusion import \
+            StableDiffusionSafetyChecker  # noqa
         self.torch_dtype = torch.float16 \
             if 'cuda' in self.device else torch.float32
         self.controlnet = ControlNetModel.from_pretrained(

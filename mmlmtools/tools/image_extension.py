@@ -1,19 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
 import math
+from typing import Optional
 
 import cv2
 import numpy as np
 import torch
-
 from PIL import Image, ImageOps
 
+from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_name
-from mmlmtools.cached_dict import CACHED_TOOLS
 from .base_tool import BaseTool
-from .parsers import BaseParser
 from .image_caption import ImageCaptionTool
+from .parsers import BaseParser
 
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
@@ -159,8 +158,7 @@ class ImageExtensionTool(BaseTool):
         else:
             width, height = text.split('x')
             tosize = (int(width), int(height))
-            out_painted_image = self.dowhile(
-                image_path, tosize, 4)
+            out_painted_image = self.dowhile(image_path, tosize, 4)
             output_path = get_new_image_name(image_path, 'extension')
             out_painted_image.save(output_path)
         return output_path

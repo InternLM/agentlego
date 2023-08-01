@@ -2,8 +2,8 @@
 from typing import Optional
 
 from mmpretrain.apis import VisualQuestionAnsweringInferencer
-from mmlmtools.toolmeta import ToolMeta
 
+from mmlmtools.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
 

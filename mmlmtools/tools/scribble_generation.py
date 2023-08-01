@@ -36,7 +36,6 @@ class Image2ScribbleTool(BaseTool):
         else:
             image = Image.open(image_path)
             scribble = self.detector(image, scribble=True)
-            output_path = get_new_image_name(
-                image_path, func_name='scribble')
+            output_path = get_new_image_name(image_path, func_name='scribble')
             scribble.save(output_path)
         return output_path

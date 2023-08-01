@@ -9,7 +9,6 @@ from PIL import Image
 from mmlmtools.cached_dict import CACHED_TOOLS
 from mmlmtools.toolmeta import ToolMeta
 from mmlmtools.utils import get_new_image_name
-
 from .base_tool import BaseTool
 from .parsers import BaseParser
 from .segment_anything import load_sam_and_predictor
@@ -88,14 +87,14 @@ class ObjectReplaceTool(BaseTool):
                 model=self.toolmeta.model['grounding'], device=self.device)
             CACHED_TOOLS['grounding'] = self.grounding
 
-        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get('predictor', None) is not None:  # noqa
+        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get(
+                'predictor', None) is not None:
             self.sam = CACHED_TOOLS['sam']
             self.sam_predictor = CACHED_TOOLS['sam_predictor']
         else:
             self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'],
-                f"model_zoo/{self.toolmeta.model['model']}",
-                True, self.device)
+                f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
             CACHED_TOOLS['sam'] = self.sam
             CACHED_TOOLS['sam_predictor'] = self.sam_predictor
 
@@ -130,11 +129,8 @@ class ObjectReplaceTool(BaseTool):
             mask = self.pad_edge(mask, padding=20)
             mask_img = Image.fromarray(mask)
             output_image = self.inpainting(
-                prompt=text2,
-                image=image_pil,
-                mask_image=mask_img)
-            output_path = get_new_image_name(
-                image, 'obj-replace')
+                prompt=text2, image=image_pil, mask_image=mask_img)
+            output_path = get_new_image_name(image, 'obj-replace')
             output_image = output_image.resize(image_pil.size)
             output_image.save(output_path)
             return output_path
@@ -197,14 +193,14 @@ class ObjectRemoveTool(BaseTool):
                 model=self.toolmeta.model['grounding'], device=self.device)
             CACHED_TOOLS['grounding'] = self.grounding
 
-        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get('predictor', None) is not None:  # noqa
+        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get(
+                'predictor', None) is not None:  # noqa
             self.sam = CACHED_TOOLS['sam']
             self.sam_predictor = CACHED_TOOLS['sam_predictor']
         else:
             self.sam, self.sam_predictor = load_sam_and_predictor(
                 self.toolmeta.model['model'],
-                f"model_zoo/{self.toolmeta.model['model']}",
-                True, self.device)
+                f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
             CACHED_TOOLS['sam'] = self.sam
             CACHED_TOOLS['sam_predictor'] = self.sam_predictor
 
@@ -253,11 +249,8 @@ class ObjectRemoveTool(BaseTool):
             mask = self.pad_edge(mask, padding=20)
             mask_image = Image.fromarray(mask)
             output_image = self.inpainting(
-                prompt=text2,
-                image=image_pil,
-                mask_image=mask_image)
-            output_path = get_new_image_name(
-                image, 'obj-remove')
+                prompt=text2, image=image_pil, mask_image=mask_image)
+            output_path = get_new_image_name(image, 'obj-remove')
             output_image = output_image.resize(image_pil.size)
             output_image.save(output_path)
             return output_path
