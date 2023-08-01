@@ -10,24 +10,13 @@ from .base_tool import BaseTool
 from .parsers import BaseParser
 
 
-def load_pose_inferencer(model, device):
-    if CACHED_TOOLS.get('pose_inferencer', None) is not None:
-        pose_inferencer = CACHED_TOOLS['pose_inferencer'][model]
+def load_mmpose_inferencer(model, device):
+    if CACHED_TOOLS.get('mmpose_inferencer', None) is not None:
+        pose_inferencer = CACHED_TOOLS['mmpose_inferencer'][model]
     else:
         pose_inferencer = MMPoseInferencer(pose2d=model, device=device)
         CACHED_TOOLS['pose_inferencer'][model] = pose_inferencer
     return pose_inferencer
-
-
-def load_facelandmark_inferencer(model, device):
-    if CACHED_TOOLS.get('facelandmark_inferencer', None) is not None:
-        facelandmark_inferencer = CACHED_TOOLS['facelandmark_inferencer'][
-            model]
-    else:
-        facelandmark_inferencer = MMPoseInferencer(pose2d=model, device=device)
-        CACHED_TOOLS['facelandmark_inferencer'][
-            model] = facelandmark_inferencer
-    return facelandmark_inferencer
 
 
 class HumanBodyPoseTool(BaseTool):
@@ -69,7 +58,7 @@ class HumanBodyPoseTool(BaseTool):
             self.visualizer.set_dataset_meta(
                 dataset_meta, skeleton_style='openpose')
         else:
-            self._inferencer = load_pose_inferencer(
+            self._inferencer = load_mmpose_inferencer(
                 self.toolmeta.model['pose2d'], self.device)
 
     def apply(self, image: str) -> str:
@@ -103,7 +92,7 @@ class HumanFaceLandmarkTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_facelandmark_inferencer(
+        self._inferencer = load_mmpose_inferencer(
             self.toolmeta.model['pose2d'], self.device)
 
     def apply(self, image: str) -> str:

@@ -5,10 +5,47 @@ import torch
 from mmagic.apis import MMagicInferencer
 from PIL import Image
 
-from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
+
+
+def load_mmagic_inferencer(model, setting, device):
+    if CACHED_TOOLS.get('mmagic_inferencer' + str(setting), None) is not None:
+        mmagic_inferencer = \
+            CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
+    else:
+        mmagic_inferencer = MMagicInferencer(
+            model_name=model, model_setting=setting, device=device)
+        CACHED_TOOLS['mmagic_inferencer' +
+                     str(setting)][model] = mmagic_inferencer
+    return mmagic_inferencer
+
+
+def load_diffusion_inferencer(model, device):
+    from diffusers import (ControlNetModel, StableDiffusionControlNetPipeline,
+                           UniPCMultistepScheduler)
+    from diffusers.pipelines.stable_diffusion import \
+        StableDiffusionSafetyChecker
+    if CACHED_TOOLS.get('diffusion_inferencer', None) is not None:
+        diffusion_inferencer = CACHED_TOOLS['diffusion_inferencer'][model]
+    else:
+        torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+        controlnet = ControlNetModel.from_pretrained(
+            model, torch_dtype=torch_dtype)
+        diffusion_inferencer = StableDiffusionControlNetPipeline.from_pretrained(  # noqa
+            'runwayml/stable-diffusion-v1-5',
+            controlnet=controlnet,
+            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
+                'CompVis/stable-diffusion-safety-checker'),
+            torch_dtype=torch_dtype)
+        diffusion_inferencer.scheduler = UniPCMultistepScheduler.from_config(
+            diffusion_inferencer.scheduler.config)
+        diffusion_inferencer.to(device)
+        CACHED_TOOLS['diffusion_inferencer'][model] = diffusion_inferencer
+    return diffusion_inferencer
 
 
 class Text2ImageTool(BaseTool):
@@ -31,15 +68,15 @@ class Text2ImageTool(BaseTool):
 
     def setup(self):
         self.aux_prompt = 'best quality, extremely detailed'
-        self._inferencer = MMagicInferencer(
-            model_name=self.toolmeta.model['model'], device=self.device)
+        self._inferencer = load_mmagic_inferencer(self.toolmeta.model['model'],
+                                                  None, self.device)
 
     def apply(self, text: str) -> str:
         text += self.aux_prompt
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 'image/sd-res.png', func_name='generate-image')
             self._inferencer.infer(text=text, result_out_dir=output_path)
             return output_path
@@ -67,16 +104,15 @@ class Seg2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = MMagicInferencer(
-            model_name=self.toolmeta.model['model_name'],
-            model_setting=self.toolmeta.model['model_setting'],
-            device=self.device)
+        self._inferencer = load_mmagic_inferencer(
+            self.toolmeta.model['model_name'],
+            self.toolmeta.model['model_setting'], self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-seg')
             self._inferencer.infer(
@@ -106,13 +142,12 @@ class Canny2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = MMagicInferencer(
-            model_name=self.toolmeta.model['model_name'],
-            model_setting=self.toolmeta.model['model_setting'],
-            device=self.device)
+        self._inferencer = load_mmagic_inferencer(
+            self.toolmeta.model['model_name'],
+            self.toolmeta.model['model_setting'], self.device)
 
     def apply(self, image_path: str, text: str) -> str:
-        output_path = get_new_image_name(
+        output_path = get_new_image_path(
             'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:
@@ -150,16 +185,15 @@ class Pose2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = MMagicInferencer(
-            model_name=self.toolmeta.model['model_name'],
-            model_setting=self.toolmeta.model['model_setting'],
-            device=self.device)
+        self._inferencer = load_mmagic_inferencer(
+            self.toolmeta.model['model_name'],
+            self.toolmeta.model['model_setting'], self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-pose')
             self._inferencer.infer(
@@ -167,10 +201,12 @@ class Pose2ImageTool(BaseTool):
         return output_path
 
 
-class ScribbleText2Image(BaseTool):
+class ScribbleText2ImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Scribble Image',
-        model={},
+        model={
+            'model_name': 'fusing/stable-diffusion-v1-5-controlnet-scribble',
+        },
         description='This is a useful tool when you want to generate a new '
         'real image from a scribble image and the user description. like: '
         'generate a real image of a object or something from this scribble '
@@ -186,25 +222,8 @@ class ScribbleText2Image(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        from diffusers import (ControlNetModel,
-                               StableDiffusionControlNetPipeline,
-                               UniPCMultistepScheduler)
-        from diffusers.pipelines.stable_diffusion import \
-            StableDiffusionSafetyChecker  # noqa
-        self.torch_dtype = torch.float16 \
-            if 'cuda' in self.device else torch.float32
-        self.controlnet = ControlNetModel.from_pretrained(
-            'fusing/stable-diffusion-v1-5-controlnet-scribble',
-            torch_dtype=self.torch_dtype)
-        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            'runwayml/stable-diffusion-v1-5',
-            controlnet=self.controlnet,
-            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
-                'CompVis/stable-diffusion-safety-checker'),
-            torch_dtype=self.torch_dtype)
-        self.pipe.scheduler = UniPCMultistepScheduler.from_config(
-            self.pipe.scheduler_config)
-        self.pipe.to(self.device)
+        self.pipe = load_diffusion_inferencer(
+            self.toolmeta.model['model_name'], self.device)
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
@@ -223,7 +242,7 @@ class ScribbleText2Image(BaseTool):
                 eta=0.0,
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 image_path, func_name='generate-image-from-scribble')
             image.save(output_path)
         return output_path
@@ -248,25 +267,8 @@ class DepthText2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        from diffusers import (ControlNetModel,
-                               StableDiffusionControlNetPipeline,
-                               UniPCMultistepScheduler)
-        from diffusers.pipelines.stable_diffusion import \
-            StableDiffusionSafetyChecker  # noqa
-        self.torch_dtype = torch.float16 \
-            if 'cuda' in self.device else torch.float32
-        self.controlnet = ControlNetModel.from_pretrained(
-            'fusing/stable-diffusion-v1-5-controlnet-depth',
-            torch_dtype=self.torch_dtype)
-        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            'runwayml/stable-diffusion-v1-5',
-            controlnet=self.controlnet,
-            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
-                'CompVis/stable-diffusion-safety-checker'),
-            torch_dtype=self.torch_dtype)
-        self.pipe.scheduler = UniPCMultistepScheduler.from_config(
-            self.pipe.scheduler_config)
-        self.pipe.to(self.device)
+        self.pipe = load_diffusion_inferencer(
+            'fusing/stable-diffusion-v1-5-controlnet-depth', self.device)
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
@@ -285,7 +287,7 @@ class DepthText2ImageTool(BaseTool):
                 eta=0.0,
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 image_path, func_name='generate-image-from-depth')
             image.save(output_path)
         return output_path
