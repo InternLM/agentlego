@@ -6,14 +6,33 @@ import numpy as np
 import torch
 from PIL import Image
 
-from mmlmtools.cached_dict import CACHED_TOOLS
-from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
 from .parsers import BaseParser
 from .segment_anything import load_sam_and_predictor
 
 GLOBAL_SEED = 1912
+
+
+def load_grounding(model, device):
+    from mmdet.apis import DetInferencer
+    if CACHED_TOOLS.get('grounding', None) is not None:
+        grounding = CACHED_TOOLS['grounding']
+    else:
+        grounding = DetInferencer(model=model, device=device)
+        CACHED_TOOLS['grounding'] = grounding
+    return grounding
+
+
+def load_inpainting(device):
+    if CACHED_TOOLS.get('inpainting', None) is not None:
+        inpainting = CACHED_TOOLS['inpainting']
+    else:
+        inpainting = Inpainting(device)
+        CACHED_TOOLS['inpainting'] = inpainting
+    return inpainting
 
 
 class Inpainting:
@@ -78,31 +97,14 @@ class ObjectReplaceTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        from mmdet.apis import DetInferencer
+        self.grounding = load_grounding(self.toolmeta.model['grounding'],
+                                        self.device)
 
-        if CACHED_TOOLS.get('grounding', None) is not None:
-            self.grounding = CACHED_TOOLS['grounding']
-        else:
-            self.grounding = DetInferencer(
-                model=self.toolmeta.model['grounding'], device=self.device)
-            CACHED_TOOLS['grounding'] = self.grounding
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.toolmeta.model['model'],
+            f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
 
-        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get(
-                'predictor', None) is not None:
-            self.sam = CACHED_TOOLS['sam']
-            self.sam_predictor = CACHED_TOOLS['sam_predictor']
-        else:
-            self.sam, self.sam_predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'],
-                f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
-            CACHED_TOOLS['sam'] = self.sam
-            CACHED_TOOLS['sam_predictor'] = self.sam_predictor
-
-        if CACHED_TOOLS.get('inpainting', None) is not None:
-            self.inpainting = CACHED_TOOLS['inpainting']
-        else:
-            self.inpainting = Inpainting(self.device)
-            CACHED_TOOLS['inpainting'] = self.inpainting
+        self.inpainting = load_inpainting(self.device)
 
     def apply(self, image_path: str, text1: str, text2: str) -> str:
         if self.remote:
@@ -130,7 +132,8 @@ class ObjectReplaceTool(BaseTool):
             mask_img = Image.fromarray(mask)
             output_image = self.inpainting(
                 prompt=text2, image=image_pil, mask_image=mask_img)
-            output_path = get_new_image_name(image, 'obj-replace')
+            output_path = get_new_image_path(
+                image_path, func_name='obj-replace')
             output_image = output_image.resize(image_pil.size)
             output_image.save(output_path)
             return output_path
@@ -168,7 +171,8 @@ class ObjectRemoveTool(BaseTool):
         name='Remove the Given Object In The Image',
         model={
             'model': 'sam_vit_h_4b8939.pth',
-            'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'
+            'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+            'vqa': 'ofa-base_3rdparty-zeroshot_vqa'
         },
         description='This is a useful tool when you want to remove the '
         'certain objects in the image. like: remove the cat in this image'
@@ -184,39 +188,14 @@ class ObjectRemoveTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        from mmdet.apis import DetInferencer
+        self.grounding = load_grounding(self.toolmeta.model['grounding'],
+                                        self.device)
 
-        if CACHED_TOOLS.get('grounding', None) is not None:
-            self.grounding = CACHED_TOOLS['grounding']
-        else:
-            self.grounding = DetInferencer(
-                model=self.toolmeta.model['grounding'], device=self.device)
-            CACHED_TOOLS['grounding'] = self.grounding
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.toolmeta.model['model'],
+            f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
 
-        if CACHED_TOOLS.get('sam', None) is not None and CACHED_TOOLS.get(
-                'predictor', None) is not None:  # noqa
-            self.sam = CACHED_TOOLS['sam']
-            self.sam_predictor = CACHED_TOOLS['sam_predictor']
-        else:
-            self.sam, self.sam_predictor = load_sam_and_predictor(
-                self.toolmeta.model['model'],
-                f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
-            CACHED_TOOLS['sam'] = self.sam
-            CACHED_TOOLS['sam_predictor'] = self.sam_predictor
-
-        if CACHED_TOOLS.get('inpainting', None) is not None:
-            self.inpainting = CACHED_TOOLS['inpainting']
-        else:
-            self.inpainting = Inpainting(self.device)
-            CACHED_TOOLS['inpainting'] = self.inpainting
-
-        if CACHED_TOOLS.get('vqa', None) is not None:
-            self.vqa = CACHED_TOOLS['vqa']
-        else:
-            from .vqa import VisualQuestionAnsweringTool
-            self.vqa = VisualQuestionAnsweringTool(self.device)
-            self.vqa.setup()
-            CACHED_TOOLS['vqa'] = self.vqa
+        self.inpainting = load_inpainting(self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
@@ -224,8 +203,7 @@ class ObjectRemoveTool(BaseTool):
         else:
             image_pil = Image.open(image_path).convert('RGB')
             text1 = text
-            text2 = self.vqa.apply(
-                image_path, 'tell me what is the background of this image')
+            text2 = 'background'
             results = self.grounding(
                 inputs=image_path,
                 texts=[text1],
@@ -235,12 +213,9 @@ class ObjectRemoveTool(BaseTool):
 
             boxes_filt = results.bboxes
 
-            if self.sam is None or self.sam_predictor is None:
-                self.setup()
             image = cv2.imread(image_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             self.sam_predictor.set_image(image)
-
             masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
             mask = torch.sum(masks, dim=0).unsqueeze(0)
             mask = torch.where(mask > 0, True, False)
@@ -250,7 +225,8 @@ class ObjectRemoveTool(BaseTool):
             mask_image = Image.fromarray(mask)
             output_image = self.inpainting(
                 prompt=text2, image=image_pil, mask_image=mask_image)
-            output_path = get_new_image_name(image, 'obj-remove')
+            output_path = get_new_image_path(
+                image_path, func_name='obj-remove')
             output_image = output_image.resize(image_pil.size)
             output_image.save(output_path)
             return output_path

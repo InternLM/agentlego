@@ -11,11 +11,11 @@ from .parsers import BaseParser
 
 def load_vqa_inferencer(model, device):
     if CACHED_TOOLS.get('vqa_inferencer', None) is not None:
-        vqa_inferencer = CACHED_TOOLS['vqa_inferencer'][model]
+        vqa_inferencer = CACHED_TOOLS['vqa_inferencer']
     else:
         vqa_inferencer = VisualQuestionAnsweringInferencer(
             model=model, device=device)
-        CACHED_TOOLS['vqa_inferencer'][model] = vqa_inferencer
+        CACHED_TOOLS['vqa_inferencer'] = vqa_inferencer
     return vqa_inferencer
 
 
