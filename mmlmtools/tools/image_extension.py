@@ -4,14 +4,13 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import torch
 from PIL import Image, ImageOps
 
-from mmlmtools.cached_dict import CACHED_TOOLS
-from mmlmtools.toolmeta import ToolMeta
-from mmlmtools.utils import get_new_image_name
+from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.toolmeta import ToolMeta
 from .base_tool import BaseTool
-from .image_caption import ImageCaptionTool
+from .image_caption import load_caption_inferencer
+from .image_editing import load_inpainting
 from .parsers import BaseParser
 
 
@@ -78,54 +77,17 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     return gaussian_img
 
 
-class Inpainting:
-
-    def __init__(self, device):
-        from diffusers import StableDiffusionInpaintPipeline
-
-        self.device = device
-        self.revision = 'fp16' if 'cuda' in self.device else None
-        self.torch_dtype = torch.float16 \
-            if 'cuda' in self.device else torch.float32
-        self.inpaint = StableDiffusionInpaintPipeline.from_pretrained(
-            'runwayml/stable-diffusion-inpainting',
-            revision=self.revision,
-            torch_dtype=self.torch_dtype).to(device)
-        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
-                        ' missing fingers, extra digit, fewer digits, '\
-                        'cropped, worst quality, low quality'\
-                        'bad lighting, bad background, bad color, '\
-                        'bad aliasing, bad distortion, bad motion blur '\
-                        'bad consistency with the background '
-
-    def __call__(self,
-                 prompt,
-                 image,
-                 mask_image,
-                 height=512,
-                 width=512,
-                 num_inference_steps=20):
-        update_image = self.inpaint(
-            prompt=prompt,
-            negative_prompt=self.n_prompt,
-            image=image.resize((width, height)),
-            mask_image=mask_image.resize((width, height)),
-            height=height,
-            width=width,
-            num_inference_steps=num_inference_steps).images[0]
-        return update_image
-
-
 class ImageExtensionTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Image Extension Tool',
-        model={},
+        model={'model': 'blip-base_3rdparty_caption'},
         description='This is a useful tool when you want to extend the '
         'picture into a larger image. like: extend the image into a '
         'resolution of 1000x1000. Attention: you must let the image '
         'to be a larger image.The input to this tool should be an '
         '{{{input:image}}} representing the image to be extended, '
-        'and a {{{input:text}}} representing resolution of widthxheight.')
+        'and a {{{input:text}}} representing resolution of widthxheight.'
+        'It returns an {{{output:image}}} representing the extended image.')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -135,14 +97,10 @@ class ImageExtensionTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self.ImageCaption = ImageCaptionTool(device=self.device)
-        self.ImageCaption.setup()
+        self.ImageCaption = load_caption_inferencer(
+            self.toolmeta.model['model'], self.device)
 
-        if CACHED_TOOLS.get('inpainting', None) is not None:
-            self.inpainting = CACHED_TOOLS['inpainting']
-        else:
-            self.inpainting = Inpainting(self.device)
-            CACHED_TOOLS['inpainting'] = self.inpainting
+        self.inpainting = load_inpainting(self.device)
 
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
@@ -159,12 +117,12 @@ class ImageExtensionTool(BaseTool):
             width, height = text.split('x')
             tosize = (int(width), int(height))
             out_painted_image = self.dowhile(image_path, tosize, 4)
-            output_path = get_new_image_name(image_path, 'extension')
+            output_path = get_new_image_path(image_path, 'extension')
             out_painted_image.save(output_path)
         return output_path
 
     def get_BLIP_caption(self, image_path):
-        BLIP_caption = self.ImageCaption.apply(image_path)
+        BLIP_caption = self.ImageCaption(image_path)[0]['pred_caption']
         return BLIP_caption
 
     def resize_image(self, image, max_size=1000000, multiple=8):
@@ -177,7 +135,7 @@ class ImageExtensionTool(BaseTool):
 
     def dowhile(self, original_img_path, tosize, expand_ratio):
         old_img = Image.open(original_img_path)
-        old_img = ImageOps.crop(old_img, (10, 10, 10, 10))
+        # old_img = ImageOps.crop(old_img, (10, 10, 10, 10))
         while (old_img.size != tosize):
             prompt = self.get_BLIP_caption(original_img_path)
             crop_w = 15 if old_img.size[0] != tosize[0] else 0
@@ -202,7 +160,7 @@ class ImageExtensionTool(BaseTool):
                 mask_image=resized_temp_mask,
                 height=resized_temp_canvas.height,
                 width=resized_temp_canvas.width,
-                num_inference_steps=5).resize(
+                num_inference_steps=10).resize(
                     (temp_canvas.width, temp_canvas.height), Image.ANTIALIAS)
             image = blend_gt2pt(old_img, image)
             old_img = image
