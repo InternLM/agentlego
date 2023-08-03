@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+import os.path as osp
 import re
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
@@ -303,7 +304,8 @@ class TypeMappingParser(BaseParser):
     @converter(category='image', source_type='pillow', target_type='path')
     def _image_pil_to_path(self, image: Image.Image) -> str:
         path = get_new_file_path(
-            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
+            osp.join('data', 'image', f'temp.{self._file_suffix["image"]}'),
+            func_name='_image_pil_to_path')
         image.save(path)
         return path
 
@@ -318,7 +320,8 @@ class TypeMappingParser(BaseParser):
     @converter(category='image', source_type='ndarray', target_type='path')
     def _image_ndarray_to_path(self, image: np.ndarray) -> str:
         path = get_new_file_path(
-            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
+            osp.join('data', 'imag', f'temp.{self._file_suffix["image"]}'),
+            func_name='_image_ndarray_to_path')
         cv2.imwrite(path, image)
         return path
 
@@ -345,7 +348,8 @@ class TypeMappingParser(BaseParser):
             raise ImportError(f'Failed to run the tool: {e} '
                               '`torchaudio` is not installed correctly')
         saved_path = get_new_file_path(
-            f'audio/temp.{self._file_suffix["audio"]}', func_name='temp')
+            osp.join('data', 'audio', f'/temp.{self._file_suffix["audio"]}'),
+            func_name='_ndarray_to_audio_path')
         torchaudio.save(
             saved_path,
             torch.from_numpy(audio['array']).reshape(1, -1).float(),
