@@ -52,5 +52,12 @@ if __name__ == '__main__':
     )
 
     # give your input here
+    # if the input is an image,you can use this format
     input_path = ''
     agent.run(input=input_path)
+
+    # if the input is an image and a text,you can use this format
+    input_path = ''
+    text = ''
+    inputs = input_path + ',' + text
+    agent.run(input=inputs)
