@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-from .base_tool import BaseTool
+from ..base_tool import BaseTool
 
 
 class Image2CannyTool(BaseTool):

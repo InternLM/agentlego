@@ -7,8 +7,8 @@ from transformers import pipeline
 
 from mmlmtools.utils.file import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
 class Image2DepthTool(BaseTool):

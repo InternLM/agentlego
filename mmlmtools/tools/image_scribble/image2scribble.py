@@ -6,8 +6,8 @@ from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
 class Image2ScribbleTool(BaseTool):

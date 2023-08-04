@@ -8,10 +8,10 @@ from PIL import Image, ImageOps
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .image_caption import load_caption_inferencer
-from .image_editing import load_inpainting
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..image_caption import load_caption_inferencer
+from mmlmtools.tools.image_editing.replace import load_inpainting
+from ..parsers import BaseParser
 
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):

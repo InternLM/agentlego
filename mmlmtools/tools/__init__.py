@@ -1,23 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# from .anything2image import (Audio2ImageTool, AudioImage2ImageTool,
-#                              AudioText2ImageTool, Thermal2ImageTool,)
-from .depth_detection import Image2DepthTool
-from .edge_detection import Image2CannyTool
-from .image_caption import ImageCaptionTool
-from .image_editing import ObjectRemoveTool, ObjectReplaceTool
-from .image_extension import ImageExtensionTool
-from .image_generation import (Canny2ImageTool, DepthText2ImageTool,
-                               Pose2ImageTool, ScribbleText2ImageTool,
-                               Seg2ImageTool, Text2ImageTool)
+from mmlmtools.tools.image_canny.canny2image import Canny2ImageTool
+from mmlmtools.tools.image_canny.image2canny import Image2CannyTool
+from mmlmtools.tools.image_depth.depth2image import DepthText2ImageTool
+from mmlmtools.tools.image_depth.image2depth import Image2DepthTool
+from mmlmtools.tools.image_editing.extension import ImageExtensionTool
+from mmlmtools.tools.image_editing.remove import ObjectRemoveTool
+from mmlmtools.tools.image_editing.replace import ObjectReplaceTool
+from mmlmtools.tools.image_pose.facelandmark import HumanFaceLandmarkTool
+from mmlmtools.tools.image_pose.image2pose import HumanBodyPoseTool
+from mmlmtools.tools.image_pose.pose2image import Pose2ImageTool
+from mmlmtools.tools.image_scribble.image2scribble import Image2ScribbleTool
+from mmlmtools.tools.image_scribble.scribble2image import ScribbleText2ImageTool  # noqa
+from mmlmtools.tools.image_text.image2text import ImageCaptionTool
+from mmlmtools.tools.image_text.text2image import Text2ImageTool
+from mmlmtools.tools.vqa.vqa import VisualQuestionAnsweringTool
+
 from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import ImageMaskOCRTool, OCRTool
-from .pose_estimation import HumanBodyPoseTool, HumanFaceLandmarkTool
-from .scribble_generation import Image2ScribbleTool
 from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
-from .vqa import VisualQuestionAnsweringTool
 
 __all__ = [
     'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
