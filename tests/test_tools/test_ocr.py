@@ -6,7 +6,7 @@ import numpy as np
 from mmengine import is_installed
 from PIL import Image
 
-from mmlmtools.api import load_tool
+from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
 
 
@@ -24,4 +24,14 @@ class TestOCRTool(ToolTestCase):
         img = Image.fromarray(img)
         tool = load_tool('OCRTool', input_style='pil image', device='cuda')
         res = tool(img)
+        assert isinstance(res, str)
+
+
+@skipIf(not is_installed('mmocr'), reason='requires mmocr')
+class TestImageMaskOCRTool(ToolTestCase):
+
+    def test_call(self):
+        tool = load_tool('ImageMaskOCRTool', device='cuda')
+        res = tool('tests/data/images/test-image.png, '
+                   'tests/data/images/test-mask.png')
         assert isinstance(res, str)

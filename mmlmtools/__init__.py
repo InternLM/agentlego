@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
-from .api import custom_tool, list_tools, load_tool
+from .apis.tool import custom_tool, list_tools, load_tool
 from .search import search_tool
 
 try:

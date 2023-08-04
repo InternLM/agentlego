@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmpretrain.apis import ImageCaptionInferencer
 
-from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from mmlmtools.utils.toolmeta import ToolMeta
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class ImageCaptionTool(BaseTool):
+class ImageCaptionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Get Photo Description',
         model={'model': 'blip-base_3rdparty_caption'},
@@ -42,7 +42,7 @@ class ImageCaptionTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -51,6 +51,13 @@ class ImageCaptionTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model.handler.model_inference import inference
+
+            out = inference('mmpretrain/blip', ['./demo_text_ocr.jpg'])
+            print('json result: {0}'.format(json.loads(out)))
+
             raise NotImplementedError
         else:
             outputs = self._inferencer(inputs)[0]['pred_caption']

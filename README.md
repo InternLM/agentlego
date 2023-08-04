@@ -64,7 +64,7 @@ from mmlmtools.adapter.load_mmtools_for_langchain
 #         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
 ```
 
-#### InterGPT
+#### InternGPT
 
 ```Python
 from mmlmtools.adapter.convert_tools_for_igpt
@@ -201,7 +201,7 @@ def convert_inputs(self, inputs, **kwargs):
     if self.input_style == 'image_path':  # visual chatgpt style
         return inputs
     elif self.input_style == 'pil image':  # transformer agent style
-        temp_image_path = get_new_image_name(
+        temp_image_path = get_new_image_path(
             'image/temp.jpg', func_name='temp')
         inputs.save(temp_image_path)
         return temp_image_path
@@ -252,7 +252,7 @@ def apply(self, inputs, **kwargs):
     else:
         with Registry('scope').switch_scope_and_registry('mmdet'):
                 results = self._inferencer(imgs=image_path, text_prompt=text)
-                output_path = get_new_image_name(
+                output_path = get_new_image_path(
                     image_path, func_name='detect-something')
                 img = mmcv.imread(image_path)
                 img = mmcv.imconvert(img, 'bgr', 'rgb')

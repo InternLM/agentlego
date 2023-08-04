@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import sys
-from collections import defaultdict
 from pickle import dumps
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import mmlmtools.tools as tools
-from .toolmeta import ToolMeta
-from .tools.base_tool import BaseTool
+from mmlmtools.tools.base_tool import BaseTool
+from ..utils.cached_dict import CACHED_TOOLS
+from ..utils.toolmeta import ToolMeta
 
 # Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
 
@@ -56,8 +56,6 @@ NAMES2TOOLS = {
     if inspect.isclass(v) and issubclass(v, BaseTool)
 }
 
-CACHED_TOOLS = defaultdict(dict)
-
 
 def import_all_tools_to(target_dir):
     global_dict = sys.modules[target_dir].__dict__
@@ -75,10 +73,8 @@ def load_tool(tool_name: str,
               name: Optional[str] = None,
               model: Optional[str] = None,
               description: Optional[str] = None,
-              input_description: Optional[str] = None,
-              output_description: Optional[str] = None,
               device: Optional[str] = 'cpu',
-              **kwargs) -> Union[callable, BaseTool]:
+              **kwargs) -> Union[Callable, BaseTool]:
     """Load a configurable callable tool for different task.
 
     Args:
@@ -124,35 +120,22 @@ def load_tool(tool_name: str,
     tool_meta = DEFAULT_TOOLS[tool_name]
 
     if name is None:
-        name = tool_meta.get('name', None)
+        name = tool_meta['name']
 
     if model is None:
-        model = tool_meta.get('model', None)
+        model = tool_meta['model']
 
     if description is None:
-        description = tool_meta.get('description')
+        description = tool_meta['description']
 
-    if input_description is None:
-        input_description = tool_meta.get('input_description')
-
-    if output_description is None:
-        output_description = tool_meta.get('output_description')
-
-    tool_id = dumps((tool_name, name, model, description, input_description,
-                     output_description, device, kwargs))
+    tool_id = dumps((tool_name, name, model, description, kwargs))
 
     if tool_id in CACHED_TOOLS[tool_name]:
         return CACHED_TOOLS[tool_name][tool_id]
     else:
         tool_type = NAMES2TOOLS[tool_name]
 
-        tool_meta = ToolMeta(
-            name=name,
-            description=description,
-            model=model,
-            input_description=input_description,
-            output_description=output_description,
-        )
+        tool_meta = ToolMeta(name=name, description=description, model=model)
 
         if inspect.isfunction(tool_type):
             # function tool
@@ -170,8 +153,6 @@ def custom_tool(*,
                 tool_name,
                 name: Optional[str] = None,
                 description: Optional[str] = None,
-                input_description: Optional[str] = None,
-                output_description: Optional[str] = None,
                 force=False):
     """Register custom tool.
 
@@ -193,11 +174,7 @@ def custom_tool(*,
 
     def wrapper(func):
         if tool_name not in DEFAULT_TOOLS:
-            DEFAULT_TOOLS[tool_name] = dict(
-                name=name,
-                description=description,
-                input_description=input_description,
-                output_description=output_description)
+            DEFAULT_TOOLS[tool_name] = dict(name=name, description=description)
             NAMES2TOOLS[tool_name] = func
         else:
             if not force:
@@ -207,10 +184,7 @@ def custom_tool(*,
                     'please set `force=True`')
             else:
                 DEFAULT_TOOLS[tool_name] = dict(
-                    name=name,
-                    description=description,
-                    input_description=input_description,
-                    output_description=output_description)
+                    name=name, description=description)
                 NAMES2TOOLS[tool_name] = func
         return func
 

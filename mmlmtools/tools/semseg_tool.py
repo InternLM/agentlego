@@ -3,12 +3,12 @@
 import mmcv
 from mmseg.apis import MMSegInferencer
 
-from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from mmlmtools.utils.toolmeta import ToolMeta
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class SemSegTool(BaseTool):
+class SemSegTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment the Image',
         model={'model': 'mask2former_r50_8xb2-90k_cityscapes-512x1024'},
@@ -39,7 +39,7 @@ class SemSegTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -48,10 +48,17 @@ class SemSegTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model import inference
+
+            predict = inference('mmsegmentation/Mask2Former',
+                                ['./demo_text_ocr.jpg'])
+            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 inputs, func_name='semseg-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

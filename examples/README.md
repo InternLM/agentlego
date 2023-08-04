@@ -1,25 +1,6 @@
 ## 测试指南
 
-1. 拉取 Visual ChatGPT 项目代码并安装
-
-```bash
-# clone the repo
-git clone https://github.com/microsoft/TaskMatrix.git
-
-# Go to directory
-cd TaskMatrix
-
-#  prepare the basic environments
-pip install -r requirements.txt
-pip install  git+https://github.com/IDEA-Research/GroundingDINO.git
-pip install  git+https://github.com/facebookresearch/segment-anything.git
-
-# prepare your private OpenAI key (for Linux)
-export OPENAI_API_KEY={Your_Private_Openai_Key}
-
-```
-
-2. 安装工具依赖（暂时方案）
+1. 安装工具依赖（暂时方案）
 
 ```bash
 pip install openmim
@@ -44,14 +25,28 @@ pip install -e .
 cd ..
 
 mim install mmsegmentation
+
+cd visual_chatgpt/
+
+# create a new environment
+conda create -n visgpt python=3.8
+
+# activate the new environment
+conda activate visgpt
+
+#  prepare the basic environments
+pip install -r requirements.txt
+
+# prepare your private OpenAI key (for Linux)
+export OPENAI_API_KEY={Your_Private_Openai_Key}
 ```
 
-3. 用本目录下的 `visual_chatgpt_XXX.py` 覆盖官方 `TaskMatrix/` 下的同名文件
+2. Quick Start
 
-4. 启动
+我们在 `examples/visual_chatgpt/` 下给了一个简化过的 visual chatgpt 代码。
+
+在本例中，我们使用了 visual chatgpt 中原生支持的 `ImageCaptioning` 和 mmtools 提供的 `OCRTool` 两个工具，来演示如何将 mmtools 集成到已有的项目中。
 
 ```bash
-cd TaskMatrix
-
-python visual_chatgpt.py
+python visual_chatgpt.py --load "ImageCaptioning_cpu,OCRTool_cpu"
 ```

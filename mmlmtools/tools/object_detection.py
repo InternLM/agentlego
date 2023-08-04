@@ -3,12 +3,12 @@
 import mmcv
 from mmdet.apis import DetInferencer
 
-from mmlmtools.toolmeta import ToolMeta
-from ..utils.utils import get_new_image_name
-from .base_tool import BaseTool
+from mmlmtools.utils.toolmeta import ToolMeta
+from ..utils.file import get_new_image_path
+from .base_tool_v1 import BaseToolv1
 
 
-class Text2BoxTool(BaseTool):
+class Text2BoxTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Give Object',
         model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},
@@ -33,8 +33,13 @@ class Text2BoxTool(BaseTool):
 
     def setup(self):
         if self._inferencer is None:
-            self._inferencer = DetInferencer(
-                model=self.toolmeta.model['model'], device=self.device)
+            from mmlmtools.utils.cached_dict import CACHED_TOOLS
+            if CACHED_TOOLS.get('grounding', None) is not None:
+                self._inferencer = CACHED_TOOLS['grounding']
+            else:
+                self._inferencer = DetInferencer(
+                    model=self.toolmeta.model['model'], device=self.device)
+                CACHED_TOOLS['grounding'] = self._inferencer
 
     def convert_inputs(self, inputs):
         if self.input_style == 'image_path, text':
@@ -48,11 +53,12 @@ class Text2BoxTool(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            results = self._inferencer(inputs=image_path,
-                                       texts=text,
-                                       no_save_vis=True,
-                                       return_datasample=True)
-            output_path = get_new_image_name(
+            results = self._inferencer(
+                inputs=image_path,
+                texts=text,
+                no_save_vis=True,
+                return_datasample=True)
+            output_path = get_new_image_path(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
@@ -79,7 +85,7 @@ class Text2BoxTool(BaseTool):
             raise NotImplementedError
 
 
-class ObjectDetectionTool(BaseTool):
+class ObjectDetectionTool(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Detect All Objects',
         model={'model': 'rtmdet_l_8xb32-300e_coco'},
@@ -106,7 +112,7 @@ class ObjectDetectionTool(BaseTool):
         if self.input_style == 'image_path':  # visual chatgpt style
             return inputs
         elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_name(
+            temp_image_path = get_new_image_path(
                 'image/temp.jpg', func_name='temp')
             inputs.save(temp_image_path)
             return temp_image_path
@@ -115,11 +121,17 @@ class ObjectDetectionTool(BaseTool):
 
     def apply(self, inputs):
         if self.remote:
+            import json
+
+            from openxlab.model import inference
+
+            predict = inference('mmdetection/RTMDet', ['./demo_text_ocr.jpg'])
+            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(
                 inputs, no_save_vis=True, return_datasample=True)
-            output_path = get_new_image_name(
+            output_path = get_new_image_path(
                 inputs, func_name='detect-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')
