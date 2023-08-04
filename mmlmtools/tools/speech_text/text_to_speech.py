@@ -7,8 +7,8 @@ import torch
 from mmengine import get
 from mmengine.utils import apply_to
 
-from .base_tool import BaseTool
-from .parsers.type_mapping_parser import NdArrayAudioType
+from ..base_tool import BaseTool
+from ..parsers.type_mapping_parser import Audio
 
 
 def resampling_audio(audio: dict, new_rate):
@@ -70,7 +70,7 @@ class TextToSpeechTool(BaseTool):
             self.post_processor)
         self.model.to(self.device)
 
-    def apply(self, text: str) -> NdArrayAudioType:
+    def apply(self, text: str) -> Audio:
         encoded_inputs = self.pre_processor(
             text=text, return_tensors='pt', truncation=True)
         encoded_inputs = dict(
@@ -83,4 +83,4 @@ class TextToSpeechTool(BaseTool):
         outputs = apply_to(outputs, lambda x: isinstance(x, torch.Tensor),
                            lambda x: x.to('cpu'))
         outputs = self.post_processor(outputs).cpu().detach()
-        return {'array': outputs.numpy(), 'sampling_rate': self.SAMPLING_RATE}
+        return Audio(array=outputs.numpy(), sampling_rate=self.SAMPLING_RATE)

@@ -14,7 +14,8 @@ class TestSpeechToTextTool(TestCase):
     def test_call_langchain_agent(self):
         for parser in (LangchainParser(), HuggingFaceAgentParser()):
             tool = load_tool('TextToSpeechTool', parser=parser, device='cuda')
-            audio_path = tool('sing a song')
+            audio = tool('sing a song')
+            audio_path = audio if isinstance(audio, str) else audio.path
             osp.exists(audio_path)
             self.assertTrue(audio_path.endswith('.wav'))
 

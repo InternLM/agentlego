@@ -3,7 +3,7 @@ import inspect
 import os.path as osp
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Tuple, Type, TypedDict
+from typing import Any, Callable, Dict, Optional, Tuple, Type
 
 import cv2
 import numpy as np
@@ -52,11 +52,22 @@ class ToolInputInfo:
     required: bool
 
 
-class NdArrayAudioType(TypedDict, total=False):
-    """Huggingface style audio input."""
-    path: str
+@dataclass
+class Audio:
     array: np.ndarray
     sampling_rate: str
+    path: Optional[str] = None
+
+    def _ipython_display_(self, include=None, exclude=None):
+        import torchaudio
+        from IPython.display import Audio, display
+        path = self.path or get_new_file_path(
+            osp.join('data', 'audio', 'temp.wav'),
+            func_name='_ndarray_to_audio_path')
+        torchaudio.save(path,
+                        torch.from_numpy(self.array).reshape(1, -1).float(),
+                        self.sampling_rate)
+        display(Audio(path, rate=self.sampling_rate))
 
 
 class TypeMappingParser(BaseParser):
@@ -85,7 +96,7 @@ class TypeMappingParser(BaseParser):
         },
         'audio': {
             str: 'path',
-            NdArrayAudioType: 'ndarray',
+            Audio: 'audio',
         },
     }
     _file_suffix = {
@@ -329,18 +340,18 @@ class TypeMappingParser(BaseParser):
     def _image_path_to_ndarray(self, path: str) -> np.ndarray:
         return cv2.imread(path)
 
-    @converter(category='audio', source_type='path', target_type='ndarray')
-    def _audio_path_to_ndarray(self, path: str) -> np.ndarray:
+    @converter(category='audio', source_type='path', target_type='audio')
+    def _audio_path_to_audio(self, path: str) -> np.ndarray:
         import torchaudio
         audio = torchaudio.load(path)
-        return {
-            'path': path,
-            'array': audio[0].reshape(-1).numpy(),
-            'sampling_rate': audio[1],
-        }
+        return Audio(
+            path=path,
+            array=audio[0].reshape(-1).numpy(),
+            sampling_rate=audio[1],
+        )
 
-    @converter(category='audio', source_type='ndarray', target_type='path')
-    def _ndarray_to_audio_path(self, audio: NdArrayAudioType) -> str:
+    @converter(category='audio', source_type='audio', target_type='path')
+    def _audio_to_audio_path(self, audio: Audio) -> str:
         # TODO: Only support audio with one channel: [1, N] now.
         try:
             import torchaudio
@@ -348,10 +359,9 @@ class TypeMappingParser(BaseParser):
             raise ImportError(f'Failed to run the tool: {e} '
                               '`torchaudio` is not installed correctly')
         saved_path = get_new_file_path(
-            osp.join('data', 'audio', f'/temp.{self._file_suffix["audio"]}'),
+            osp.join('data', 'audio', f'temp.{self._file_suffix["audio"]}'),
             func_name='_ndarray_to_audio_path')
-        torchaudio.save(
-            saved_path,
-            torch.from_numpy(audio['array']).reshape(1, -1).float(),
-            audio['sampling_rate'])
+        torchaudio.save(saved_path,
+                        torch.from_numpy(audio.array).reshape(1, -1).float(),
+                        audio.sampling_rate)
         return saved_path

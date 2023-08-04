@@ -2,24 +2,23 @@
 import torch
 from mmengine.utils import apply_to
 
-from .base_tool import BaseTool
-from .parsers.type_mapping_parser import NdArrayAudioType
+from ..base_tool import BaseTool
+from ..parsers.type_mapping_parser import Audio
 
 
-def resampling_audio(audio: dict, new_rate):
+def resampling_audio(audio: Audio, new_rate):
     try:
         import torchaudio
     except ImportError as e:
         raise ImportError(f'Failed to run the tool: {e} '
                           '`torchaudio` is not installed correctly')
-    array, ori_sampling_rate = audio['array'], audio['sampling_rate']
+    array, ori_sampling_rate = audio.array, audio.sampling_rate
     array = torch.from_numpy(array).reshape(-1, 1)
     torchaudio.functional.resample(array, ori_sampling_rate, new_rate)
-    return {
-        'array': array.reshape(-1).numpy(),
-        'sampling_rate': new_rate,
-        'path': audio['path']
-    }
+    return Audio(
+        array=array.reshape(-1).numpy(),
+        sampling_rate=new_rate,
+        path=audio.path)
 
 
 class SpeechToTextTool(BaseTool):
@@ -43,12 +42,12 @@ class SpeechToTextTool(BaseTool):
             self.toolmeta.model)
         self.model.to(self.device)
 
-    def apply(self, audio: NdArrayAudioType) -> str:
+    def apply(self, audio: Audio) -> str:
         target_sampling_rate = self.processor.feature_extractor.sampling_rate
-        if target_sampling_rate != audio['sampling_rate']:
+        if target_sampling_rate != audio.sampling_rate:
             audio = resampling_audio(audio, target_sampling_rate)
         encoded_inputs = self.processor(
-            audio['array'], return_tensors='pt').input_features
+            audio.array, return_tensors='pt').input_features
         encoded_inputs = apply_to(encoded_inputs,
                                   lambda x: isinstance(x, torch.Tensor),
                                   lambda x: x.to(self.device))
