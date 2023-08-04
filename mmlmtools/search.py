@@ -17,7 +17,23 @@ def _cosine_similarity(a: np.array, b: np.array) -> list:
     return res
 
 
-def _search_with_openai(query, choices, topk, model='text-embedding-ada-002'):
+def _search_with_openai(query, choices, model='text-embedding-ada-002'):
+    """Search tools with openai API.
+
+    Note:
+        You need to install openai first. And you need to set the
+        OPENAI_API_KEY.
+
+    Args:
+        query (str): User input.
+        choices (list): List of tool descriptions.
+        topk (int): Max number of tools to be returned.
+        model (str): OpenAI API model name.
+            Defaults to 'text-embedding-ada-002'.
+
+    Returns:
+        list: List of tool descriptions.
+    """
     try:
         from openai.embeddings_utils import get_embeddings
     except ModuleNotFoundError:
@@ -28,32 +44,54 @@ def _search_with_openai(query, choices, topk, model='text-embedding-ada-002'):
     embeddings = get_embeddings([query] + choices, engine=model)
     similarity = _cosine_similarity(
         np.array(embeddings[0]), np.array(embeddings[1:]))
-    descend_sort = similarity.argsort()[::-1]
 
-    return [choices[i] for i in descend_sort[:topk]]
+    # only return the similarity greater than 0.8
+    indices = np.where(similarity > 0.8)[0]
+    if len(indices) > 0:
+        indices = indices[np.argsort(-similarity[indices])]
+    else:
+        indices = [np.argmax(similarity)]
+
+    return [choices[i] for i in indices]
 
 
 def _serach_with_sentence_transformers(
-        query, choices, topk, model='sentence-transformers/all-mpnet-base-v2'):
+        query, choices, model='sentence-transformers/all-mpnet-base-v2'):
+    """Search tools with sentence-transformers.
+
+    Args:
+        query (str): User input.
+        choices (list): List of tool descriptions.
+        model (str): Sentence-transformers model name. Defaults to
+            'sentence-transformers/all-mpnet-base-v2'.
+
+    Returns:
+        list: List of tool descriptions.
+    """
     model = SentenceTransformer(model)
     embeddings = model.encode([query] + choices)
     similarity = _cosine_similarity(embeddings[0], embeddings[1:])
-    descend_sort = similarity.argsort()[::-1]
 
-    return [choices[i] for i in descend_sort[:topk]]
+    # only return the similarity greater than 0.8
+    indices = np.where(similarity > 0.8)[0]
+    if len(indices) > 0:
+        indices = indices[np.argsort(-similarity[indices])]
+    else:
+        indices = [np.argmax(similarity)]
+
+    return [choices[i] for i in indices]
 
 
-def _search_with_thefuzz(query, choices, topk):
+def _search_with_thefuzz(query, choices, topk=5):
     result = process.extract(query, choices=choices, limit=topk)
     return [res for res, _ in result]
 
 
-def search_tool(query: str, topk: int = 5, kind: str = 'thefuzz') -> List[str]:
+def search_tool(query: str, kind: str = 'thefuzz') -> List[str]:
     """Search several proper tools according to the query.
 
     Args:
         query (str): User input.
-        topk (int): Number of tools to be returned.
         kind (str): Different third-party libraries are used to assist in
             searching the appropriate tools. Optional values are "thefuzz",
             "openai", and "st". Defaults to "thefuzz".
@@ -73,14 +111,14 @@ def search_tool(query: str, topk: int = 5, kind: str = 'thefuzz') -> List[str]:
     choices = list(choice2names.keys())
 
     if kind == 'thefuzz':
-        result = _search_with_thefuzz(query, choices, topk)
+        result = _search_with_thefuzz(query, choices)
     elif kind == 'openai':
-        result = _search_with_openai(query, choices, topk)
+        result = _search_with_openai(query, choices)
     elif kind == 'st':
-        result = _serach_with_sentence_transformers(query, choices, topk)
+        result = _serach_with_sentence_transformers(query, choices)
     else:
-        raise ValueError('The supported kind are "thefuzz", "openai" or "st", '
-                         f'but got {kind}.')
+        raise ValueError('The supported kinds are "thefuzz", "openai" or "st",'
+                         f' but got {kind}.')
 
     names = []
     for description in result:
