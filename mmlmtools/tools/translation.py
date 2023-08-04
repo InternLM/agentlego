@@ -6,15 +6,15 @@ from .base_tool import BaseTool
 from .parsers import BaseParser
 
 
-class TextTranslation(BaseTool):
+class TextTranslationTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Text translation',
         model={'model_name': 't5-small'},
         description='This is a useful tool that converts a text from one '
         'language to another. It takes three arguments as inputs: the '
         '{{{input:text}}} to be translated, the source language '
-        '{{{source_lang:text}}} and the target language '
-        '{{{target_lang:text}}}. It retures the translated text.',
+        '{{{input:text}}} and the target language '
+        '{{{input:text}}}. It retures the translated text {{{output:text}}}.',
     )
 
     PROMPT = ('translate {source_lang} to {target_lang}: {input}')
@@ -44,7 +44,7 @@ class TextTranslation(BaseTool):
 
             self._model.to(self.device)
 
-    def apply(self, input: str, source_lang: str, target_lang: str):
+    def apply(self, input: str, source_lang: str, target_lang: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
