@@ -1,18 +1,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmpretrain.apis import VisualQuestionAnsweringInferencer
-
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+
+try:
+    from mmpretrain.apis import VisualQuestionAnsweringInferencer
+    has_mmpretrain = True
+except ImportError:
+    has_mmpretrain = False
 
 
 def load_vqa_inferencer(model, device):
     if CACHED_TOOLS.get('vqa_inferencer', None) is not None:
         vqa_inferencer = CACHED_TOOLS['vqa_inferencer']
     else:
+        if not has_mmpretrain:
+            raise RuntimeError('mmpretrain is required but not installed')
         vqa_inferencer = VisualQuestionAnsweringInferencer(
             model=model, device=device)
         CACHED_TOOLS['vqa_inferencer'] = vqa_inferencer

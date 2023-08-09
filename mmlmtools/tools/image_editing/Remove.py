@@ -8,7 +8,7 @@ from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .replace import load_grounding, load_inpainting
+from .Replace import load_grounding, load_inpainting
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 from ..segment_anything import load_sam_and_predictor

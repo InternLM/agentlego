@@ -35,7 +35,7 @@ def load_diffusion_inferencer(model, device):
     return diffusion_inferencer
 
 
-class DepthText2ImageTool(BaseTool):
+class DepthTextToImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Depth Image',
         model={},

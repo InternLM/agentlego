@@ -2,18 +2,24 @@
 from typing import Optional
 
 import numpy as np
-from mmpretrain.apis import ImageCaptionInferencer
-
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+
+try:
+    from mmpretrain.apis import ImageCaptionInferencer
+    has_mmpretrain = True
+except ImportError:
+    has_mmpretrain = False
 
 
 def load_caption_inferencer(model, device):
     if CACHED_TOOLS.get('caption_inferencer', None) is not None:
         caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
     else:
+        if not has_mmpretrain:
+            raise RuntimeError('mmpretrain is required but not installed')
         caption_inferencer = ImageCaptionInferencer(model=model, device=device)
         CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
 

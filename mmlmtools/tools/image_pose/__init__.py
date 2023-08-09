@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from mmlmtools.tools.image_pose.image2pose import HumanBodyPoseTool
-from mmlmtools.tools.image_pose.pose2image import Pose2ImageTool
-from mmlmtools.tools.image_pose.facelandmark import HumanFaceLandmarkTool
+from .FaceLandmark import HumanFaceLandmarkTool
+from .ImageToPose import HumanBodyPoseTool
+from .PoseToImage import PoseToImageTool
 
-__all__ = ['HumanBodyPoseTool', 'Pose2ImageTool', 'HumanFaceLandmarkTool']
+__all__ = ['HumanBodyPoseTool', 'HumanFaceLandmarkTool', 'PoseToImageTool']

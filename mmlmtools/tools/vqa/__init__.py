@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from mmlmtools.tools.vqa.vqa import VisualQuestionAnsweringTool
+from .VQA import VisualQuestionAnsweringTool
 
 __all__ = ['VisualQuestionAnsweringTool']

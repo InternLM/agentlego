@@ -13,14 +13,22 @@ from ..base_tool import BaseTool
 from ..parsers import BaseParser
 from ..segment_anything import load_sam_and_predictor
 
+try:
+    from mmdet.apis import DetInferencer
+    has_mmdet = True
+except ImportError:
+    has_mmdet = False
+
+
 GLOBAL_SEED = 1912
 
 
 def load_grounding(model, device):
-    from mmdet.apis import DetInferencer
     if CACHED_TOOLS.get('grounding', None) is not None:
         grounding = CACHED_TOOLS['grounding']
     else:
+        if not has_mmdet:
+            raise RuntimeError('mmdet is required but not installed')
         grounding = DetInferencer(model=model, device=device)
         CACHED_TOOLS['grounding'] = grounding
     return grounding

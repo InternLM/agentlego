@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from mmlmtools.tools.image_canny.image2canny import Image2CannyTool
-from mmlmtools.tools.image_canny.canny2image import Canny2ImageTool
+from .CannyToImage import CannyToImageTool
+from .ImageToCanny import ImageToCannyTool
 
-__all__ = ['Image2CannyTool', 'Canny2ImageTool']
+__all__ = ['CannyToImageTool', 'ImageToCannyTool']

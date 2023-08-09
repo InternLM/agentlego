@@ -11,7 +11,7 @@ from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
 
-class Image2DepthTool(BaseTool):
+class ImageToDepthTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Depth Image On Image',
         model=None,

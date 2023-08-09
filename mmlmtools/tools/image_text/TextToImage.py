@@ -1,13 +1,17 @@
 # Copyright (c) OpenMMLab.All rights reserved.
 from typing import Optional
 
-from mmagic.apis import MMagicInferencer
-
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+
+try:
+    from mmagic.apis import MMagicInferencer
+    has_mmagic = True
+except ImportError:
+    has_mmagic = False
 
 
 def load_mmagic_inferencer(model, setting, device):
@@ -15,6 +19,8 @@ def load_mmagic_inferencer(model, setting, device):
         mmagic_inferencer = \
             CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
     else:
+        if not has_mmagic:
+            raise RuntimeError('mmagic is required but not installed')
         mmagic_inferencer = MMagicInferencer(
             model_name=model, model_setting=setting, device=device)
         CACHED_TOOLS['mmagic_inferencer' +
@@ -22,7 +28,7 @@ def load_mmagic_inferencer(model, setting, device):
     return mmagic_inferencer
 
 
-class Text2ImageTool(BaseTool):
+class TextToImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image From User Input Text',
         model={'model': 'stable_diffusion'},

@@ -1,13 +1,17 @@
 # Copyright (c) OpenMMLab.All rights reserved.
 from typing import Optional
 
-from mmagic.apis import MMagicInferencer
-
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+
+try:
+    from mmagic.apis import MMagicInferencer
+    has_mmagic = True
+except ImportError:
+    has_mmagic = False
 
 
 def load_mmagic_inferencer(model, setting, device):
@@ -15,6 +19,8 @@ def load_mmagic_inferencer(model, setting, device):
         mmagic_inferencer = \
             CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
     else:
+        if not has_mmagic:
+            raise RuntimeError('mmagic is required but not installed')
         mmagic_inferencer = MMagicInferencer(
             model_name=model, model_setting=setting, device=device)
         CACHED_TOOLS['mmagic_inferencer' +
@@ -22,19 +28,20 @@ def load_mmagic_inferencer(model, setting, device):
     return mmagic_inferencer
 
 
-class Canny2ImageTool(BaseTool):
+class PoseToImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        name='Generate Image Condition On Canny Image',
+        name='Generate Image Condition On Pose Image',
         model={
             'model_name': 'controlnet',
-            'model_setting': 1
+            'model_setting': 2
         },
         description='This is a useful tool when you want to generate a new '
-        'real image from a canny image and the user description. like: '
-        'generate a real image of a object or something from this canny image.'
-        'The input to this tool should be an {{{input:image}}} and a '
-        '{{{input:text}}} representing the image and the text description. '
-        'It returns a {{{output:image}}} representing the generated image.')
+        'real image from a human pose image and the user description. like: '
+        'generate a real image of a human from this human pose image. or '
+        'generate a real image of a human from this pose. The input to this '
+        'tool should be an {{{input:image}}} and a {{{input:text}}} '
+        'representing the image and the text description. It returns a '
+        '{{{output:image}}} representing the generated image.')
 
     def __init__(self,
                  toolmeta: Optional[ToolMeta] = None,
@@ -49,16 +56,12 @@ class Canny2ImageTool(BaseTool):
             self.toolmeta.model['model_setting'], self.device)
 
     def apply(self, image_path: str, text: str) -> str:
-        output_path = get_new_image_path(
-            'image/controlnet-res.png', func_name='generate-image-from-canny')
-
         if self.remote:
-            from openxlab.model import inference
-            out = inference('mmagic/controlnet_canny', [image_path, text])
-            with open(output_path, 'wb') as file:
-                file.write(out)
-
+            raise NotImplementedError
         else:
+            output_path = get_new_image_path(
+                'image/controlnet-res.png',
+                func_name='generate-image-from-pose')
             self._inferencer.infer(
                 text=text, control=image_path, result_out_dir=output_path)
         return output_path

@@ -35,7 +35,7 @@ def load_diffusion_inferencer(model, device):
     return diffusion_inferencer
 
 
-class ScribbleText2ImageTool(BaseTool):
+class ScribbleTextToImageTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Scribble Image',
         model={

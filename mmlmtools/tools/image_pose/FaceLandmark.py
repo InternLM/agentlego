@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmlmtools.tools.image_pose.image2pose import load_mmpose_inferencer
+from mmlmtools.tools.image_pose.ImageToPose import load_mmpose_inferencer
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool

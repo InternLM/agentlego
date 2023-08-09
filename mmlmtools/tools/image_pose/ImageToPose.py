@@ -1,19 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmpose.apis import MMPoseInferencer
-
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
+try:
+    from mmpose.apis import MMPoseInferencer
+    has_mmpose = True
+except ImportError:
+    has_mmpose = False
+
 
 def load_mmpose_inferencer(model, device):
     if CACHED_TOOLS.get('mmpose_inferencer', None) is not None:
         pose_inferencer = CACHED_TOOLS['mmpose_inferencer'][model]
     else:
+        if not has_mmpose:
+            raise RuntimeError('mmpose is required but not installed')
         pose_inferencer = MMPoseInferencer(pose2d=model, device=device)
         CACHED_TOOLS['pose_inferencer'][model] = pose_inferencer
     return pose_inferencer

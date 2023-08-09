@@ -8,9 +8,9 @@ from PIL import Image, ImageOps
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
+from .Replace import load_inpainting
 from ..base_tool import BaseTool
 from ..image_caption import load_caption_inferencer
-from mmlmtools.tools.image_editing.replace import load_inpainting
 from ..parsers import BaseParser
 
 
