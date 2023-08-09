@@ -23,7 +23,7 @@ from .segmentation.segment_anything import (ObjectSegmenting, SegmentAnything,
                                             SegmentClicked,)
 from .segmentation.semantic_segmentation import SemanticSegmentation
 from .text_qa import TextQuestionAnswering
-from .text_to_speech import SpeechToTextTool, TextToSpeechTool
+from .text_to_speech import SpeechToText, TextToSpeech
 from .vqa.visual_question_answering import VisualQuestionAnswering
 
 __all__ = [
@@ -35,5 +35,5 @@ __all__ = [
     'SegmentAnything', 'SegmentClicked', 'SemanticSegmentation',
     'InstructPix2Pix', 'TextQuestionAnswering', 'AudioToImage',
     'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage',
-    'TextQuestionAnswering', 'SpeechToTextTool', 'TextToSpeechTool'
+    'TextQuestionAnswering', 'SpeechToText', 'TextToSpeech'
 ]

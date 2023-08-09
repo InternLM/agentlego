@@ -21,7 +21,7 @@ def resampling_audio(audio: Audio, new_rate):
         path=audio.path)
 
 
-class SpeechToTextTool(BaseTool):
+class SpeechToText(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Transcriber',
         model='openai/whisper-base',

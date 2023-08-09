@@ -27,7 +27,7 @@ def resampling_audio(audio: dict, new_rate):
     }
 
 
-class TextToSpeechTool(BaseTool):
+class TextToSpeech(BaseTool):
     SAMPLING_RATE = 16000
     DEFAULT_TOOLMETA = dict(
         name='Text Reader',
