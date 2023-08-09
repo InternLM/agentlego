@@ -8,7 +8,7 @@ from PIL import Image, ImageOps
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .Replace import load_inpainting
+from .replace import load_inpainting
 from ..base_tool import BaseTool
 from ..image_caption import load_caption_inferencer
 from ..parsers import BaseParser
@@ -77,7 +77,7 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     return gaussian_img
 
 
-class ImageExtensionTool(BaseTool):
+class ImageExtension(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Image Extension Tool',
         model={'model': 'blip-base_3rdparty_caption'},

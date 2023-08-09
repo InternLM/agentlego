@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .VQA import VisualQuestionAnsweringTool
+from .VQA import VisualQuestionAnswering
 
-__all__ = ['VisualQuestionAnsweringTool']
+__all__ = ['VisualQuestionAnswering']

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .ImageToText import ImageCaptionTool
-from .TextToImage import TextToImageTool
+from .image_to_text import ImageCaption
+from .text_to_image import TextToImage
 
-__all__ = ['ImageCaptionTool', 'TextToImageTool']
+__all__ = ['ImageCaption', 'TextToImage']

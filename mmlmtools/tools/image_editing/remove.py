@@ -8,7 +8,7 @@ from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
-from .Replace import load_grounding, load_inpainting
+from .replace import load_grounding, load_inpainting
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 from ..segment_anything import load_sam_and_predictor
@@ -16,7 +16,7 @@ from ..segment_anything import load_sam_and_predictor
 GLOBAL_SEED = 1912
 
 
-class ObjectRemoveTool(BaseTool):
+class ObjectRemove(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Remove the Given Object In The Image',
         model={

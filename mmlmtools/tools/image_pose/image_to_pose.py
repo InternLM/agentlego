@@ -25,7 +25,7 @@ def load_mmpose_inferencer(model, device):
     return pose_inferencer
 
 
-class HumanBodyPoseTool(BaseTool):
+class HumanBodyPose(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Human Body Pose Detection On Image',
         model={'pose2d': 'human'},

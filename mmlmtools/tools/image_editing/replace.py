@@ -81,7 +81,7 @@ class Inpainting:
         return update_image
 
 
-class ObjectReplaceTool(BaseTool):
+class ObjectReplace(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Replace the Given Object In The Image',
         model={

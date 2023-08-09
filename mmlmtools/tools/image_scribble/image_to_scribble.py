@@ -10,7 +10,7 @@ from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
 
-class ImageToScribbleTool(BaseTool):
+class ImageToScribble(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Scribble Conditioned On Image',
         model=None,

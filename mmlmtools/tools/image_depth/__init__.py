@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .DepthToImage import DepthTextToImageTool
-from .ImageToDepth import ImageToDepthTool
+from .depth_to_image import DepthTextToImage
+from .image_to_depth import ImageToDepth
 
-__all__ = ['DepthTextToImageTool', 'ImageToDepthTool']
+__all__ = ['DepthTextToImage', 'ImageToDepth']

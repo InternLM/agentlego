@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .ImageToScribble import ImageToScribbleTool
-from .ScribbleToImage import ScribbleTextToImageTool
+from .image_to_scribble import ImageToScribble
+from .scribble_to_image import ScribbleTextToImage
 
-__all__ = ['ImageToScribbleTool', 'ScribbleTextToImageTool']
+__all__ = ['ImageToScribble', 'ScribbleTextToImage']

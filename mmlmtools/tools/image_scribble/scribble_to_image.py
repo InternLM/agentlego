@@ -35,13 +35,15 @@ def load_diffusion_inferencer(model, device):
     return diffusion_inferencer
 
 
-class DepthTextToImageTool(BaseTool):
+class ScribbleTextToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        name='Generate Image Condition On Depth Image',
-        model={},
+        name='Generate Image Condition On Scribble Image',
+        model={
+            'model_name': 'fusing/stable-diffusion-v1-5-controlnet-scribble',
+        },
         description='This is a useful tool when you want to generate a new '
-        'real image from a depth image and the user description. like: '
-        'generate a real image of a object or something from this depth '
+        'real image from a scribble image and the user description. like: '
+        'generate a real image of a object or something from this scribble '
         'image. The input to this tool should be an {{{input:image}}} and a '
         '{{{input:text}}} representing the image and the text description. '
         'It returns a {{{output:image}}} representing the generated image.')
@@ -55,7 +57,7 @@ class DepthTextToImageTool(BaseTool):
 
     def setup(self):
         self.pipe = load_diffusion_inferencer(
-            'fusing/stable-diffusion-v1-5-controlnet-depth', self.device)
+            self.toolmeta.model['model_name'], self.device)
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
@@ -75,6 +77,6 @@ class DepthTextToImageTool(BaseTool):
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
             output_path = get_new_image_path(
-                image_path, func_name='generate-image-from-depth')
+                image_path, func_name='generate-image-from-scribble')
             image.save(output_path)
         return output_path

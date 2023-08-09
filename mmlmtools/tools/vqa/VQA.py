@@ -25,7 +25,7 @@ def load_vqa_inferencer(model, device):
     return vqa_inferencer
 
 
-class VisualQuestionAnsweringTool(BaseTool):
+class VisualQuestionAnswering(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Visual Question Answering',
         model={'model': 'ofa-base_3rdparty-zeroshot_vqa'},

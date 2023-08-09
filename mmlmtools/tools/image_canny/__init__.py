@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .CannyToImage import CannyToImageTool
-from .ImageToCanny import ImageToCannyTool
+from .canny_to_image import CannyTextToImage
+from .image_to_canny import ImageToCanny
 
-__all__ = ['CannyToImageTool', 'ImageToCannyTool']
+__all__ = ['CannyTextToImage', 'ImageToCanny']

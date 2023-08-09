@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .Extension import ImageExtensionTool
-from .Remove import ObjectRemoveTool
-from .Replace import ObjectReplaceTool
+from .extension import ImageExtension
+from .remove import ObjectRemove
+from .replace import ObjectReplace
 
-__all__ = ['ImageExtensionTool', 'ObjectRemoveTool', 'ObjectReplaceTool']
+__all__ = ['ImageExtension', 'ObjectRemove', 'ObjectReplace']

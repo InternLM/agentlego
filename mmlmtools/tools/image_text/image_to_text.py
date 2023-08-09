@@ -26,7 +26,7 @@ def load_caption_inferencer(model, device):
     return caption_inferencer
 
 
-class ImageCaptionTool(BaseTool):
+class ImageCaption(BaseTool):
 
     DEFAULT_TOOLMETA = dict(
         name='Get Photo Description',

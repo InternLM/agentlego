@@ -29,7 +29,7 @@ def load_mmagic_inferencer(model, setting, device):
     return mmagic_inferencer
 
 
-class CannyToImageTool(BaseTool):
+class CannyTextToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image Condition On Canny Image',
         model={

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .FaceLandmark import HumanFaceLandmarkTool
-from .ImageToPose import HumanBodyPoseTool
-from .PoseToImage import PoseToImageTool
+from .facelandmark import HumanFaceLandmark
+from .image_to_pose import HumanBodyPose
+from .pose_to_image import PoseToImage
 
-__all__ = ['HumanBodyPoseTool', 'HumanFaceLandmarkTool', 'PoseToImageTool']
+__all__ = ['HumanBodyPose', 'HumanFaceLandmark', 'PoseToImage']

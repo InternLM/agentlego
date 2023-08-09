@@ -5,7 +5,7 @@ import numpy as np
 from ..base_tool import BaseTool
 
 
-class ImageToCannyTool(BaseTool):
+class ImageToCanny(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Edge Detection On Image',
         model=None,
