@@ -23,13 +23,18 @@ from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
 
 __all__ = [
-    'ImageCaption', 'Text2BoxTool', 'TextToImage', 'OCRTool',
-    'HumanBodyPose', 'SemSegTool', 'ObjectDetectionTool',
-    'ImageToCanny', 'CannyTextToImage', 'SegToImageTool',
-    'SegmentAnything', 'SegmentClicked', 'TextQuestionAnsweringTool',
-    'PoseToImage', 'ImageMaskOCRTool', 'ObjectSegmenting',
-    'InstructPix2PixTool', 'HumanFaceLandmark', 'ImageToScribble',
-    'ScribbleTextToImage', 'ImageToDepth', 'DepthTextToImage',
-    'ImageExtension', 'VisualQuestionAnswering',
-    'ObjectReplace', 'ObjectRemove'
+    'CannyTextToImage', 'ImageToCanny',
+    'DepthTextToImage', 'ImageToDepth',
+    'ImageExtension', 'ObjectRemove', 'ObjectReplace',
+    'HumanFaceLandmark', 'HumanBodyPose', 'PoseToImage',
+    'ImageToScribble', 'ScribbleTextToImage',
+    'ImageCaption', 'TextToImage',
+    'VisualQuestionAnswering',
+
+    'ObjectDetectionTool', 'Text2BoxTool',
+    'ImageMaskOCRTool', 'OCRTool',
+    'ObjectSegmenting', 'SegmentAnything', 'SegmentClicked',
+    'SemSegTool',
+    'InstructPix2PixTool',
+    'TextQuestionAnsweringTool'
 ]
