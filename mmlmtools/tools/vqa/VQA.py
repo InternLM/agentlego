@@ -14,6 +14,15 @@ except ImportError:
 
 
 def load_vqa_inferencer(model, device):
+    """Load vqa inferencer.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        vqa_inferencer (VisualQuestionAnsweringInferencer): The vqa inferencer.
+    """
     if CACHED_TOOLS.get('vqa_inferencer', None) is not None:
         vqa_inferencer = CACHED_TOOLS['vqa_inferencer']
     else:

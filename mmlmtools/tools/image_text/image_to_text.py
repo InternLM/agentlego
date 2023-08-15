@@ -15,6 +15,15 @@ except ImportError:
 
 
 def load_caption_inferencer(model, device):
+    """Load caption inferencer.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        caption_inferencer (ImageCaptionInferencer): The caption inferencer.
+    """
     if CACHED_TOOLS.get('caption_inferencer', None) is not None:
         caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
     else:

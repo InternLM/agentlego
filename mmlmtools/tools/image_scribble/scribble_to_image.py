@@ -12,6 +12,16 @@ from ..parsers import BaseParser
 
 
 def load_diffusion_inferencer(model, device):
+    """Load the diffusion inferencer.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        diffusion_inferencer (StableDiffusionControlNetPipeline): The diffusion
+            inferencer.
+    """
     from diffusers import (ControlNetModel, StableDiffusionControlNetPipeline,
                            UniPCMultistepScheduler)
     from diffusers.pipelines.stable_diffusion import \

@@ -15,6 +15,15 @@ except ImportError:
 
 
 def load_mmpose_inferencer(model, device):
+    """Load mmpose inferencer.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        pose_inferencer (MMPoseInferencer): The mmpose inferencer.
+    """
     if CACHED_TOOLS.get('mmpose_inferencer', None) is not None:
         pose_inferencer = CACHED_TOOLS['mmpose_inferencer'][model]
     else:

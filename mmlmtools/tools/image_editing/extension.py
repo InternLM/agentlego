@@ -15,6 +15,20 @@ from ..parsers import BaseParser
 
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
+    """Blend the ground truth image with the predicted image.
+
+    This function is copied from 'TaskMatrix/visual_chatgpt.py:
+    <https://github.com/microsoft/TaskMatrix/blob/main/visual_chatgpt.py>'_.
+
+    Args:
+        old_image (PIL.Image.Image): The ground truth image.
+        new_image (PIL.Image.Image): The predicted image.
+        sigma (float): The sigma of the Gaussian kernel.
+        steps (int): The number of steps to blend.
+
+    Returns:
+        PIL.Image.Image: The blended image.
+    """
     new_size = new_image.size
     old_size = old_image.size
     easy_img = np.array(new_image)

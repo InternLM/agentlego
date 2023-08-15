@@ -24,6 +24,15 @@ GLOBAL_SEED = 1912
 
 
 def load_grounding(model, device):
+    """Load grounding model.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        grounding (DetInferencer): The grounding model.
+    """
     if CACHED_TOOLS.get('grounding', None) is not None:
         grounding = CACHED_TOOLS['grounding']
     else:
@@ -35,6 +44,14 @@ def load_grounding(model, device):
 
 
 def load_inpainting(device):
+    """Load inpainting model.
+
+    Args:
+        device (str): The device to use.
+
+    Returns:
+        inpainting (Inpainting): The inpainting model.
+    """
     if CACHED_TOOLS.get('inpainting', None) is not None:
         inpainting = CACHED_TOOLS['inpainting']
     else:
@@ -44,7 +61,14 @@ def load_inpainting(device):
 
 
 class Inpainting:
+    """Inpainting model.
 
+    Refers to 'TaskMatrix/visual_chatgpt.py:
+    <https://github.com/microsoft/TaskMatrix/blob/main/visual_chatgpt.py>'_.
+
+    Args:
+        device (str): The device to use.
+    """
     def __init__(self, device):
         from diffusers import StableDiffusionInpaintPipeline
 

@@ -16,6 +16,16 @@ except ImportError:
 
 
 def load_mmagic_inferencer(model, setting, device):
+    """Load mmagic inferencer.
+
+    Args:
+        model (str): The name of the model.
+        setting (int): The setting of the model.
+        device (str): The device to use.
+
+    Returns:
+        mmagic_inferencer (MMagicInferencer): The mmagic inferencer.
+    """
     if CACHED_TOOLS.get('mmagic_inferencer' + str(setting), None) is not None:
         mmagic_inferencer = \
             CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
