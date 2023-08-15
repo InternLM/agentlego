@@ -13,7 +13,7 @@ from .image_scribble.image_to_scribble import ImageToScribble
 from .image_scribble.scribble_to_image import ScribbleTextToImage
 from .image_text.image_to_text import ImageCaption
 from .image_text.text_to_image import TextToImage
-from .vqa.VQA import VisualQuestionAnswering
+from .vqa.visual_question_answering import VisualQuestionAnswering
 
 from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import ImageMaskOCRTool, OCRTool

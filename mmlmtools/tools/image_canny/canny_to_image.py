@@ -70,11 +70,7 @@ class CannyTextToImage(BaseTool):
             'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:
-            from openxlab.model import inference
-            out = inference('mmagic/controlnet_canny', [image_path, text])
-            with open(output_path, 'wb') as file:
-                file.write(out)
-
+            raise NotImplementedError
         else:
             self._inferencer.infer(
                 text=text, control=image_path, result_out_dir=output_path)
