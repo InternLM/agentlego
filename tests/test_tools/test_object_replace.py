@@ -13,7 +13,7 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 class TestObjectReplace(ToolTestCase):
 
     def test_call(self):
-        img_path = 'tests/data/images/test-image.jpeg'
+        img_path = 'tests/data/images/test.jpg'
         tool = load_tool(
             'ObjectReplace', parser=VisualChatGPTParser(), device='cpu')
         res = tool(img_path, 'dog', 'a cartoon dog')
