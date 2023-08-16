@@ -191,7 +191,7 @@ class TypeMappingParser(BaseParser):
                     getattr(self, self._converters[(c, src_t, tgt_t)]))
 
         self._output_converters = []
-        for c, src_t, tgt_t in zip(input_cats, tool_output_types,
+        for c, src_t, tgt_t in zip(output_cats, tool_output_types,
                                    agent_output_types):
             if src_t == tgt_t:
                 self._output_converters.append(lambda x: x)

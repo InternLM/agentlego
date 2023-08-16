@@ -1,11 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import cv2
 import numpy as np
 
-from .base_tool import BaseTool
+from mmlmtools.utils.toolmeta import ToolMeta
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
-class Image2CannyTool(BaseTool):
+class ImageToCanny(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Edge Detection On Image',
         model=None,
@@ -15,14 +19,14 @@ class Image2CannyTool(BaseTool):
         'output should be a {{{output: image}}}')
 
     def __init__(self,
-                 *args,
-                 low_threshold: int = 100,
-                 high_threshold: int = 200,
-                 **kwargs
-                 ):
-        super().__init__(*args, **kwargs)
-        self.low_threshold = low_threshold
-        self.high_threshold = high_threshold
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
+                 remote: bool = False,
+                 device: str = 'cuda'):
+
+        super().__init__(toolmeta, parser, remote, device)
+        self.low_threshold = 100
+        self.high_threshold = 200
 
     def apply(self, inputs: np.ndarray) -> np.ndarray:
         if self.remote:

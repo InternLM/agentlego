@@ -1,31 +1,40 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# from .anything2image import (Audio2ImageTool, AudioImage2ImageTool,
-#                              AudioText2ImageTool, Thermal2ImageTool,)
-from .depth_detection import Image2DepthTool
-from .edge_detection import Image2CannyTool
-from .image_caption import ImageCaptionTool
-from .image_editing import ObjectRemoveTool, ObjectReplaceTool
-from .image_extension import ImageExtensionTool
-from .image_generation import (Canny2ImageTool, DepthText2ImageTool,
-                               Pose2ImageTool, ScribbleText2ImageTool,
-                               Seg2ImageTool, Text2ImageTool)
+from .image_canny.canny_to_image import CannyTextToImage
+from .image_canny.image_to_canny import ImageToCanny
+from .image_depth.depth_to_image import DepthTextToImage
+from .image_depth.image_to_depth import ImageToDepth
+from .image_editing.extension import ImageExtension
+from .image_editing.remove import ObjectRemove
+from .image_editing.replace import ObjectReplace
+from .image_pose.facelandmark import HumanFaceLandmark
+from .image_pose.image_to_pose import HumanBodyPose
+from .image_pose.pose_to_image import PoseToImage
+from .image_scribble.image_to_scribble import ImageToScribble
+from .image_scribble.scribble_to_image import ScribbleTextToImage
+from .image_text.image_to_text import ImageCaption
+from .image_text.text_to_image import TextToImage
+from .vqa.visual_question_answering import VisualQuestionAnswering
+
 from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import ImageMaskOCRTool, OCRTool
-from .pose_estimation import HumanBodyPoseTool, HumanFaceLandmarkTool
-from .scribble_generation import Image2ScribbleTool
 from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
-from .vqa import VisualQuestionAnsweringTool
 
 __all__ = [
-    'ImageCaptionTool', 'Text2BoxTool', 'Text2ImageTool', 'OCRTool',
-    'HumanBodyPoseTool', 'SemSegTool', 'ObjectDetectionTool',
-    'Image2CannyTool', 'Canny2ImageTool', 'Seg2ImageTool', 'SegmentAnything',
-    'SegmentClicked', 'TextQuestionAnsweringTool', 'Pose2ImageTool',
-    'ImageMaskOCRTool', 'ObjectSegmenting', 'InstructPix2PixTool',
-    'HumanFaceLandmarkTool', 'Image2ScribbleTool', 'ScribbleText2ImageTool',
-    'Image2DepthTool', 'DepthText2ImageTool', 'ImageExtensionTool',
-    'VisualQuestionAnsweringTool', 'ObjectReplaceTool', 'ObjectRemoveTool'
+    'CannyTextToImage', 'ImageToCanny',
+    'DepthTextToImage', 'ImageToDepth',
+    'ImageExtension', 'ObjectRemove', 'ObjectReplace',
+    'HumanFaceLandmark', 'HumanBodyPose', 'PoseToImage',
+    'ImageToScribble', 'ScribbleTextToImage',
+    'ImageCaption', 'TextToImage',
+    'VisualQuestionAnswering',
+
+    'ObjectDetectionTool', 'Text2BoxTool',
+    'ImageMaskOCRTool', 'OCRTool',
+    'ObjectSegmenting', 'SegmentAnything', 'SegmentClicked',
+    'SemSegTool',
+    'InstructPix2PixTool',
+    'TextQuestionAnsweringTool'
 ]

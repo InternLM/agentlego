@@ -11,14 +11,12 @@ from mmlmtools.testing import ToolTestCase
 from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
-@skipIf(not is_installed('mmpretrain'), reason='requires mmpretrain')
-class TestVisionQuestionAnswering(ToolTestCase):
+@skipIf(not is_installed('mmagic'), reason='requires mmagic')
+class TestPoseToImage(ToolTestCase):
 
-    def test_call(self):
+    def test_all(self):
         tool = load_tool(
-            'VisualQuestionAnswering',
-            parser=VisualChatGPTParser(),
-            device='cuda')
+            'PoseToImage', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -27,8 +25,6 @@ class TestVisionQuestionAnswering(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'VisualQuestionAnswering',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
+            'PoseToImage', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img, 'prompt')
-        assert isinstance(res, str)
+        assert isinstance(res, Image.Image)
