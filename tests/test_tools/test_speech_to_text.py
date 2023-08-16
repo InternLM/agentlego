@@ -9,7 +9,7 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangchainParser
 
 @skipIf(not is_installed('transformers') or not is_installed('torchaudio'),
         'only test TestSpeechToTextTool when `transformers` is installed')
-class TestSpeechToTextTool(TestCase):
+class TestSpeechToText(TestCase):
 
     def test_call_langchain_agent(self):
         for parser in (LangchainParser(), HuggingFaceAgentParser()):
