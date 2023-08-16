@@ -44,7 +44,7 @@ class HuggingFaceAgentParser(TypeMappingParser):
     _default_agent_cat2type = {
         'image': 'pillow',
         'text': 'string',
-        'audio': 'path',
+        'audio': 'audio',
     }
 
     def refine_description(self, description: str) -> str:

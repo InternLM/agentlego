@@ -43,6 +43,17 @@ class SpeechToText(BaseTool):
         self.model.to(self.device)
 
     def apply(self, audio: Audio) -> str:
+        # For `HuggingfaceAgent`, we need to make output audio
+        # a `Audio` object since jupyter notebook could display it.
+        # Therefore the mapping of
+        # `HuggingFaceAgentParser._default_agent_cat2type` should be
+        # 'audio': 'audio'
+        # However, the audio should be a `path` when it is used as input,
+        # since it is hard for LLM to construct a `Audio` object.
+        # Consider the case that we've set 'audio': 'audio' in the mapping, and
+        # `HuggingFaceParser` is used. the `audio` will be a string.
+        if isinstance(audio, str):
+            audio = Audio.from_path(audio)
         target_sampling_rate = self.processor.feature_extractor.sampling_rate
         if target_sampling_rate != audio.sampling_rate:
             audio = resampling_audio(audio, target_sampling_rate)

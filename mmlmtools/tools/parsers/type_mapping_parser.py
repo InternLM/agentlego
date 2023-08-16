@@ -3,7 +3,7 @@ import inspect
 import os.path as osp
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Optional, Tuple, Type, Union
 
 import cv2
 import numpy as np
@@ -324,17 +324,13 @@ class TypeMappingParser(BaseParser):
         return cv2.imread(path)
 
     @converter(category='audio', source_type='path', target_type='audio')
-    def _audio_path_to_audio(self, path: str) -> np.ndarray:
-        import torchaudio
-        audio = torchaudio.load(path)
-        return Audio(
-            path=path,
-            array=audio[0].reshape(-1).numpy(),
-            sampling_rate=audio[1],
-        )
+    def _audio_path_to_audio(self, path: str) -> Audio:
+        return Audio.from_path(path)
 
     @converter(category='audio', source_type='audio', target_type='path')
-    def _audio_to_audio_path(self, audio: Audio) -> str:
+    def _audio_to_audio_path(self, audio: Union[Audio, str]) -> str:
+        if isinstance(audio, str):
+            return str
         # TODO: Only support audio with one channel: [1, N] now.
         try:
             import torchaudio
