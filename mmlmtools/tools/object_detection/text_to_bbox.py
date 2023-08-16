@@ -3,7 +3,7 @@ from typing import Optional
 
 import mmcv
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -57,8 +57,8 @@ class TextToBbox(BaseTool):
                 texts=text,
                 no_save_vis=True,
                 return_datasample=True)
-            output_path = get_new_image_path(
-                image, func_name='detect-something')
+            output_path = get_new_file_path(
+                image, func_name='detect-something')['predictions'][0]
             img = mmcv.imread(image, channel_order='rgb')
             self._inferencer.visualizer.add_datasample(
                 'results',

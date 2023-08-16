@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab.All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -68,7 +68,7 @@ class PoseToImage(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 'image/controlnet-res.png',
                 func_name='generate-image-from-pose')
             self._inferencer.infer(

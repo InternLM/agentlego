@@ -161,7 +161,7 @@ class ImageExtension(BaseTool):
             width, height = text.split('x')
             tosize = (int(width), int(height))
             out_painted_image = self.dowhile(image_path, tosize, 4)
-            output_path = get_new_image_path(image_path, 'extension')
+            output_path = get_new_file_path(image_path, 'extension')
             out_painted_image.save(output_path)
         return output_path
 

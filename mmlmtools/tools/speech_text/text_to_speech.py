@@ -8,7 +8,7 @@ from mmengine import get
 from mmengine.utils import apply_to
 
 from ..base_tool import BaseTool
-from ..parsers.type_mapping_parser import Audio
+from ..parsers import Audio
 
 
 def resampling_audio(audio: dict, new_rate):

@@ -4,7 +4,7 @@ from typing import Optional
 import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -94,7 +94,7 @@ class ScribbleTextToImage(BaseTool):
                 eta=0.0,
                 negative_prompt=self.n_prompt,
                 guidance_scale=9.0).images[0]
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 image_path, func_name='generate-image-from-scribble')
             image.save(output_path)
         return output_path

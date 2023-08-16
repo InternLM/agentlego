@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 from PIL import Image
 
-from mmlmtools.utils.file import get_new_image_path
+from mmlmtools.utils.file import get_new_file_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
@@ -47,6 +47,6 @@ class ImageToDepth(BaseTool):
             depth = depth[:, :, None]
             depth = np.concatenate([depth, depth, depth], axis=2)
             depth = Image.fromarray(depth)
-            output_path = get_new_image_path(image_path, func_name='depth')
+            output_path = get_new_file_path(image_path, func_name='depth')
             depth.save(output_path)
             return output_path

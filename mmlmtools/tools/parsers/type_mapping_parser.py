@@ -13,6 +13,7 @@ from PIL import Image
 from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_parser import BaseParser
+from .utils import Audio
 
 
 class converter():
@@ -50,24 +51,6 @@ class converter():
 class ToolInputInfo:
     name: str
     required: bool
-
-
-@dataclass
-class Audio:
-    array: np.ndarray
-    sampling_rate: str
-    path: Optional[str] = None
-
-    def _ipython_display_(self, include=None, exclude=None):
-        import torchaudio
-        from IPython.display import Audio, display
-        path = self.path or get_new_file_path(
-            osp.join('data', 'audio', 'temp.wav'),
-            func_name='_ndarray_to_audio_path')
-        torchaudio.save(path,
-                        torch.from_numpy(self.array).reshape(1, -1).float(),
-                        self.sampling_rate)
-        display(Audio(path, rate=self.sampling_rate))
 
 
 class TypeMappingParser(BaseParser):

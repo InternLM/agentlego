@@ -3,7 +3,7 @@ import torch
 from mmengine.utils import apply_to
 
 from ..base_tool import BaseTool
-from ..parsers.type_mapping_parser import Audio
+from ..parsers import Audio
 
 
 def resampling_audio(audio: Audio, new_rate):

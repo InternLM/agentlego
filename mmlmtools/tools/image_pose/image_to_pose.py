@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -76,7 +76,7 @@ class HumanBodyPose(BaseTool):
                 self.toolmeta.model['pose2d'], self.device)
 
     def apply(self, image: str) -> str:
-        output_path = get_new_image_path(image, func_name='pose-estimation')
+        output_path = get_new_file_path(image, func_name='pose-estimation')
         if self.remote:
             raise NotImplementedError
         else:
