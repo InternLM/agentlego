@@ -1,1 +1,0 @@
-# Segment Anything Model (SAM)
