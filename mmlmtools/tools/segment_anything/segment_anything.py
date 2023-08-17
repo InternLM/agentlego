@@ -15,10 +15,10 @@ from segment_anything.utils.transforms import ResizeLongestSide
 
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from ..utils.file import get_new_image_path
-from .base_tool import BaseTool
-from .parsers import BaseParser
-from .text2bbox import load_grounding
+from ...utils.file import get_new_image_path
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
+from ..text2bbox import load_grounding
 
 GLOBAL_SEED = 1912
 

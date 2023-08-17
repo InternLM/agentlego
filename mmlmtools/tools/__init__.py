@@ -14,8 +14,10 @@ from .image_scribble.scribble_to_image import ScribbleTextToImage
 from .image_text.image_to_text import ImageCaption
 from .image_text.text_to_image import TextToImage
 from .object_detection import ObjectDetectionTool, Text2BoxTool
-from .ocr import ImageMaskOCRTool, OCRTool
-from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
+from .ocr.ocr import ImageMaskOCRTool, OCRTool
+from .segment_anything.segment_anything import (ObjectSegmenting,
+                                                SegmentAnything,
+                                                SegmentClicked,)
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text2bbox import Text2BboxTool

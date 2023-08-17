@@ -11,7 +11,7 @@ from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-from ..segment_anything import load_sam_and_predictor
+from ..segment_anything.segment_anything import load_sam_and_predictor
 
 try:
     from mmdet.apis import DetInferencer
