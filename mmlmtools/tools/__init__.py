@@ -6,6 +6,7 @@ from .image_depth.image_to_depth import ImageToDepth
 from .image_editing.extension import ImageExtension
 from .image_editing.remove import ObjectRemove
 from .image_editing.replace import ObjectReplace
+from .image_editing.stylization import InstructPix2PixTool
 from .image_pose.facelandmark import HumanFaceLandmark
 from .image_pose.image_to_pose import HumanBodyPose
 from .image_pose.pose_to_image import PoseToImage
@@ -19,7 +20,6 @@ from .segment_anything.segment_anything import (ObjectSegmenting,
                                                 SegmentAnything,
                                                 SegmentClicked,)
 from .semseg_tool import SemSegTool
-from .stylization import InstructPix2PixTool
 from .text2bbox import Text2BboxTool
 from .text_qa import TextQuestionAnsweringTool
 from .translation import Translation

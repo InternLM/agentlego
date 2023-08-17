@@ -10,8 +10,8 @@ from PIL import Image
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
 def load_instruct_pix2pix(model, device):
