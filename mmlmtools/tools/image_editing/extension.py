@@ -10,6 +10,7 @@ from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
+from ..image_text.image_to_text import load_caption_inferencer
 from ..parsers import BaseParser
 from .replace import load_inpainting
 
