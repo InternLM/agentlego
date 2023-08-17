@@ -6,8 +6,8 @@ from mmpretrain.apis import ImageCaptionInferencer
 
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
 def load_caption_inferencer(model, device):
@@ -34,7 +34,7 @@ class ImageCaptionTool(BaseTool):
                  toolmeta: Optional[ToolMeta] = None,
                  parser: Optional[BaseParser] = None,
                  remote: bool = False,
-                 device: str = 'cpu'):
+                 device: str = 'cuda'):
 
         super().__init__(toolmeta, parser, remote, device)
 
