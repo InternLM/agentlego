@@ -67,7 +67,9 @@ class TypeMappingParser(BaseParser):
     _converters: Dict[Tuple[str, str, str], str]
 
     # mapping from tool argument (i.e. the argument of `apply` method) type
-    # to data type for each data category
+    # to data type for each data category. The Type Hint of `tool.apply` must
+    # be one of the second level key defined in the following dict:
+    # `str`, `Image`, `np.ndarray, `Image.Image` or `Audio`.
     _toolarg2type: Dict[str, Dict[Type, str]] = {
         'image': {
             str: 'path',
