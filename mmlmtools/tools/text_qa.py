@@ -5,7 +5,7 @@ from ..utils.toolmeta import ToolMeta
 from .base_tool_v1 import BaseToolv1
 
 
-class TextQuestionAnsweringTool(BaseToolv1):
+class TextQuestionAnswering(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Text Question Answering',
         model={'model_name': 'google/flan-t5-base'},

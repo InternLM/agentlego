@@ -11,10 +11,10 @@ from mmlmtools.testing import ToolTestCase
 
 
 @skipIf(not is_installed('mmsegmentation'), reason='mmsegmentation')
-class TestSemSegTool(ToolTestCase):
+class TestSemanticSegmentation(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('SemSegTool', device='cuda')
+        tool = load_tool('SemanticSegmentation', device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -23,7 +23,7 @@ class TestSemSegTool(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'SemSegTool',
+            'SemanticSegmentation',
             output_style='pil image',
             input_style='pil image',
             device='cuda')
