@@ -17,7 +17,7 @@ from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ...utils.file import get_new_image_path
 from ..base_tool import BaseTool
-from ..object_detection.text2bbox import load_grounding
+from ..object_detection.text_to_bbox import load_grounding
 from ..parsers import BaseParser
 
 GLOBAL_SEED = 1912

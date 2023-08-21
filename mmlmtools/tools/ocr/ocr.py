@@ -22,7 +22,7 @@ def load_ocr_inferencer(model, device):
     return mmocr_inferencer
 
 
-class OCRTool(BaseTool):
+class OCR(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize the Optical Characters On Image',
         model={
@@ -54,7 +54,7 @@ class OCRTool(BaseTool):
         return outputs
 
 
-class ImageMaskOCRTool(BaseTool):
+class ImageMaskOCR(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Recognize The Optical Characters On Image With Mask',
         model={

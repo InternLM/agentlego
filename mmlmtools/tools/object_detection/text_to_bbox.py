@@ -20,7 +20,7 @@ def load_grounding(model, device):
     return grounding
 
 
-class Text2BboxTool(BaseTool):
+class TextToBbox(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Detect the Given Object',
         model={'model': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'},

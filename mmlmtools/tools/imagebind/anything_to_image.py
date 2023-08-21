@@ -3,25 +3,25 @@ from typing import Optional
 
 import torch
 from diffusers import StableUnCLIPImg2ImgPipeline
+from models.imagebind_model import imagebind_huge as ib
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .imagebind.models.imagebind_model import imagebind_huge as ib
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
-def load_anything2image(device, e_mode):
-    if CACHED_TOOLS.get('anything2image', None) is not None:
-        anything2image = CACHED_TOOLS['anything2image']
+def load_anything_to_image(device, e_mode):
+    if CACHED_TOOLS.get('AnythingToImage', None) is not None:
+        AnythingToImage = CACHED_TOOLS['AnythingToImage']
     else:
-        anything2image = Anything2Image(device, e_mode)
-        CACHED_TOOLS['anything2image'] = anything2image
-    return anything2image
+        AnythingToImage = AnythingToImage(device, e_mode)
+        CACHED_TOOLS['AnythingToImage'] = AnythingToImage
+    return AnythingToImage
 
 
-class Anything2Image:
+class AnythingToImage:
 
     def __init__(self, device, e_mode):
         pipe = StableUnCLIPImg2ImgPipeline.from_pretrained(
@@ -40,7 +40,7 @@ class Anything2Image:
             self.model.to(device)
 
 
-class Audio2ImageTool(BaseTool):
+class AudioToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio',
         model=None,
@@ -59,7 +59,7 @@ class Audio2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything2image(self.device, True)
+        self._inferencer = load_anything_to_image(self.device, True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -89,7 +89,7 @@ class Audio2ImageTool(BaseTool):
         return new_img_name
 
 
-class Thermal2ImageTool(BaseTool):
+class ThermalToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Thermal Image',
         model=None,
@@ -108,7 +108,7 @@ class Thermal2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything2image(self.device, True)
+        self._inferencer = load_anything_to_image(self.device, True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -140,7 +140,7 @@ class Thermal2ImageTool(BaseTool):
         return new_img_name
 
 
-class AudioImage2ImageTool(BaseTool):
+class AudioImageToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Image and Audio',
         model=None,
@@ -160,7 +160,7 @@ class AudioImage2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything2image(self.device, True)
+        self._inferencer = load_anything_to_image(self.device, True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -204,7 +204,7 @@ class AudioImage2ImageTool(BaseTool):
         return new_img_name
 
 
-class AudioText2ImageTool(BaseTool):
+class AudioTextToImage(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Generate Image from Audio and Text',
         model=None,
@@ -225,7 +225,7 @@ class AudioText2ImageTool(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything2image(self.device, True)
+        self._inferencer = load_anything_to_image(self.device, True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device

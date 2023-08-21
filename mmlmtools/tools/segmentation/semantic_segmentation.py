@@ -8,7 +8,7 @@ from ...utils.file import get_new_image_path
 from ..base_tool_v1 import BaseToolv1
 
 
-class SemSegTool(BaseToolv1):
+class SemanticSegmentation(BaseToolv1):
     DEFAULT_TOOLMETA = dict(
         name='Segment the Image',
         model={'model': 'mask2former_r50_8xb2-90k_cityscapes-512x1024'},

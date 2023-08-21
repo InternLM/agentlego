@@ -32,7 +32,7 @@ def load_instruct_pix2pix(model, device):
     return instruct_pix2pix
 
 
-class InstructPix2PixTool(BaseTool):
+class InstructPix2Pix(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Instruct Image Using Text',
         model={'model': 'timbrooks/instruct-pix2pix'},

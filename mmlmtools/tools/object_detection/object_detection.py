@@ -22,7 +22,7 @@ def load_object_detection(model, device):
     return object_detection
 
 
-class ObjectDetectionTool(BaseTool):
+class ObjectDetection(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Detect All Objects',
         model={'model': 'rtmdet_l_8xb32-300e_coco'},
