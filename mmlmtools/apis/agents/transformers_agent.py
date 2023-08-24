@@ -8,7 +8,7 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser
 from ..tool import list_tools, load_tool
 
 
-class TFAgentTool(Tool):
+class HFAgentTool(Tool):
     """Adapter for mmlmtools.tools.Tool to transformers.tools.Tool."""
 
     def __init__(self, tool: BaseTool):
@@ -23,8 +23,8 @@ class TFAgentTool(Tool):
         return self.tool(*args, **kwargs)
 
 
-def load_tools_for_tf_agent(tool_names: List[str],
-                            device: str = 'cpu') -> List[TFAgentTool]:
+def load_tools_for_hfagent(tool_names: List[str],
+                           device: str = 'cpu') -> List[HFAgentTool]:
     """Load a set of tools and adapt them to the transformers agent tool
     interface.
 
@@ -33,7 +33,7 @@ def load_tools_for_tf_agent(tool_names: List[str],
         device (str): device to load tools. Defaults to 'cpu'.
 
     Returns:
-    list(TFAgentTool): loaded tools
+    list(HFAgentTool): loaded tools
     """
     all_tools = list_tools()
     loaded_tools = []
@@ -41,6 +41,6 @@ def load_tools_for_tf_agent(tool_names: List[str],
         if name not in all_tools:
             raise ValueError(f'{name} is not a valid tool name.')
         tool = load_tool(name, device=device, parser=HuggingFaceAgentParser())
-        loaded_tools.append(TFAgentTool(tool))
+        loaded_tools.append(HFAgentTool(tool))
 
     return loaded_tools
