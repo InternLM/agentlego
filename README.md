@@ -107,8 +107,8 @@ from mmlmtools.adapter.convert_tools_for_igpt
 
 ```Python
 # from transformers import HfAgent
-from mmlmtools.adapter.transformers_agent import load_tools_for_tf_agent
-tools = load_tools_for_tf_agent()
+from mmlmtools.adapter.transformers_agent import load_tools_for_hfagent
+tools = load_tools_for_hfagent()
 agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder",
                 additional_tools=tools)
 ```

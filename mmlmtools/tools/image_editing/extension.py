@@ -7,11 +7,36 @@ import numpy as np
 from PIL import Image, ImageOps
 
 from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from .replace import load_inpainting
 from ..base_tool import BaseTool
-from ..image_caption import load_caption_inferencer
 from ..parsers import BaseParser
+from .replace import load_inpainting
+
+try:
+    from mmpretrain.apis import ImageCaptionInferencer
+    has_mmpretrain = True
+except ImportError:
+    has_mmpretrain = False
+
+
+def load_caption_inferencer(model, device):
+    """Load caption inferencer.
+
+    Args:
+        model (str): The name of the model.
+        device (str): The device to use.
+
+    Returns:
+        caption_inferencer (ImageCaptionInferencer): The caption inferencer.
+    """
+    if CACHED_TOOLS.get('caption_inferencer', None) is not None:
+        caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
+    else:
+        if not has_mmpretrain:
+            raise RuntimeError('mmpretrain is required but not installed')
+        caption_inferencer = ImageCaptionInferencer(model=model, device=device)
+        CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
 
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
