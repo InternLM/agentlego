@@ -19,7 +19,7 @@ from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
-from .translation import TextTranslationTool
+from .translation import Translation
 from .vqa.visual_question_answering import VisualQuestionAnswering
 
 __all__ = [
@@ -29,5 +29,5 @@ __all__ = [
     'ImageCaption', 'TextToImage', 'VisualQuestionAnswering',
     'ObjectDetectionTool', 'Text2BoxTool', 'ImageMaskOCRTool', 'OCRTool',
     'ObjectSegmenting', 'SegmentAnything', 'SegmentClicked', 'SemSegTool',
-    'InstructPix2PixTool', 'TextQuestionAnsweringTool', 'TextTranslationTool'
+    'InstructPix2PixTool', 'TextQuestionAnsweringTool', 'Translation'
 ]

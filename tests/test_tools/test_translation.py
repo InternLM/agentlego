@@ -8,7 +8,7 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('transformers'), reason='requires transformers')
-class TestTextTranslationTool(ToolTestCase):
+class TestTranslation(ToolTestCase):
 
     def test_call(self):
         text = 'Legumes share resources with nitrogen-fixing bacteria'
@@ -16,13 +16,11 @@ class TestTextTranslationTool(ToolTestCase):
         target_lang = 'French'
 
         tool = load_tool(
-            'TextTranslationTool', parser=VisualChatGPTParser(), device='cuda')
+            'Translation', parser=VisualChatGPTParser(), device='cuda')
         res = tool(text, source_lang, target_lang)
         assert isinstance(res, str)
 
         tool = load_tool(
-            'TextTranslationTool',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
+            'Translation', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(text, source_lang, target_lang)
         assert isinstance(res, str)

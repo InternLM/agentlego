@@ -2,11 +2,11 @@
 from typing import Optional
 
 from mmlmtools.utils.toolmeta import ToolMeta
-from .base_tool import BaseTool
-from .parsers import BaseParser
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
-class TextTranslationTool(BaseTool):
+class Translation(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Text translation',
         model={'model_name': 't5-small'},
