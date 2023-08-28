@@ -13,28 +13,20 @@ from .image_scribble.image_to_scribble import ImageToScribble
 from .image_scribble.scribble_to_image import ScribbleTextToImage
 from .image_text.image_to_text import ImageCaption
 from .image_text.text_to_image import TextToImage
-from .vqa.visual_question_answering import VisualQuestionAnswering
-
 from .object_detection import ObjectDetectionTool, Text2BoxTool
 from .ocr import ImageMaskOCRTool, OCRTool
 from .segment_anything import ObjectSegmenting, SegmentAnything, SegmentClicked
 from .semseg_tool import SemSegTool
 from .stylization import InstructPix2PixTool
 from .text_qa import TextQuestionAnsweringTool
+from .vqa.visual_question_answering import VisualQuestionAnswering
 
 __all__ = [
-    'CannyTextToImage', 'ImageToCanny',
-    'DepthTextToImage', 'ImageToDepth',
-    'ImageExtension', 'ObjectRemove', 'ObjectReplace',
-    'HumanFaceLandmark', 'HumanBodyPose', 'PoseToImage',
-    'ImageToScribble', 'ScribbleTextToImage',
-    'ImageCaption', 'TextToImage',
-    'VisualQuestionAnswering',
-
-    'ObjectDetectionTool', 'Text2BoxTool',
-    'ImageMaskOCRTool', 'OCRTool',
-    'ObjectSegmenting', 'SegmentAnything', 'SegmentClicked',
-    'SemSegTool',
-    'InstructPix2PixTool',
-    'TextQuestionAnsweringTool'
+    'CannyTextToImage', 'ImageToCanny', 'DepthTextToImage', 'ImageToDepth',
+    'ImageExtension', 'ObjectRemove', 'ObjectReplace', 'HumanFaceLandmark',
+    'HumanBodyPose', 'PoseToImage', 'ImageToScribble', 'ScribbleTextToImage',
+    'ImageCaption', 'TextToImage', 'VisualQuestionAnswering',
+    'ObjectDetectionTool', 'Text2BoxTool', 'ImageMaskOCRTool', 'OCRTool',
+    'ObjectSegmenting', 'SegmentAnything', 'SegmentClicked', 'SemSegTool',
+    'InstructPix2PixTool', 'TextQuestionAnsweringTool'
 ]

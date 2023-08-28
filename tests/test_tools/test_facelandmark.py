@@ -16,9 +16,7 @@ class TestHumanFaceLandmark(ToolTestCase):
 
     def test_call(self):
         tool = load_tool(
-            'HumanFaceLandmark',
-            parser=VisualChatGPTParser(),
-            device='cuda')
+            'HumanFaceLandmark', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)

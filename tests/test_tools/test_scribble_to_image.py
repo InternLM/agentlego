@@ -13,9 +13,7 @@ class TestScribbleTextToImage(ToolTestCase):
 
     def test_all(self):
         tool = load_tool(
-            'ScribbleTextToImage',
-            parser=VisualChatGPTParser(),
-            device='cuda')
+            'ScribbleTextToImage', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)

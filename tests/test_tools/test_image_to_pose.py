@@ -25,8 +25,6 @@ class TestHumanBodyPose(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'HumanBodyPose',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
+            'HumanBodyPose', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img)
         assert isinstance(res, Image.Image)

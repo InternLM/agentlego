@@ -19,7 +19,6 @@ try:
 except ImportError:
     has_mmdet = False
 
-
 GLOBAL_SEED = 1912
 
 
@@ -69,6 +68,7 @@ class Inpainting:
     Args:
         device (str): The device to use.
     """
+
     def __init__(self, device):
         from diffusers import StableDiffusionInpaintPipeline
 
