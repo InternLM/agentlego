@@ -22,8 +22,6 @@ class TestImageToScribble(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'ImageToScribble',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
+            'ImageToScribble', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img)
         assert isinstance(res, Image.Image)

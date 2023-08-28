@@ -22,8 +22,6 @@ class TestDepthTextToImage(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'DepthTextToImage',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
+            'DepthTextToImage', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img, 'prompt')
         assert isinstance(res, Image.Image)

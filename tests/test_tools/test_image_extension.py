@@ -16,8 +16,6 @@ class TestImageExtension(ToolTestCase):
 
         img = Image.open(img_path)
         tool = load_tool(
-            'ImageExtension',
-            parser=HuggingFaceAgentParser(),
-            device='cpu')
+            'ImageExtension', parser=HuggingFaceAgentParser(), device='cpu')
         res = tool(img, '2000x1000')
         assert isinstance(res, Image.Image)
