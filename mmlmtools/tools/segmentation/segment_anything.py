@@ -9,15 +9,11 @@ import numpy as np
 import torch
 import wget
 from PIL import Image
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
-from segment_anything.modeling import Sam
-from segment_anything.utils.transforms import ResizeLongestSide
 
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ...utils.file import get_new_image_path
 from ..base_tool import BaseTool
-from ..object_detection.text_to_bbox import load_grounding
 from ..parsers import BaseParser
 
 GLOBAL_SEED = 1912
@@ -27,6 +23,13 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     if CACHED_TOOLS.get('sam', None) is not None:
         sam = CACHED_TOOLS['sam'][model]
     else:
+        try:
+            from segment_anything import sam_model_registry
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `segment_anything` correctly')
+
         url = ('https://dl.fbaipublicfiles.com/segment_anything/'
                f'{model}')
         mmengine.mkdir_or_exist('model_zoo')
@@ -41,6 +44,14 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
     if CACHED_TOOLS.get('sam_predictor', None) is not None:
         sam_predictor = CACHED_TOOLS['sam_predictor'][model]
     else:
+        try:
+            from segment_anything.utils.transforms import \
+                ResizeLongestSide  # noqa: F401
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `segment_anything` correctly')
+
         sam_predictor = SamPredictor(sam)
         CACHED_TOOLS['sam_predictor'][model] = sam_predictor
     return sam, sam_predictor
@@ -50,7 +61,7 @@ class SamPredictor:
 
     def __init__(
         self,
-        sam_model: Sam,
+        sam_model,
     ) -> None:
         """Uses SAM to calculate the image embedding for an image, and then
         allow repeated, efficient mask prediction given prompts.
@@ -60,7 +71,8 @@ class SamPredictor:
         """
         super().__init__()
         self.model = sam_model
-        self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
+        self.transform = ResizeLongestSide(  # noqa: F821
+            sam_model.image_encoder.img_size)
 
     def set_image(
         self,
@@ -319,6 +331,14 @@ class SegmentAnything(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from segment_anything import \
+                SamAutomaticMaskGenerator  # noqa: F401
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `segment_anything` correctly')
+
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.e_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
@@ -347,7 +367,7 @@ class SegmentAnything(BaseTool):
         if self.e_mode:
             self.sam.to(device=self.device)
 
-        mask_generator = SamAutomaticMaskGenerator(self.sam)
+        mask_generator = SamAutomaticMaskGenerator(self.sam)  # noqa: F821
         annos = mask_generator.generate(img)
 
         # to cpu
@@ -543,6 +563,11 @@ class ObjectSegmenting(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from ..object_detection.text_to_bbox import load_grounding
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool for {e}')
+
         self.grounding = load_grounding(
             model=self.toolmeta.model['grounding'], device=self.device)
 

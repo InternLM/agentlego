@@ -1,60 +1,56 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
 
 import mmcv
-from mmseg.apis import MMSegInferencer
 
+from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ...utils.file import get_new_image_path
-from ..base_tool_v1 import BaseToolv1
+from ..base_tool import BaseTool
+from ..parsers import BaseParser
 
 
-class SemanticSegmentation(BaseToolv1):
+def load_semseg_inferencer(model, device):
+    if CACHED_TOOLS.get('semseg_inferencer', None) is not None:
+        semseg_inferencer = CACHED_TOOLS['semseg_inferencer'][model]
+    else:
+        try:
+            from mmseg.apis import MMSegInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmseg` correctly')
+
+        semseg_inferencer = MMSegInferencer(model=model, device=device)
+        CACHED_TOOLS['semseg_inferencer'][model] = semseg_inferencer
+
+    return semseg_inferencer
+
+
+class SemanticSegmentation(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Segment the Image',
         model={'model': 'mask2former_r50_8xb2-90k_cityscapes-512x1024'},
         description='This is a useful tool '
         'when you only want to segment the picture or segment all '
-        'objects in the picture. like: segment all objects. ',
-        input_description='It takes a string as the input, '
-        'representing the image_path. ',
-        output_description='It returns a string as the output, '
-        'representing the image_path. ')
+        'objects in the picture. like: segment all objects. '
+        'It takes an {{{input:image}}} as the input, and returns '
+        'a {{{output:image}}} as the output, representing the image with '
+        'semantic segmentation results. ')
 
     def __init__(self,
-                 toolmeta: ToolMeta = None,
-                 input_style: str = 'image_path',
-                 output_style: str = 'image_path',
+                 toolmeta: Optional[ToolMeta] = None,
+                 parser: Optional[BaseParser] = None,
                  remote: bool = False,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, input_style, output_style, remote, device)
-
-        self._inferencer = None
+        super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        if self._inferencer is None:
-            self._inferencer = MMSegInferencer(
-                model=self.toolmeta.model['model'], device=self.device)
+        self._inferencer = load_semseg_inferencer(self.toolmeta.model['model'],
+                                                  self.device)
 
-    def convert_inputs(self, inputs):
-        if self.input_style == 'image_path':  # visual chatgpt style
-            return inputs
-        elif self.input_style == 'pil image':  # transformer agent style
-            temp_image_path = get_new_image_path(
-                'image/temp.jpg', func_name='temp')
-            inputs.save(temp_image_path)
-            return temp_image_path
-        else:
-            raise NotImplementedError
-
-    def apply(self, inputs):
+    def apply(self, inputs: str) -> str:
         if self.remote:
-            import json
-
-            from openxlab.model import inference
-
-            predict = inference('mmsegmentation/Mask2Former',
-                                ['./demo_text_ocr.jpg'])
-            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)
@@ -71,13 +67,3 @@ class SemanticSegmentation(BaseToolv1):
                 show=False,
                 out_file=output_path)
         return output_path
-
-    def convert_outputs(self, outputs):
-        if self.output_style == 'image_path':  # visual chatgpt style
-            return outputs
-        elif self.output_style == 'pil image':  # transformer agent style
-            from PIL import Image
-            outputs = Image.open(outputs)
-            return outputs
-        else:
-            raise NotImplementedError

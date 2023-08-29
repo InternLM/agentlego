@@ -3,7 +3,6 @@
 from typing import Optional
 
 import mmcv
-from mmdet.apis import DetInferencer
 
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
@@ -16,6 +15,13 @@ def load_object_detection(model, device):
     if CACHED_TOOLS.get('object_detection', None) is not None:
         object_detection = CACHED_TOOLS['object_detection'][model]
     else:
+        try:
+            from mmdet.apis import DetInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmdet` correctly')
+
         object_detection = DetInferencer(model=model, device=device)
         CACHED_TOOLS['object_detection'][model] = object_detection
 

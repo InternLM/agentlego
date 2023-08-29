@@ -2,9 +2,6 @@
 from typing import Optional
 
 import torch
-from diffusers import EulerAncestralDiscreteScheduler as ea_scheduler
-from diffusers import \
-    StableDiffusionInstructPix2PixPipeline as sd_instruct_pix2pix
 from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
@@ -23,6 +20,16 @@ def load_instruct_pix2pix(model, device):
     if CACHED_TOOLS.get('instruct_pix2pix', None) is not None:
         instruct_pix2pix = CACHED_TOOLS['instruct_pix2pix'][model]
     else:
+        try:
+            from diffusers import \
+                EulerAncestralDiscreteScheduler as ea_scheduler
+            from diffusers import \
+                StableDiffusionInstructPix2PixPipeline as sd_instruct_pix2pix
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `diffusers` correctly')
+
         instruct_pix2pix = sd_instruct_pix2pix.from_pretrained(
             model, safety_checker=None, torch_dtype=torch_dtype).to(device)
         instruct_pix2pix.scheduler = ea_scheduler.from_config(

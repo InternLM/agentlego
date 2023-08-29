@@ -22,13 +22,21 @@ def load_diffusion_inferencer(model, device):
         diffusion_inferencer (StableDiffusionControlNetPipeline): The diffusion
             inferencer.
     """
-    from diffusers import (ControlNetModel, StableDiffusionControlNetPipeline,
-                           UniPCMultistepScheduler)
-    from diffusers.pipelines.stable_diffusion import \
-        StableDiffusionSafetyChecker
+
     if CACHED_TOOLS.get('diffusion_inferencer', None) is not None:
         diffusion_inferencer = CACHED_TOOLS['diffusion_inferencer'][model]
     else:
+        try:
+            from diffusers import (ControlNetModel,
+                                   StableDiffusionControlNetPipeline,
+                                   UniPCMultistepScheduler)
+            from diffusers.pipelines.stable_diffusion import \
+                StableDiffusionSafetyChecker
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `diffusers` correctly')
+
         torch_dtype = torch.float16 if 'cuda' in device else torch.float32
         controlnet = ControlNetModel.from_pretrained(
             model, torch_dtype=torch_dtype)

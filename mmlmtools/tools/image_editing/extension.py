@@ -10,9 +10,7 @@ from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
-from ..image_text.image_to_text import load_caption_inferencer
 from ..parsers import BaseParser
-from .replace import load_inpainting
 
 try:
     from mmpretrain.apis import ImageCaptionInferencer
@@ -137,6 +135,12 @@ class ImageExtension(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from ..image_text.image_to_text import load_caption_inferencer
+            from .replace import load_inpainting
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool for {e}')
+
         self.ImageCaption = load_caption_inferencer(
             self.toolmeta.model['model'], self.device)
 

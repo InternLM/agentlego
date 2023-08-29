@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from controlnet_aux import HEDdetector
 from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
@@ -28,6 +27,13 @@ class ImageToScribble(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from controlnet_aux import HEDdetector
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `controlnet_aux` correctly')
+
         self.detector = HEDdetector.from_pretrained('lllyasviel/Annotators')
 
     def apply(self, image_path: str) -> str:

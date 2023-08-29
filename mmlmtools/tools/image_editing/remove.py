@@ -10,8 +10,6 @@ from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-from ..segmentation.segment_anything import load_sam_and_predictor
-from .replace import load_grounding, load_inpainting
 
 GLOBAL_SEED = 1912
 
@@ -38,6 +36,12 @@ class ObjectRemove(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from ..segmentation.segment_anything import load_sam_and_predictor
+            from .replace import load_grounding, load_inpainting
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool for {e}')
+
         self.grounding = load_grounding(self.toolmeta.model['grounding'],
                                         self.device)
 

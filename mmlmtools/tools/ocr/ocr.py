@@ -2,7 +2,6 @@
 from typing import Optional
 
 import numpy as np
-from mmocr.apis import MMOCRInferencer
 from PIL import Image
 
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
@@ -16,6 +15,13 @@ def load_ocr_inferencer(model, device):
     if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
         mmocr_inferencer = CACHED_TOOLS['mmocr_inferencer'][model_id]
     else:
+        try:
+            from mmocr.apis import MMOCRInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmocr` correctly')
+
         mmocr_inferencer = MMOCRInferencer(
             det=model['det'], rec=model['rec'], device=device)
         CACHED_TOOLS['mmocr_inferencer'][model_id] = mmocr_inferencer

@@ -2,7 +2,6 @@
 from typing import Optional
 
 import torch
-from diffusers import StableUnCLIPImg2ImgPipeline
 from models.imagebind_model import imagebind_huge as ib
 
 from mmlmtools.utils import get_new_image_path
@@ -24,6 +23,13 @@ def load_anything_to_image(device, e_mode):
 class AnythingToImage:
 
     def __init__(self, device, e_mode):
+        try:
+            from diffusers import StableUnCLIPImg2ImgPipeline
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `diffusers` correctly')
+
         pipe = StableUnCLIPImg2ImgPipeline.from_pretrained(
             'stabilityai/stable-diffusion-2-1-unclip',
             torch_dtype=torch.float16,
@@ -65,7 +71,7 @@ class AudioToImage(BaseTool):
         self.device = self._inferencer.device
         self.e_mode = self._inferencer.e_mode
 
-    def apply(self, audio_path: str) -> str:
+    def apply(self, audio: str) -> str:
         if self.remote:
             raise NotImplementedError
 
@@ -73,13 +79,13 @@ class AudioToImage(BaseTool):
             self.pipe.to(self.device)
             self.model.to(self.device)
 
-        audio_paths = [audio_path]
+        audio_paths = [audio]
         audio_data = ib.load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self.model.forward({ib.ModalityType.AUDIO: audio_data})
         embeddings = embeddings[ib.ModalityType.AUDIO]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'Audio2Image')
+        new_img_name = get_new_image_path(audio_paths[0], 'AudioToImage')
         images[0].save(new_img_name)
 
         if self.e_mode:
@@ -130,7 +136,7 @@ class ThermalToImage(BaseTool):
         embeddings = embeddings[ib.ModalityType.THERMAL]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(thermal_data[0], 'Thermal2Image')
+        new_img_name = get_new_image_path(thermal_data[0], 'ThermalToImage')
         images[0].save(new_img_name)
 
         if self.e_mode:
@@ -194,7 +200,7 @@ class AudioImageToImage(BaseTool):
         embeddings = (img_embeddings + audio_embeddings) / 2
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_path, 'AudioImage2Image')
+        new_img_name = get_new_image_path(audio_path, 'AudioImageToImage')
         images[0].save(new_img_name)
 
         if self.e_mode:
@@ -253,7 +259,7 @@ class AudioTextToImage(BaseTool):
         embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'AudioText2Image')
+        new_img_name = get_new_image_path(audio_paths[0], 'AudioTextToImage')
         images[0].save(new_img_name)
 
         if self.e_mode:

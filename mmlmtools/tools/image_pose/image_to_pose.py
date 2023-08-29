@@ -7,12 +7,6 @@ from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
-try:
-    from mmpose.apis import MMPoseInferencer
-    has_mmpose = True
-except ImportError:
-    has_mmpose = False
-
 
 def load_mmpose_inferencer(model, device):
     """Load mmpose inferencer.
@@ -27,8 +21,13 @@ def load_mmpose_inferencer(model, device):
     if CACHED_TOOLS.get('mmpose_inferencer', None) is not None:
         pose_inferencer = CACHED_TOOLS['mmpose_inferencer'][model]
     else:
-        if not has_mmpose:
-            raise RuntimeError('mmpose is required but not installed')
+        try:
+            from mmpose.apis import MMPoseInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmpose` correctly')
+
         pose_inferencer = MMPoseInferencer(pose2d=model, device=device)
         CACHED_TOOLS['pose_inferencer'][model] = pose_inferencer
     return pose_inferencer
