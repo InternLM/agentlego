@@ -19,7 +19,7 @@ from ..parsers import BaseParser
 GLOBAL_SEED = 1912
 
 
-def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
+def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
     if CACHED_TOOLS.get('sam', None) is not None:
         sam = CACHED_TOOLS['sam'][model]
     else:
@@ -37,7 +37,7 @@ def load_sam_and_predictor(model, model_ckpt_path, e_mode, device):
             wget.download(url, out=model_ckpt_path)
 
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
-        if e_mode is not True:
+        if eco_mode is not True:
             sam.to(device=device)
         CACHED_TOOLS['sam'][model] = sam
 
@@ -340,9 +340,9 @@ class SegmentAnything(BaseTool):
                 'install `segment_anything` correctly')
 
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
-        self.e_mode = True
+        self.eco_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
             self.device)
 
     def apply(self, image_path: str) -> str:
@@ -364,14 +364,14 @@ class SegmentAnything(BaseTool):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # to device
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device=self.device)
 
         mask_generator = SamAutomaticMaskGenerator(self.sam)  # noqa: F821
         annos = mask_generator.generate(img)
 
         # to cpu
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device='cpu')
         return annos
 
@@ -434,13 +434,13 @@ class SegmentAnything(BaseTool):
             self._is_setup = True
 
         # to device
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device=self.device)
 
         embedding = self.sam_predictor.set_image(img)
 
         # to cpu
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device='cpu')
         return embedding
 
@@ -465,9 +465,9 @@ class SegmentClicked(BaseTool):
 
     def setup(self):
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
-        self.e_mode = True
+        self.eco_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
             self.device)
 
     def apply(self, image_path: str, mask_path: str) -> str:
@@ -496,7 +496,7 @@ class SegmentClicked(BaseTool):
             self._is_setup = True
 
         # to device
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device=self.device)
 
         random.seed(GLOBAL_SEED)
@@ -517,7 +517,7 @@ class SegmentClicked(BaseTool):
         )
 
         # to cpu
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device='cpu')
 
         return res_masks[np.argmax(scores), :, :]
@@ -528,13 +528,13 @@ class SegmentClicked(BaseTool):
             self._is_setup = True
 
         # to device
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device=self.device)
 
         embedding = self.sam_predictor.set_image(img)
 
         # to cpu
-        if self.e_mode:
+        if self.eco_mode:
             self.sam.to(device='cpu')
 
         return embedding
@@ -571,10 +571,10 @@ class ObjectSegmenting(BaseTool):
         self.grounding = load_grounding(
             model=self.toolmeta.model['grounding'], device=self.device)
 
-        self.e_mode = True
+        self.eco_mode = True
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.e_mode,
+            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
             self.device)
 
     def apply(self, image_path: str, text: str) -> str:

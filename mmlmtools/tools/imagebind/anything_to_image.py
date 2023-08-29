@@ -11,18 +11,18 @@ from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
 
-def load_anything_to_image(device, e_mode):
+def load_anything_to_image(device, eco_mode):
     if CACHED_TOOLS.get('AnythingToImage', None) is not None:
         AnythingToImage = CACHED_TOOLS['AnythingToImage']
     else:
-        AnythingToImage = AnythingToImage(device, e_mode)
+        AnythingToImage = AnythingToImage(device, eco_mode)
         CACHED_TOOLS['AnythingToImage'] = AnythingToImage
     return AnythingToImage
 
 
 class AnythingToImage:
 
-    def __init__(self, device, e_mode):
+    def __init__(self, device, eco_mode):
         try:
             from diffusers import StableUnCLIPImg2ImgPipeline
         except ImportError as e:
@@ -35,13 +35,13 @@ class AnythingToImage:
             torch_dtype=torch.float16,
             variation='fp16')
         self.device = device
-        self.e_mode = e_mode
+        self.eco_mode = eco_mode
         self.pipe = pipe
         self.pipe.enable_model_cpu_offload()
         self.pipe.enable_vae_slicing()
         self.model = ib.imagebind_huge(pretrained=True)
         self.model.eval()
-        if self.e_mode is not True:
+        if not self.eco_mode:
             self.pipe.to(device)
             self.model.to(device)
 
@@ -69,13 +69,13 @@ class AudioToImage(BaseTool):
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
-        self.e_mode = self._inferencer.e_mode
+        self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, audio: str) -> str:
         if self.remote:
             raise NotImplementedError
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to(self.device)
             self.model.to(self.device)
 
@@ -88,7 +88,7 @@ class AudioToImage(BaseTool):
         new_img_name = get_new_image_path(audio_paths[0], 'AudioToImage')
         images[0].save(new_img_name)
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to('cpu')
             self.model.to('cpu')
 
@@ -118,13 +118,13 @@ class ThermalToImage(BaseTool):
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
-        self.e_mode = self._inferencer.e_mode
+        self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, thermal_path: str) -> str:
         if self.remote:
             raise NotImplementedError
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to(self.device)
             self.model.to(self.device)
 
@@ -139,7 +139,7 @@ class ThermalToImage(BaseTool):
         new_img_name = get_new_image_path(thermal_data[0], 'ThermalToImage')
         images[0].save(new_img_name)
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to('cpu')
             self.model.to('cpu')
 
@@ -170,13 +170,13 @@ class AudioImageToImage(BaseTool):
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
-        self.e_mode = self._inferencer.e_mode
+        self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, image_path: str, audio_path: str) -> str:
         if self.remote:
             raise NotImplementedError
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to(self.device)
             self.model.to(self.device)
 
@@ -203,7 +203,7 @@ class AudioImageToImage(BaseTool):
         new_img_name = get_new_image_path(audio_path, 'AudioImageToImage')
         images[0].save(new_img_name)
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to('cpu')
             self.model.to('cpu')
 
@@ -235,13 +235,13 @@ class AudioTextToImage(BaseTool):
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
-        self.e_mode = self._inferencer.e_mode
+        self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, audio_path: str, prompt: str) -> str:
         if self.remote:
             raise NotImplementedError
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to(self.device)
             self.model.to(self.device)
 
@@ -262,7 +262,7 @@ class AudioTextToImage(BaseTool):
         new_img_name = get_new_image_path(audio_paths[0], 'AudioTextToImage')
         images[0].save(new_img_name)
 
-        if self.e_mode:
+        if self.eco_mode:
             self.pipe.to('cpu')
             self.model.to('cpu')
 
