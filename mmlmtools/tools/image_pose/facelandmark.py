@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
@@ -37,7 +37,7 @@ class HumanFaceLandmark(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_path(image, func_name='face-landmark')
+            output_path = get_new_file_path(image, func_name='face-landmark')
             next(
                 self._inferencer(
                     inputs=image,

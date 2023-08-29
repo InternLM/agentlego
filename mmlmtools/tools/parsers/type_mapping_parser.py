@@ -1,16 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+import os.path as osp
 import re
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Tuple, Type
+from typing import Any, Callable, Dict, Optional, Tuple, Type, Union
 
 import cv2
 import numpy as np
+import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from .base_parser import BaseParser
+from .utils import Audio
 
 
 class converter():
@@ -64,7 +67,9 @@ class TypeMappingParser(BaseParser):
     _converters: Dict[Tuple[str, str, str], str]
 
     # mapping from tool argument (i.e. the argument of `apply` method) type
-    # to data type for each data category
+    # to data type for each data category. The Type Hint of `tool.apply` must
+    # be one of the second level key defined in the following dict:
+    # `str`, `Image`, `np.ndarray, `Image.Image` or `Audio`.
     _toolarg2type: Dict[str, Dict[Type, str]] = {
         'image': {
             str: 'path',
@@ -73,10 +78,15 @@ class TypeMappingParser(BaseParser):
         },
         'text': {
             str: 'string',
-        }
+        },
+        'audio': {
+            str: 'path',
+            Audio: 'audio',
+        },
     }
     _file_suffix = {
         'image': 'jpg',
+        'audio': 'wav',
     }
 
     def __init__(self, agent_datacat2type: Optional[Dict[str, str]] = None):
@@ -289,8 +299,9 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='pillow', target_type='path')
     def _image_pil_to_path(self, image: Image.Image) -> str:
-        path = get_new_image_path(
-            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
+        path = get_new_file_path(
+            osp.join('data', 'image', f'temp.{self._file_suffix["image"]}'),
+            func_name='_image_pil_to_path')
         image.save(path)
         return path
 
@@ -304,11 +315,34 @@ class TypeMappingParser(BaseParser):
 
     @converter(category='image', source_type='ndarray', target_type='path')
     def _image_ndarray_to_path(self, image: np.ndarray) -> str:
-        path = get_new_image_path(
-            f'image/temp.{self._file_suffix["image"]}', func_name='temp')
+        path = get_new_file_path(
+            osp.join('data', 'imag', f'temp.{self._file_suffix["image"]}'),
+            func_name='_image_ndarray_to_path')
         cv2.imwrite(path, image)
         return path
 
     @converter(category='image', source_type='path', target_type='ndarray')
     def _image_path_to_ndarray(self, path: str) -> np.ndarray:
         return cv2.imread(path)
+
+    @converter(category='audio', source_type='path', target_type='audio')
+    def _audio_path_to_audio(self, path: str) -> Audio:
+        return Audio.from_path(path)
+
+    @converter(category='audio', source_type='audio', target_type='path')
+    def _audio_to_audio_path(self, audio: Union[Audio, str]) -> str:
+        if isinstance(audio, str):
+            return str
+        # TODO: Only support audio with one channel: [1, N] now.
+        try:
+            import torchaudio
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool: {e} '
+                              '`torchaudio` is not installed correctly')
+        saved_path = get_new_file_path(
+            osp.join('data', 'audio', f'temp.{self._file_suffix["audio"]}'),
+            func_name='_ndarray_to_audio_path')
+        torchaudio.save(saved_path,
+                        torch.from_numpy(audio.array).reshape(1, -1).float(),
+                        audio.sampling_rate)
+        return saved_path

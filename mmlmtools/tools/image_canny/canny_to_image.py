@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab.All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -64,7 +64,7 @@ class CannyTextToImage(BaseTool):
             self.toolmeta.model['model_setting'], self.device)
 
     def apply(self, image_path: str, text: str) -> str:
-        output_path = get_new_image_path(
+        output_path = get_new_file_path(
             'image/controlnet-res.png', func_name='generate-image-from-canny')
 
         if self.remote:

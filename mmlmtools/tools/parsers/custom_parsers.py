@@ -5,14 +5,14 @@ from typing import Any, Dict, Tuple
 from .type_mapping_parser import TypeMappingParser
 
 
-class VisualChatGPTParser(TypeMappingParser):
+class LangchainParser(TypeMappingParser):
     _default_agent_cat2type = {
         'image': 'path',
         'text': 'string',
+        'audio': 'path'
     }
-    _file_suffix = {
-        'image': 'png',
-    }
+    _file_suffix = TypeMappingParser._file_suffix.copy()
+    _file_suffix.update({'image': 'png'})
 
     def parse_inputs(self, *args, **kwargs) -> Tuple[Tuple, Dict]:
 
@@ -44,6 +44,7 @@ class HuggingFaceAgentParser(TypeMappingParser):
     _default_agent_cat2type = {
         'image': 'pillow',
         'text': 'string',
+        'audio': 'audio',
     }
 
     def refine_description(self, description: str) -> str:

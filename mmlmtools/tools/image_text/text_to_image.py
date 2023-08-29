@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab.All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -65,7 +65,7 @@ class TextToImage(BaseTool):
         if self.remote:
             raise NotImplementedError
         else:
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 'image/sd-res.png', func_name='generate-image')
             self._inferencer.infer(text=text, result_out_dir=output_path)
             return output_path

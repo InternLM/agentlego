@@ -3,20 +3,20 @@ import os
 import uuid
 
 
-def get_new_image_path(org_img_path: str, func_name: str = 'update'):
-    """Create a new image path for the tool output based on the original image
-    path and tool function. The image path is unique and can be identified by
+def get_new_file_path(org_file_path: str, func_name: str = 'update'):
+    """Create a new file path for the tool output based on the original file
+    path and tool function. The file path is unique and can be identified by
     the agent. The file name consists of uuid, function name of all appled
     tools and the original file name.
 
     Args:
-        org_img_path (str): Original image path
+        org_file_path (str): Original file path
         func_name (str, optional): Descriptions. Defaults to `'update'`
 
     Returns:
-        new_image_path (str): The new image path
+        str: The new file path
     """
-    dirname, basename = os.path.split(org_img_path)
+    dirname, basename = os.path.split(org_file_path)
     os.makedirs(dirname, exist_ok=True)
     basename_splits = basename.split('.')
 
@@ -35,5 +35,5 @@ def get_new_image_path(org_img_path: str, func_name: str = 'update'):
     else:
         raise NotImplementedError
     new_file_name += f'.{img_format}'
-    new_image_path = os.path.join(dirname, new_file_name)
-    return new_image_path
+    new_file_path = os.path.join(dirname, new_file_name)
+    return new_file_path

@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -167,7 +167,7 @@ class ObjectReplace(BaseTool):
             mask_img = Image.fromarray(mask)
             output_image = self.inpainting(
                 prompt=text2, image=image_pil, mask_image=mask_img)
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 image_path, func_name='obj-replace')
             output_image = output_image.resize(image_pil.size)
             output_image.save(output_path)

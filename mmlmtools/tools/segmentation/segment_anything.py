@@ -12,7 +12,7 @@ from PIL import Image
 
 from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
-from ...utils.file import get_new_image_path
+from ...utils.file import get_new_file_path
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
@@ -351,7 +351,7 @@ class SegmentAnything(BaseTool):
         else:
             annos = self.segment_anything(image_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_image_path(image_path, 'sam')
+            seg_all_image_path = get_new_file_path(img_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
@@ -484,7 +484,7 @@ class SegmentClicked(BaseTool):
             res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_image_path(image_path, 'sam-clicked')
+            filaname = get_new_file_path(img_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
 
@@ -636,7 +636,7 @@ class ObjectSegmenting(BaseTool):
                 random_color=True,
                 transparency=0.3)
 
-        updated_image_path = get_new_image_path(
+        updated_image_path = get_new_file_path(
             image_path, func_name='segmentation')
 
         new_image = Image.fromarray(image)
