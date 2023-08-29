@@ -8,24 +8,23 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
-@skipIf(not is_installed('mmsegmentation'), reason='mmsegmentation')
-class TestSemSegTool(ToolTestCase):
+@skipIf(not is_installed('mmdet'), reason='requires mmdet')
+class TestTextToBbox(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('SemSegTool', device='cuda')
+        tool = load_tool(
+            'TextToBbox', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
-        res = tool(img_path)
+        res = tool(f'{img_path}, man')
         assert isinstance(res, str)
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'SemSegTool',
-            output_style='pil image',
-            input_style='pil image',
-            device='cuda')
-        res = tool(img)
+            'TextToBbox', parser=HuggingFaceAgentParser(), device='cuda')
+        res = tool(img, 'man')
         assert isinstance(res, Image.Image)

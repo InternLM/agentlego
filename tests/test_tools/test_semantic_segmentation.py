@@ -8,14 +8,13 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
-@skipIf(not is_installed('mmpretrain'), reason='requires mmpretrain')
-class TestImageCaption(ToolTestCase):
+@skipIf(not is_installed('mmsegmentation'), reason='mmsegmentation')
+class TestSemanticSegmentation(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('ImageCaption', device='cuda')
+        tool = load_tool('SemanticSegmentation', device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -24,6 +23,9 @@ class TestImageCaption(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'ImageCaption', input_style='pil image', device='cuda')
+            'SemanticSegmentation',
+            output_style='pil image',
+            input_style='pil image',
+            device='cuda')
         res = tool(img)
-        assert isinstance(res, str)
+        assert isinstance(res, Image.Image)

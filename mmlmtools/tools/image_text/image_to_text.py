@@ -8,12 +8,6 @@ from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
-try:
-    from mmpretrain.apis import ImageCaptionInferencer
-    has_mmpretrain = True
-except ImportError:
-    has_mmpretrain = False
-
 
 def load_caption_inferencer(model, device):
     """Load caption inferencer.
@@ -25,11 +19,17 @@ def load_caption_inferencer(model, device):
     Returns:
         caption_inferencer (ImageCaptionInferencer): The caption inferencer.
     """
+
     if CACHED_TOOLS.get('caption_inferencer', None) is not None:
         caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
     else:
-        if not has_mmpretrain:
-            raise RuntimeError('mmpretrain is required but not installed')
+        try:
+            from mmpretrain.apis import ImageCaptionInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmpretrain` correctly')
+
         caption_inferencer = ImageCaptionInferencer(model=model, device=device)
         CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
 

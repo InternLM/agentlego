@@ -8,13 +8,14 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
 
 
 @skipIf(not is_installed('mmocr'), reason='requires mmocr')
-class TestOCRTool(ToolTestCase):
+class TestOCR(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('OCRTool', device='cuda')
+        tool = load_tool('OCR', parser=VisualChatGPTParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -22,16 +23,17 @@ class TestOCRTool(ToolTestCase):
         assert isinstance(res, str)
 
         img = Image.fromarray(img)
-        tool = load_tool('OCRTool', input_style='pil image', device='cuda')
+        tool = load_tool('OCR', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img)
-        assert isinstance(res, str)
+        assert isinstance(res, list)
 
 
 @skipIf(not is_installed('mmocr'), reason='requires mmocr')
-class TestImageMaskOCRTool(ToolTestCase):
+class TestImageMaskOCR(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('ImageMaskOCRTool', device='cuda')
+        tool = load_tool(
+            'ImageMaskOCR', parser=VisualChatGPTParser(), device='cuda')
         res = tool('tests/data/images/test-image.png, '
                    'tests/data/images/test-mask.png')
         assert isinstance(res, str)

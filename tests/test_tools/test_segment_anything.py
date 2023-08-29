@@ -4,6 +4,7 @@ from mmengine import is_installed
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
+from mmlmtools.tools.parsers import VisualChatGPTParser
 
 
 @skipIf(
@@ -11,7 +12,8 @@ from mmlmtools.testing import ToolTestCase
 class TestSegmentAnything(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('SegmentAnything', device='cpu')
+        tool = load_tool(
+            'SegmentAnything', parser=VisualChatGPTParser(), device='cpu')
         res = tool('tests/data/images/test-image.png')
         assert isinstance(res, str)
 
@@ -21,7 +23,8 @@ class TestSegmentAnything(ToolTestCase):
 class TestSegmentClicked(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('SegmentClicked', device='cpu')
+        tool = load_tool(
+            'SegmentClicked', parser=VisualChatGPTParser(), device='cpu')
         res = tool('tests/data/images/test-image.png, '
                    'tests/data/images/test-mask.png')
         assert isinstance(res, str)
@@ -32,7 +35,7 @@ class TestSegmentClicked(ToolTestCase):
 class TestObjectSegmenting(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('ObjectSegmenting', device='cpu')
-        res = tool('tests/data/images/test-image.png, '
-                   'water cup')
+        tool = load_tool(
+            'ObjectSegmenting', parser=VisualChatGPTParser(), device='cpu')
+        res = tool('tests/data/images/test-image.png, water cup')
         assert isinstance(res, str)

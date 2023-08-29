@@ -7,12 +7,6 @@ from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
-try:
-    from mmagic.apis import MMagicInferencer
-    has_mmagic = True
-except ImportError:
-    has_mmagic = False
-
 
 def load_mmagic_inferencer(model, setting, device):
     """Load mmagic inferencer.
@@ -29,8 +23,13 @@ def load_mmagic_inferencer(model, setting, device):
         mmagic_inferencer = \
             CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
     else:
-        if not has_mmagic:
-            raise RuntimeError('mmagic is required but not installed')
+        try:
+            from mmagic.apis import MMagicInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmagic` correctly')
+
         mmagic_inferencer = MMagicInferencer(
             model_name=model, model_setting=setting, device=device)
         CACHED_TOOLS['mmagic_inferencer' +

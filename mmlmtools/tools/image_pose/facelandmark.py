@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmlmtools.tools.image_pose.image_to_pose import load_mmpose_inferencer
 from mmlmtools.utils import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -25,6 +24,12 @@ class HumanFaceLandmark(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from mmlmtools.tools.image_pose.image_to_pose import \
+                load_mmpose_inferencer
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool for {e}')
+
         self._inferencer = load_mmpose_inferencer(
             self.toolmeta.model['pose2d'], self.device)
 

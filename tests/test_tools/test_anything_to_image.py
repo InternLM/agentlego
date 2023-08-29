@@ -7,37 +7,37 @@ from mmlmtools.testing import ToolTestCase
 
 
 @skipIf(not is_installed('diffusers'), reason='requires diffusers')
-class TestAudio2ImageTool(ToolTestCase):
+class TestAudioToImage(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('Audio2ImageTool', device='cpu')
+        tool = load_tool('AudioToImage', device='cpu')
         res = tool('tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
 
 @skipIf(not is_installed('diffusers'), reason='requires diffusers')
-class TestThermal2ImageTool(ToolTestCase):
+class TestThermalToImage(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('Thermal2ImageTool', device='cpu')
+        tool = load_tool('ThermalToImage', device='cpu')
         res = tool('tests/data/thermal/030419.jpg')
         assert isinstance(res, str)
 
 
 @skipIf(not is_installed('diffusers'), reason='requires diffusers')
-class TestAudioImage2ImageTool(ToolTestCase):
+class TestAudioImageToImage(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('AudioImage2ImageTool', device='cpu')
+        tool = load_tool('AudioImageToImage', device='cpu')
         res = tool('tests/data/images/dog-image.jpg, tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
 
 @skipIf(not is_installed('diffusers'), reason='requires diffusers')
-class TestAudioText2ImageTool(ToolTestCase):
+class TestAudioTextToImage(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool('AudioText2ImageTool', device='cpu')
+        tool = load_tool('AudioTextToImage', device='cpu')
         res = tool(
             'tests/data/audio/cat.wav, generate a cat flying in the sky')
         assert isinstance(res, str)

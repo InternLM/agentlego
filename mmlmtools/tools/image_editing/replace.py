@@ -11,13 +11,6 @@ from mmlmtools.utils.cached_dict import CACHED_TOOLS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-from ..segment_anything import load_sam_and_predictor
-
-try:
-    from mmdet.apis import DetInferencer
-    has_mmdet = True
-except ImportError:
-    has_mmdet = False
 
 GLOBAL_SEED = 1912
 
@@ -35,8 +28,13 @@ def load_grounding(model, device):
     if CACHED_TOOLS.get('grounding', None) is not None:
         grounding = CACHED_TOOLS['grounding']
     else:
-        if not has_mmdet:
-            raise RuntimeError('mmdet is required but not installed')
+        try:
+            from mmdet.apis import DetInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmdet` correctly')
+
         grounding = DetInferencer(model=model, device=device)
         CACHED_TOOLS['grounding'] = grounding
     return grounding
@@ -129,6 +127,11 @@ class ObjectReplace(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from ..segmentation.segment_anything import load_sam_and_predictor
+        except ImportError as e:
+            raise ImportError(f'Failed to run the tool for {e}')
+
         self.grounding = load_grounding(self.toolmeta.model['grounding'],
                                         self.device)
 

@@ -3,7 +3,6 @@ from typing import Optional
 
 import numpy as np
 from PIL import Image
-from transformers import pipeline
 
 from mmlmtools.utils.file import get_new_image_path
 from mmlmtools.utils.toolmeta import ToolMeta
@@ -29,6 +28,13 @@ class ImageToDepth(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
+        try:
+            from transformers import pipeline
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `transformers` correctly')
+
         self.depth_estimator = pipeline('depth-estimation')
 
     def apply(self, image_path: str) -> str:
