@@ -1,2 +1,2 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-CACHED_OBJECT = {}
+CACHED_OBJECTS = {}

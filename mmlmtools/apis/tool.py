@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union
 
 import mmlmtools.tools as tools
 from mmlmtools.tools.base_tool import BaseTool
-from ..utils.cached_dict import CACHED_OBJECT
+from ..utils.cached_dict import CACHED_OBJECTS
 from ..utils.toolmeta import ToolMeta
 
 # Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
@@ -141,11 +141,11 @@ def load_tool(tool_name: str,
 
 def _load_cached_object(cls: Callable, *args, **kwargs):
     tool_id = str((cls.__name__, args, kwargs))
-    if tool_id in CACHED_OBJECT:
-        return CACHED_OBJECT[tool_id]
+    if tool_id in CACHED_OBJECTS:
+        return CACHED_OBJECTS[tool_id]
     else:
         tool = cls(*args, **kwargs)
-        CACHED_OBJECT[tool_id] = tool
+        CACHED_OBJECTS[tool_id] = tool
         return tool
 
 
