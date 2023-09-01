@@ -39,18 +39,11 @@ def test_load_tool():
     assert tool.toolmeta.model == 'atss_r50_fpn_1x_coco'
 
     # description will be overwrite
-    tool = load_tool('Canny2ImageTool', description='custom')
+    tool = load_tool('ImageCaptionTool', description='custom')
     assert 'custom' in tool.toolmeta.description
 
-    tool = load_tool('Canny2ImageTool', input_description='custom')
-    assert 'custom' in tool.toolmeta.input_description
-
-    tool = load_tool('Canny2ImageTool', output_description='custom')
-    assert 'custom' in tool.toolmeta.output_description
-
     # cached tool
-    cached_tool = tool = load_tool(
-        'Canny2ImageTool', output_description='custom')
+    cached_tool = tool = load_tool('ImageCaptionTool')
     assert cached_tool is tool
 
 
@@ -59,8 +52,7 @@ def test_register_custom_tools():
     @custom_tool(
         tool_name='code executor',
         description='python code executor',
-        output_description='nothing',
-        input_description='nothing')
+    )
     def python_code_exec1(inputs):
         return eval(inputs)
 
@@ -68,8 +60,6 @@ def test_register_custom_tools():
     res = tool('1+1')
     assert res == 2
     assert tool.toolmeta.description == 'python code executor'
-    assert tool.toolmeta.input_description == 'nothing'
-    assert tool.toolmeta.output_description == 'nothing'
 
     # tool with duplicated name
     with pytest.raises(KeyError):
@@ -79,9 +69,9 @@ def test_register_custom_tools():
         def python_code_exec2(inputs):
             return eval(inputs)
 
-    @custom_tool(
-        tool_name='code executor',
-        description='python code executor',
-        force=True)
-    def python_code_exec3(inputs):
-        return eval(inputs)
+        @custom_tool(
+            tool_name='code executor',
+            description='python code executor',
+            force=True)
+        def python_code_exec3(inputs):
+            return eval(inputs)

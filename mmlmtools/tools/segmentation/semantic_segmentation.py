@@ -3,28 +3,11 @@ from typing import Optional
 
 import mmcv
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
-from ...utils.file import get_new_image_path
+from ...utils.file import get_new_file_path
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_semseg_inferencer(model, device):
-    if CACHED_TOOLS.get('semseg_inferencer', None) is not None:
-        semseg_inferencer = CACHED_TOOLS['semseg_inferencer'][model]
-    else:
-        try:
-            from mmseg.apis import MMSegInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmseg` correctly')
-
-        semseg_inferencer = MMSegInferencer(model=model, device=device)
-        CACHED_TOOLS['semseg_inferencer'][model] = semseg_inferencer
-
-    return semseg_inferencer
 
 
 class SemanticSegmentation(BaseTool):
@@ -46,15 +29,18 @@ class SemanticSegmentation(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_semseg_inferencer(self.toolmeta.model['model'],
-                                                  self.device)
+        from mmseg.apis import MMSegInferencer
+        self._inferencer = load_or_build_object(
+            MMSegInferencer,
+            model=self.toolmeta.model['model'],
+            device=self.device)
 
     def apply(self, inputs: str) -> str:
         if self.remote:
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 inputs, func_name='semseg-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

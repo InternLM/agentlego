@@ -1,37 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-try:
-    from mmpretrain.apis import VisualQuestionAnsweringInferencer
-    has_mmpretrain = True
-except ImportError:
-    has_mmpretrain = False
-
-
-def load_vqa_inferencer(model, device):
-    """Load vqa inferencer.
-
-    Args:
-        model (str): The name of the model.
-        device (str): The device to use.
-
-    Returns:
-        vqa_inferencer (VisualQuestionAnsweringInferencer): The vqa inferencer.
-    """
-    if CACHED_TOOLS.get('vqa_inferencer', None) is not None:
-        vqa_inferencer = CACHED_TOOLS['vqa_inferencer']
-    else:
-        if not has_mmpretrain:
-            raise RuntimeError('mmpretrain is required but not installed')
-        vqa_inferencer = VisualQuestionAnsweringInferencer(
-            model=model, device=device)
-        CACHED_TOOLS['vqa_inferencer'] = vqa_inferencer
-    return vqa_inferencer
 
 
 class VisualQuestionAnswering(BaseTool):
@@ -54,8 +27,11 @@ class VisualQuestionAnswering(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_vqa_inferencer(self.toolmeta.model['model'],
-                                               self.device)
+        from mmpretrain.apis import VisualQuestionAnsweringInferencer
+        self._inferencer = load_or_build_object(
+            VisualQuestionAnsweringInferencer,
+            model=self.toolmeta.model,
+            device=self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:

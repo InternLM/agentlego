@@ -4,26 +4,10 @@ from typing import Optional
 import mmcv
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_grounding(model, device):
-    if CACHED_TOOLS.get('grounding', None) is not None:
-        grounding = CACHED_TOOLS['grounding'][model]
-    else:
-        try:
-            from mmdet.apis import DetInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmdet` correctly')
-
-        grounding = DetInferencer(model=model, device=device)
-        CACHED_TOOLS['grounding'][model] = grounding
-    return grounding
 
 
 class TextToBbox(BaseTool):
@@ -45,8 +29,11 @@ class TextToBbox(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_grounding(
-            model=self.toolmeta.model['model'], device=self.device)
+        from mmdet.apis import DetInferencer
+        self._inferencer = load_or_build_object(
+            DetInferencer,
+            model=self.toolmeta.model['model'],
+            device=self.device)
 
     def apply(self, image: str, text: str) -> str:
         if self.remote:

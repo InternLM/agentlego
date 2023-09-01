@@ -10,7 +10,7 @@ import torch
 import wget
 from PIL import Image
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ...utils.file import get_new_file_path
 from ..base_tool import BaseTool
@@ -20,9 +20,8 @@ GLOBAL_SEED = 1912
 
 
 def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
-    if CACHED_TOOLS.get('sam', None) is not None:
-        sam = CACHED_TOOLS['sam'][model]
-    else:
+
+    def _load_sam(model, model_ckpt_path, eco_mode, device):
         try:
             from segment_anything import sam_model_registry
         except ImportError as e:
@@ -39,21 +38,14 @@ def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
         if eco_mode is not True:
             sam.to(device=device)
-        CACHED_TOOLS['sam'][model] = sam
+        return sam
 
-    if CACHED_TOOLS.get('sam_predictor', None) is not None:
-        sam_predictor = CACHED_TOOLS['sam_predictor'][model]
-    else:
-        try:
-            from segment_anything.utils.transforms import \
-                ResizeLongestSide  # noqa: F401
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `segment_anything` correctly')
+    def _load_sam_predictor(sam):
+        return SamPredictor(sam)
 
-        sam_predictor = SamPredictor(sam)
-        CACHED_TOOLS['sam_predictor'][model] = sam_predictor
+    sam = load_or_build_object(_load_sam, model, model_ckpt_path, eco_mode,
+                               device)
+    sam_predictor = load_or_build_object(_load_sam_predictor, sam)
     return sam, sam_predictor
 
 
@@ -71,8 +63,15 @@ class SamPredictor:
         """
         super().__init__()
         self.model = sam_model
-        self.transform = ResizeLongestSide(  # noqa: F821
-            sam_model.image_encoder.img_size)
+
+        try:
+            from segment_anything.utils.transforms import ResizeLongestSide
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `segment_anything` correctly')
+
+        self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
 
     def set_image(
         self,
@@ -331,13 +330,6 @@ class SegmentAnything(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        try:
-            from segment_anything import \
-                SamAutomaticMaskGenerator  # noqa: F401
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `segment_anything` correctly')
 
         self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.eco_mode = True
@@ -351,7 +343,7 @@ class SegmentAnything(BaseTool):
         else:
             annos = self.segment_anything(image_path)
             full_img, _ = self.show_annos(annos)
-            seg_all_image_path = get_new_file_path(img_path, 'sam')
+            seg_all_image_path = get_new_file_path(image_path, 'sam')
             full_img.save(seg_all_image_path, 'PNG')
             return seg_all_image_path
 
@@ -367,7 +359,14 @@ class SegmentAnything(BaseTool):
         if self.eco_mode:
             self.sam.to(device=self.device)
 
-        mask_generator = SamAutomaticMaskGenerator(self.sam)  # noqa: F821
+        try:
+            from segment_anything import SamAutomaticMaskGenerator
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `segment_anything` correctly')
+
+        mask_generator = SamAutomaticMaskGenerator(self.sam)
         annos = mask_generator.generate(img)
 
         # to cpu
@@ -484,7 +483,7 @@ class SegmentClicked(BaseTool):
             res_mask = self.segment_by_mask(clicked_mask, features)
 
             res_mask = res_mask.astype(np.uint8) * 255
-            filaname = get_new_file_path(img_path, 'sam-clicked')
+            filaname = get_new_file_path(image_path, 'sam-clicked')
             mask_img = Image.fromarray(res_mask)
             mask_img.save(filaname, 'PNG')
 

@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import sys
-from pickle import dumps
 from typing import Callable, Optional, Union
 
 import mmlmtools.tools as tools
 from mmlmtools.tools.base_tool import BaseTool
-from ..utils.cached_dict import CACHED_TOOLS
+from ..utils.cache import load_or_build_object
 from ..utils.toolmeta import ToolMeta
 
 # Loaded from OpenMMLab metafiles, the loaded DEFAULT_TOOLS will be like this:
@@ -123,29 +122,20 @@ def load_tool(tool_name: str,
         name = tool_meta['name']
 
     if model is None:
-        model = tool_meta['model']
+        model = tool_meta.get('model')
 
     if description is None:
         description = tool_meta['description']
 
-    tool_id = dumps((tool_name, name, model, description, kwargs))
-
-    if tool_id in CACHED_TOOLS[tool_name]:
-        return CACHED_TOOLS[tool_name][tool_id]
+    tool_meta = ToolMeta(name=name, description=description, model=model)
+    tool_type = NAMES2TOOLS[tool_name]
+    if inspect.isfunction(tool_type):
+        # function tool
+        tool_obj = tool_type
+        tool_obj.toolmeta = tool_meta
     else:
-        tool_type = NAMES2TOOLS[tool_name]
-
-        tool_meta = ToolMeta(name=name, description=description, model=model)
-
-        if inspect.isfunction(tool_type):
-            # function tool
-            tool_obj = tool_type
-            tool_obj.toolmeta = tool_meta
-        else:
-            # Instantiate class tool
-            tool_obj = tool_type(toolmeta=tool_meta, device=device, **kwargs)
-
-        CACHED_TOOLS[tool_name][tool_id] = tool_obj
+        tool_obj = load_or_build_object(
+            tool_type, toolmeta=tool_meta, device=device, **kwargs)
     return tool_obj
 
 

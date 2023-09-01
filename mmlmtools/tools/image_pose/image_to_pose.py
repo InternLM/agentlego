@@ -2,35 +2,10 @@
 from typing import Optional
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_mmpose_inferencer(model, device):
-    """Load mmpose inferencer.
-
-    Args:
-        model (str): The name of the model.
-        device (str): The device to use.
-
-    Returns:
-        pose_inferencer (MMPoseInferencer): The mmpose inferencer.
-    """
-    if CACHED_TOOLS.get('mmpose_inferencer', None) is not None:
-        pose_inferencer = CACHED_TOOLS['mmpose_inferencer'][model]
-    else:
-        try:
-            from mmpose.apis import MMPoseInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmpose` correctly')
-
-        pose_inferencer = MMPoseInferencer(pose2d=model, device=device)
-        CACHED_TOOLS['pose_inferencer'][model] = pose_inferencer
-    return pose_inferencer
 
 
 class HumanBodyPose(BaseTool):
@@ -72,8 +47,11 @@ class HumanBodyPose(BaseTool):
             self.visualizer.set_dataset_meta(
                 dataset_meta, skeleton_style='openpose')
         else:
-            self._inferencer = load_mmpose_inferencer(
-                self.toolmeta.model['pose2d'], self.device)
+            from mmpose.apis import MMPoseInferencer
+            self._inferencer = load_or_build_object(
+                MMPoseInferencer,
+                pose2d=self.toolmeta.model['pose2d'],
+                device=self.device)
 
     def apply(self, image: str) -> str:
         output_path = get_new_file_path(image, func_name='pose-estimation')

@@ -2,22 +2,13 @@
 from typing import Optional
 
 import torch
-from models.imagebind_model import imagebind_huge as ib
 
-from mmlmtools.utils import get_new_image_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils import get_new_file_path
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_anything_to_image(device, eco_mode):
-    if CACHED_TOOLS.get('AnythingToImage', None) is not None:
-        AnythingToImage = CACHED_TOOLS['AnythingToImage']
-    else:
-        AnythingToImage = AnythingToImage(device, eco_mode)
-        CACHED_TOOLS['AnythingToImage'] = AnythingToImage
-    return AnythingToImage
+from .models.imagebind_model import imagebind_huge as ib
 
 
 class AnythingToImage:
@@ -65,7 +56,8 @@ class AudioToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -85,7 +77,7 @@ class AudioToImage(BaseTool):
         embeddings = embeddings[ib.ModalityType.AUDIO]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'AudioToImage')
+        new_img_name = get_new_file_path(audio_paths[0], 'AudioToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -114,7 +106,8 @@ class ThermalToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -136,7 +129,7 @@ class ThermalToImage(BaseTool):
         embeddings = embeddings[ib.ModalityType.THERMAL]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(thermal_data[0], 'ThermalToImage')
+        new_img_name = get_new_file_path(thermal_data[0], 'ThermalToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -166,7 +159,8 @@ class AudioImageToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -200,7 +194,7 @@ class AudioImageToImage(BaseTool):
         embeddings = (img_embeddings + audio_embeddings) / 2
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_path, 'AudioImageToImage')
+        new_img_name = get_new_file_path(audio_path, 'AudioImageToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -231,7 +225,8 @@ class AudioTextToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -259,7 +254,7 @@ class AudioTextToImage(BaseTool):
         embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'AudioTextToImage')
+        new_img_name = get_new_file_path(audio_paths[0], 'AudioTextToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
