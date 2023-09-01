@@ -7,8 +7,11 @@ import torch
 from mmengine import get
 from mmengine.utils import apply_to
 
-from ..base_tool import BaseTool
-from ..parsers import Audio
+from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.types import AudioIO
+from mmlmtools.utils import require
+from ..base import BaseTool
 
 
 def resampling_audio(audio: dict, new_rate):
@@ -29,48 +32,47 @@ def resampling_audio(audio: dict, new_rate):
 
 class TextToSpeech(BaseTool):
     SAMPLING_RATE = 16000
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Text Reader',
-        model='microsoft/speecht5_tts',
-        description='This is a tool that reads an English text out loud. It '
-        'takes an {{{input:text}}} which should contain the'
-        'text to read (in English) and returns a {{{output:audio}}} '
-        'containing the sound.')
-    default_speaker_embedding = 'https://huggingface.co/spaces/Matthijs/speecht5-tts-demo/resolve/main/spkemb/cmu_us_awb_arctic-wav-arctic_a0002.npy'  # noqa: E501
+        description='This is a tool that can speak the input text into audio.',
+        inputs=['text'],
+        outputs=['audio'],
+    )
 
+    @require('transformers')
     def __init__(self,
-                 *args,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: callable = DefaultParser,
                  post_processor: str = 'microsoft/speecht5_hifigan',
-                 speaker_embeddings: Union[str, torch.Tensor, None] = None,
-                 **kwargs):  # noqa: E501
-        super().__init__(*args, **kwargs)
-        self.post_processor = post_processor
-        if speaker_embeddings is None:
-            speaker_embeddings = self.default_speaker_embedding
+                 model='microsoft/speecht5_tts',
+                 speaker_embeddings: Union[str, torch.Tensor] = (
+                     'https://huggingface.co/spaces/Matthijs/'
+                     'speecht5-tts-demo/resolve/main/spkemb/'
+                     'cmu_us_awb_arctic-wav-arctic_a0002.npy'),
+                 sampling_rate=16000,
+                 device='cuda'):
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.post_processor_name = post_processor
+        self.model_name = model
 
         if isinstance(speaker_embeddings, str):
             with BytesIO(get(speaker_embeddings)) as f:
                 speaker_embeddings = torch.from_numpy(np.load(f)).unsqueeze(0)
         self.speaker_embeddings = speaker_embeddings
+        self.sampling_rate = sampling_rate
+        self.device = device
 
     def setup(self) -> None:
-        try:
-            from transformers.models.speecht5 import (SpeechT5ForTextToSpeech,
-                                                      SpeechT5HifiGan,
-                                                      SpeechT5Processor)
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `transformers` correctly')
-        self.pre_processor = SpeechT5Processor.from_pretrained(
-            self.toolmeta.model)
+        from transformers.models.speecht5 import (SpeechT5ForTextToSpeech,
+                                                  SpeechT5HifiGan,
+                                                  SpeechT5Processor)
+        self.pre_processor = SpeechT5Processor.from_pretrained(self.model_name)
         self.model = SpeechT5ForTextToSpeech.from_pretrained(
-            self.toolmeta.model)
+            self.model_name).to(self.device)
         self.post_processor = SpeechT5HifiGan.from_pretrained(
-            self.post_processor)
-        self.model.to(self.device)
+            self.post_processor_name)
 
-    def apply(self, text: str) -> Audio:
+    def apply(self, text: str) -> AudioIO:
         encoded_inputs = self.pre_processor(
             text=text, return_tensors='pt', truncation=True)
         encoded_inputs = dict(
@@ -82,5 +84,5 @@ class TextToSpeech(BaseTool):
         outputs = self.model.generate_speech(**encoded_inputs)
         outputs = apply_to(outputs, lambda x: isinstance(x, torch.Tensor),
                            lambda x: x.to('cpu'))
-        outputs = self.post_processor(outputs).cpu().detach()
-        return Audio(array=outputs.numpy(), sampling_rate=self.SAMPLING_RATE)
+        outputs = self.post_processor(outputs).cpu().detach().reshape(1, -1)
+        return AudioIO(outputs, sampling_rate=self.sampling_rate)

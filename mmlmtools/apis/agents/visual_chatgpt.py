@@ -3,13 +3,13 @@ import inspect
 import weakref
 
 from mmlmtools import tools
-from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import LangChainParser
+from mmlmtools.parsers import LangChainParser
+from mmlmtools.tools.base import BaseTool
 
 
-def wrapped_init(self, *args, parser=LangChainParser(), **kwargs):
+def wrapped_init(self, *args, parser=LangChainParser, **kwargs):
     return self.__class__.__bases__[0].__init__(
-        self, *args, parser=LangChainParser(), **kwargs)
+        self, *args, parser=LangChainParser, **kwargs)
 
 
 class _Inference:

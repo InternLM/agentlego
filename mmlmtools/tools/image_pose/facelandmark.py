@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from ..base import BaseTool
 
 
 class HumanFaceLandmark(BaseTool):

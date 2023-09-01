@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
-from .extension import ImageExtension
+from .expansion import ImageExpansion
 from .remove import ObjectRemove
 from .replace import ObjectReplace
 from .stylization import ImageStylization
 
 __all__ = [
-    'ImageExtension', 'ObjectRemove', 'ObjectReplace', 'ImageStylization'
+    'ImageExpansion', 'ObjectRemove', 'ObjectReplace', 'ImageStylization'
 ]

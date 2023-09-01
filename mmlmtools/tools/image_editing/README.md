@@ -1,6 +1,6 @@
 # Image Editing Tools
 
-## ImageExtension
+## ImageExpansion
 
 ## ObjectRemove
 

@@ -1,88 +1,88 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Union
 
 import cv2
 import numpy as np
 import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import require
+from mmlmtools.utils.cache import load_or_build_object
+from ..base import BaseTool
 
 GLOBAL_SEED = 1912
 
 
 class ObjectRemove(BaseTool):
-    DEFAULT_TOOLMETA = dict(
-        name='Remove the Given Object In The Image',
-        model={
-            'model': 'sam_vit_h_4b8939.pth',
-            'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-            'vqa': 'ofa-base_3rdparty-zeroshot_vqa'
-        },
-        description='This is a useful tool when you want to remove the '
-        'certain objects in the image. like: remove the cat in this image'
-        'The input to this tool should be an {{{input:image}}} and '
-        '{{{input:text}}} representing the object to be removed.It returns '
-        'an {{{output:image}}} representing the image with the removed object')
+    DEFAULT_TOOLMETA = ToolMeta(
+        name='Remove Object From Image',
+        description=('This is a useful tool when you want to remove the '
+                     'certain objects in the image. You need to input the '
+                     'image and the object name to remove.'),
+        inputs=['image', 'text'],
+        outputs=['image'],
+    )
 
+    @require('mmdet')
+    @require('segment_anything')
+    @require('diffusers')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: type = DefaultParser,
+                 sam_model: str = 'sam_vit_h_4b8939.pth',
+                 grounding_model:
+                 str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
                  device: str = 'cuda'):
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta, parser)
+        self.grounding_model = grounding_model
+        self.sam_model = sam_model
+        self.device = device
 
     def setup(self):
-        try:
-            from ..segmentation.segment_anything import load_sam_and_predictor
-            from .replace import load_grounding, load_inpainting
-        except ImportError as e:
-            raise ImportError(f'Failed to run the tool for {e}')
+        from mmdet.apis import DetInferencer
 
-        self.grounding = load_grounding(self.toolmeta.model['grounding'],
-                                        self.device)
+        from ..segmentation.segment_anything import load_sam_and_predictor
+        from .replace import Inpainting
 
+        self.grounding = load_or_build_object(
+            DetInferencer, model=self.grounding_model, device=self.device)
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'],
-            f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
+            self.sam_model, False, self.device)
 
-        self.inpainting = load_inpainting(self.device)
+        self.inpainting = load_or_build_object(Inpainting, device=self.device)
 
-    def apply(self, image_path: str, text: str) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            image_pil = Image.open(image_path).convert('RGB')
-            text1 = text
-            text2 = 'background'
-            results = self.grounding(
-                inputs=image_path,
-                texts=[text1],
-                no_save_vis=True,
-                return_datasample=True)
-            results = results['predictions'][0].pred_instances
+    def apply(self, image: ImageIO, text: str) -> ImageIO:
+        image_path = image.to_path()
+        image_pil = image.to_pil()
 
-            boxes_filt = results.bboxes
+        text1 = text
+        text2 = 'background'
+        results = self.grounding(
+            inputs=image_path,
+            texts=[text1],
+            no_save_vis=True,
+            return_datasample=True)
+        results = results['predictions'][0].pred_instances
 
-            image = cv2.imread(image_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            self.sam_predictor.set_image(image)
-            masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
-            mask = torch.sum(masks, dim=0).unsqueeze(0)
-            mask = torch.where(mask > 0, True, False)
-            mask = mask.squeeze(0).squeeze(0).cpu()
+        boxes_filt = results.bboxes
 
-            mask = self.pad_edge(mask, padding=20)
-            mask_image = Image.fromarray(mask)
-            output_image = self.inpainting(
-                prompt=text2, image=image_pil, mask_image=mask_image)
-            output_path = get_new_file_path(image_path, func_name='obj-remove')
-            output_image = output_image.resize(image_pil.size)
-            output_image.save(output_path)
-            return output_path
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.sam_predictor.set_image(image)
+        masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
+        mask = torch.sum(masks, dim=0).unsqueeze(0)
+        mask = torch.where(mask > 0, True, False)
+        mask = mask.squeeze(0).squeeze(0).cpu()
+
+        mask = self.pad_edge(mask, padding=20)
+        mask_image = Image.fromarray(mask)
+        output_image = self.inpainting(
+            prompt=text2, image=image_pil, mask_image=mask_image)
+        output_image = output_image.resize(image_pil.size)
+        return ImageIO(output_image)
 
     def pad_edge(self, mask, padding):
         mask = mask.numpy()

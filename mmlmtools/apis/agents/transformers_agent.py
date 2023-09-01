@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from transformers.tools import Tool
 
-from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import HuggingFaceAgentParser
+from mmlmtools.parsers import HuggingFaceAgentParser
+from mmlmtools.tools.base import BaseTool
 from ..tool import list_tools, load_tool
 
 
@@ -15,10 +15,9 @@ class HFAgentTool(Tool):
         self.tool = tool
 
         self.name: str = tool.name
-        self.description: str = ('MMLMTool for transformer agents.\n' +
-                                 tool.description)
-        self.inputs: List = list(tool.inputs)
-        self.outputs: List = list(tool.outputs)
+        self.description: str = tool.description
+        self.inputs: List = list(tool.toolmeta.inputs)
+        self.outputs: List = list(tool.toolmeta.outputs)
 
     def __call__(self, *args, **kwargs):
         return self.tool(*args, **kwargs)
@@ -37,15 +36,14 @@ def load_tools_for_hfagent(tool_names: Optional[List[str]] = None,
     Returns:
     list(HFAgentTool): loaded tools
     """
-    all_tools = list_tools()
+    tool_names = tool_names or list_tools()
     loaded_tools = []
-    for name in all_tools:
-        if tool_names is not None and name in tool_names:
-            continue
-        tool = load_tool(name, device=device, parser=HuggingFaceAgentParser())
+    for name in tool_names:
+        tool = load_tool(name, device=device, parser=HuggingFaceAgentParser)
         # remove spaces in the tool name which is not allowed in the hugging
         # face agent system
-        name = 'mmlmtool_' + tool.name.lower().replace(' ', '_')
+        name = 'mm_' + tool.name.lower().replace(' ', '_')
         tool.toolmeta.name = name
-        loaded_tools.append(TFAgentTool(tool))
+        loaded_tools.append(HFAgentTool(tool))
+
     return loaded_tools

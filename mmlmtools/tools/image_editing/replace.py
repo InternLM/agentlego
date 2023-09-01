@@ -1,17 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Union
 
 import cv2
 import numpy as np
 import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_file_path
+from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import require
 from mmlmtools.utils.cache import load_or_build_object
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
-from ..segmentation.segment_anything import load_sam_and_predictor
+from ..base import BaseTool
 
 GLOBAL_SEED = 1912
 
@@ -64,72 +64,70 @@ class Inpainting:
 
 class ObjectReplace(BaseTool):
     DEFAULT_TOOLMETA = dict(
-        name='Replace the Given Object In The Image',
-        model={
-            'model': 'sam_vit_h_4b8939.pth',
-            'grounding': 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'
-        },
+        name='Replace Object In Image',
         description='This is a useful tool when you want to replace the '
-        'certain objects in the image with another object. like: replace '
-        'the cat in this image with a dog, or can you replace the cat '
-        'with a dog for me. The input to this tool should be an '
-        '{{{input:image}}} and {{{input:text}}} representing the object '
-        'to be replaced and {{{input:text}}} representing the object to '
-        'replace with. It returns a {{{output:image}}} representing '
-        'the image with the replaced object.')
+        'certain objects in the image with another object, like replacing '
+        'a cat in an image with a dog. You need to input the image to '
+        'edit, the object name to be replaced, and the object to '
+        'replace with.',
+        inputs=['image', 'text', 'text'],
+        outputs=['image'],
+    )
 
+    @require('mmdet')
+    @require('segment_anything')
+    @require('diffusers')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: type = DefaultParser,
+                 sam_model: str = 'sam_vit_h_4b8939.pth',
+                 grounding_model:
+                 str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
                  device: str = 'cuda'):
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta, parser)
+        self.sam_model = sam_model
+        self.grounding_model = grounding_model
+        self.device = device
 
     def setup(self):
         from mmdet.apis import DetInferencer
 
+        from ..segmentation.segment_anything import load_sam_and_predictor
+
         self.grounding = load_or_build_object(
-            DetInferencer,
-            model=self.toolmeta.model['grounding'],
-            device=self.device)
+            DetInferencer, model=self.grounding_model, device=self.device)
+        self.sam, self.sam_predictor = load_sam_and_predictor(
+            self.sam_model, False, self.device)
 
         self.inpainting = load_or_build_object(Inpainting, device=self.device)
 
-        self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'],
-            f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
+    def apply(self, image: ImageIO, text1: str, text2: str) -> ImageIO:
+        image_path = image.to_path()
+        image_pil = image.to_pil()
 
-    def apply(self, image_path: str, text1: str, text2: str) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            image_pil = Image.open(image_path).convert('RGB')
-            results = self.grounding(
-                inputs=image_path,
-                texts=[text1],
-                no_save_vis=True,
-                return_datasample=True)
-            results = results['predictions'][0].pred_instances
+        results = self.grounding(
+            inputs=image_path,
+            texts=[text1],
+            no_save_vis=True,
+            return_datasample=True)
+        results = results['predictions'][0].pred_instances
 
-            boxes_filt = results.bboxes
+        boxes_filt = results.bboxes
 
-            image = cv2.imread(image_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            self.sam_predictor.set_image(image)
-            masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
-            mask = torch.sum(masks, dim=0).unsqueeze(0)
-            mask = torch.where(mask > 0, True, False)
-            mask = mask.squeeze(0).squeeze(0).cpu()
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        self.sam_predictor.set_image(image)
+        masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
+        mask = torch.sum(masks, dim=0).unsqueeze(0)
+        mask = torch.where(mask > 0, True, False)
+        mask = mask.squeeze(0).squeeze(0).cpu()
 
-            mask = self.pad_edge(mask, padding=20)
-            mask_img = Image.fromarray(mask)
-            output_image = self.inpainting(
-                prompt=text2, image=image_pil, mask_image=mask_img)
-            output_path = get_new_file_path(
-                image_path, func_name='obj-replace')
-            output_image = output_image.resize(image_pil.size)
-            output_image.save(output_path)
-            return output_path
+        mask = self.pad_edge(mask, padding=20)
+        mask_img = Image.fromarray(mask)
+        output_image = self.inpainting(
+            prompt=text2, image=image_pil, mask_image=mask_img)
+        output_image = output_image.resize(image_pil.size)
+        return ImageIO(output_image)
 
     def pad_edge(self, mask, padding):
         mask = mask.numpy()
