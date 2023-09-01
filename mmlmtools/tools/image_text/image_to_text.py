@@ -3,37 +3,10 @@ from typing import Optional
 
 import numpy as np
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_caption_inferencer(model, device):
-    """Load caption inferencer.
-
-    Args:
-        model (str): The name of the model.
-        device (str): The device to use.
-
-    Returns:
-        caption_inferencer (ImageCaptionInferencer): The caption inferencer.
-    """
-
-    if CACHED_TOOLS.get('caption_inferencer', None) is not None:
-        caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
-    else:
-        try:
-            from mmpretrain.apis import ImageCaptionInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmpretrain` correctly')
-
-        caption_inferencer = ImageCaptionInferencer(model=model, device=device)
-        CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
-
-    return caption_inferencer
 
 
 class ImageCaption(BaseTool):
@@ -55,8 +28,11 @@ class ImageCaption(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_caption_inferencer(
-            self.toolmeta.model['model'], self.device)
+        from mmpretrain.apis import ImageCaptionInferencer
+        self._inferencer = load_or_build_object(
+            ImageCaptionInferencer,
+            model=self.toolmeta.model['model'],
+            device=self.device)
 
     def apply(self, image: np.ndarray) -> str:
         if self.remote:

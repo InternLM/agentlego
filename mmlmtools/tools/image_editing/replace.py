@@ -7,54 +7,13 @@ import torch
 from PIL import Image
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+from ..segmentation.segment_anything import load_sam_and_predictor
 
 GLOBAL_SEED = 1912
-
-
-def load_grounding(model, device):
-    """Load grounding model.
-
-    Args:
-        model (str): The name of the model.
-        device (str): The device to use.
-
-    Returns:
-        grounding (DetInferencer): The grounding model.
-    """
-    if CACHED_TOOLS.get('grounding', None) is not None:
-        grounding = CACHED_TOOLS['grounding']
-    else:
-        try:
-            from mmdet.apis import DetInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmdet` correctly')
-
-        grounding = DetInferencer(model=model, device=device)
-        CACHED_TOOLS['grounding'] = grounding
-    return grounding
-
-
-def load_inpainting(device):
-    """Load inpainting model.
-
-    Args:
-        device (str): The device to use.
-
-    Returns:
-        inpainting (Inpainting): The inpainting model.
-    """
-    if CACHED_TOOLS.get('inpainting', None) is not None:
-        inpainting = CACHED_TOOLS['inpainting']
-    else:
-        inpainting = Inpainting(device)
-        CACHED_TOOLS['inpainting'] = inpainting
-    return inpainting
 
 
 class Inpainting:
@@ -127,19 +86,18 @@ class ObjectReplace(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        try:
-            from ..segmentation.segment_anything import load_sam_and_predictor
-        except ImportError as e:
-            raise ImportError(f'Failed to run the tool for {e}')
+        from mmdet.apis import DetInferencer
 
-        self.grounding = load_grounding(self.toolmeta.model['grounding'],
-                                        self.device)
+        self.grounding = load_or_build_object(
+            DetInferencer,
+            model=self.toolmeta.model['grounding'],
+            device=self.device)
+
+        self.inpainting = load_or_build_object(Inpainting, device=self.device)
 
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.toolmeta.model['model'],
             f"model_zoo/{self.toolmeta.model['model']}", True, self.device)
-
-        self.inpainting = load_inpainting(self.device)
 
     def apply(self, image_path: str, text1: str, text2: str) -> str:
         if self.remote:

@@ -2,39 +2,10 @@
 from typing import Optional
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_mmagic_inferencer(model, setting, device):
-    """Load mmagic inferencer.
-
-    Args:
-        model (str): The name of the model.
-        setting (int): The setting of the model.
-        device (str): The device to use.
-
-    Returns:
-        mmagic_inferencer (MMagicInferencer): The mmagic inferencer.
-    """
-    if CACHED_TOOLS.get('mmagic_inferencer' + str(setting), None) is not None:
-        mmagic_inferencer = \
-            CACHED_TOOLS['mmagic_inferencer' + str(setting)][model]
-    else:
-        try:
-            from mmagic.apis import MMagicInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmagic` correctly')
-
-        mmagic_inferencer = MMagicInferencer(
-            model_name=model, model_setting=setting, device=device)
-        CACHED_TOOLS['mmagic_inferencer' +
-                     str(setting)][model] = mmagic_inferencer
-    return mmagic_inferencer
 
 
 class CannyTextToImage(BaseTool):
@@ -59,9 +30,19 @@ class CannyTextToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_mmagic_inferencer(
-            self.toolmeta.model['model_name'],
-            self.toolmeta.model['model_setting'], self.device)
+        try:
+            from mmagic.apis import MMagicInferencer
+        except ImportError as e:
+            raise ImportError(
+                f'Failed to run the tool for {e}, please check if you have '
+                'install `mmagic` correctly')
+
+        self._inferencer = load_or_build_object(
+            MMagicInferencer,
+            model_name=self.toolmeta.model['model_name'],
+            model_setting=self.toolmeta.model['model_setting'],
+            device=self.device,
+        )
 
     def apply(self, image_path: str, text: str) -> str:
         output_path = get_new_file_path(

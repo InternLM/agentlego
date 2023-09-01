@@ -4,28 +4,10 @@ from typing import Optional
 import numpy as np
 from PIL import Image
 
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_ocr_inferencer(model, device):
-    model_id = f"{model['det']} {model['rec']}"
-    if CACHED_TOOLS.get('mmocr_inferencer', None) is not None:
-        mmocr_inferencer = CACHED_TOOLS['mmocr_inferencer'][model_id]
-    else:
-        try:
-            from mmocr.apis import MMOCRInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmocr` correctly')
-
-        mmocr_inferencer = MMOCRInferencer(
-            det=model['det'], rec=model['rec'], device=device)
-        CACHED_TOOLS['mmocr_inferencer'][model_id] = mmocr_inferencer
-    return mmocr_inferencer
 
 
 class OCR(BaseTool):
@@ -48,8 +30,12 @@ class OCR(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_ocr_inferencer(self.toolmeta.model,
-                                               self.device)
+        from mmocr.apis import MMOCRInferencer
+        self._inferencer = load_or_build_object(
+            MMOCRInferencer,
+            det=self.toolmeta.model['det'],
+            rec=self.toolmeta.model['rec'],
+            device=self.device)
 
     def apply(self, image: str) -> str:
         if self.remote:
@@ -84,8 +70,12 @@ class ImageMaskOCR(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_ocr_inferencer(self.toolmeta.model,
-                                               self.device)
+        from mmocr.apis import MMOCRInferencer
+        self._inferencer = load_or_build_object(
+            MMOCRInferencer,
+            det=self.toolmeta.model['det'],
+            rec=self.toolmeta.model['rec'],
+            device=self.device)
 
     def apply(self, image_path: str, mask_path: str) -> str:
         if self.remote:

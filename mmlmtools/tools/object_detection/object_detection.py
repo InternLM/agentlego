@@ -5,27 +5,10 @@ from typing import Optional
 import mmcv
 
 from mmlmtools.utils import get_new_image_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_object_detection(model, device):
-    if CACHED_TOOLS.get('object_detection', None) is not None:
-        object_detection = CACHED_TOOLS['object_detection'][model]
-    else:
-        try:
-            from mmdet.apis import DetInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmdet` correctly')
-
-        object_detection = DetInferencer(model=model, device=device)
-        CACHED_TOOLS['object_detection'][model] = object_detection
-
-    return object_detection
 
 
 class ObjectDetection(BaseTool):
@@ -47,17 +30,24 @@ class ObjectDetection(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_object_detection(
-            model=self.toolmeta.model['model'], device=self.device)
+        if self.remote:
+            try:
+                from openxlab.model import inference as openxlab_inference
+            except ImportError as e:
+                raise ImportError(
+                    f'Failed to run the tool for {e}, please check if you have'
+                    ' install `openxlab` correctly')
+
+            self._inferencer = openxlab_inference
+        else:
+            from mmdet.apis import DetInferencer
+            self._inferencer = load_or_build_object(
+                DetInferencer,
+                model=self.toolmeta.model['model'],
+                device=self.device)
 
     def apply(self, image_path: str) -> str:
         if self.remote:
-            import json
-
-            from openxlab.model import inference
-
-            predict = inference('mmdetection/RTMDet', ['./demo_text_ocr.jpg'])
-            print(f'json result:{json.loads(predict)}')
             raise NotImplementedError
         else:
             results = self._inferencer(

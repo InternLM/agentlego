@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import CACHED_OBJECTS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
@@ -23,8 +23,8 @@ def load_diffusion_inferencer(model, device):
             inferencer.
     """
 
-    if CACHED_TOOLS.get('diffusion_inferencer', None) is not None:
-        diffusion_inferencer = CACHED_TOOLS['diffusion_inferencer'][model]
+    if CACHED_OBJECTS.get('diffusion_inferencer', None) is not None:
+        diffusion_inferencer = CACHED_OBJECTS['diffusion_inferencer'][model]
     else:
         try:
             from diffusers import (ControlNetModel,
@@ -49,7 +49,7 @@ def load_diffusion_inferencer(model, device):
         diffusion_inferencer.scheduler = UniPCMultistepScheduler.from_config(
             diffusion_inferencer.scheduler.config)
         diffusion_inferencer.to(device)
-        CACHED_TOOLS['diffusion_inferencer'][model] = diffusion_inferencer
+        CACHED_OBJECTS['diffusion_inferencer'][model] = diffusion_inferencer
     return diffusion_inferencer
 
 

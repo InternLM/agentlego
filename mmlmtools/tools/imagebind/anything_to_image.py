@@ -5,19 +5,10 @@ import torch
 from models.imagebind_model import imagebind_huge as ib
 
 from mmlmtools.utils import get_new_image_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-
-def load_anything_to_image(device, eco_mode):
-    if CACHED_TOOLS.get('AnythingToImage', None) is not None:
-        AnythingToImage = CACHED_TOOLS['AnythingToImage']
-    else:
-        AnythingToImage = AnythingToImage(device, eco_mode)
-        CACHED_TOOLS['AnythingToImage'] = AnythingToImage
-    return AnythingToImage
 
 
 class AnythingToImage:
@@ -65,7 +56,8 @@ class AudioToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -114,7 +106,8 @@ class ThermalToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -166,7 +159,8 @@ class AudioImageToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device
@@ -231,7 +225,8 @@ class AudioTextToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self._inferencer = load_anything_to_image(self.device, True)
+        self._inferencer = load_or_build_object(
+            AnythingToImage, device=self.device, eco_mode=True)
         self.pipe = self._inferencer.pipe
         self.model = self._inferencer.model
         self.device = self._inferencer.device

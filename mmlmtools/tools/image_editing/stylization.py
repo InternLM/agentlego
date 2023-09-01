@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 
 from mmlmtools.utils import get_new_image_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils.cache import CACHED_OBJECTS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
@@ -17,8 +17,8 @@ def load_instruct_pix2pix(model, device):
     else:
         torch_dtype = torch.float32
 
-    if CACHED_TOOLS.get('instruct_pix2pix', None) is not None:
-        instruct_pix2pix = CACHED_TOOLS['instruct_pix2pix'][model]
+    if CACHED_OBJECTS.get('instruct_pix2pix', None) is not None:
+        instruct_pix2pix = CACHED_OBJECTS['instruct_pix2pix'][model]
     else:
         try:
             from diffusers import \
@@ -34,7 +34,7 @@ def load_instruct_pix2pix(model, device):
             model, safety_checker=None, torch_dtype=torch_dtype).to(device)
         instruct_pix2pix.scheduler = ea_scheduler.from_config(
             instruct_pix2pix.scheduler.config)
-        CACHED_TOOLS['instruct_pix2pix'][model] = instruct_pix2pix
+        CACHED_OBJECTS['instruct_pix2pix'][model] = instruct_pix2pix
 
     return instruct_pix2pix
 

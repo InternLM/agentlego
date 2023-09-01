@@ -6,36 +6,12 @@ import cv2
 import numpy as np
 from PIL import Image, ImageOps
 
-from mmlmtools.utils import get_new_image_path
-from mmlmtools.utils.cached_dict import CACHED_TOOLS
+from mmlmtools.utils import get_new_file_path
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
-
-try:
-    from mmpretrain.apis import ImageCaptionInferencer
-    has_mmpretrain = True
-except ImportError:
-    has_mmpretrain = False
-
-
-def load_caption_inferencer(model, device):
-    """Load caption inferencer.
-
-    Args:
-        model (str): The name of the model.
-        device (str): The device to use.
-
-    Returns:
-        caption_inferencer (ImageCaptionInferencer): The caption inferencer.
-    """
-    if CACHED_TOOLS.get('caption_inferencer', None) is not None:
-        caption_inferencer = CACHED_TOOLS['caption_inferencer'][model]
-    else:
-        if not has_mmpretrain:
-            raise RuntimeError('mmpretrain is required but not installed')
-        caption_inferencer = ImageCaptionInferencer(model=model, device=device)
-        CACHED_TOOLS['caption_inferencer'][model] = caption_inferencer
+from .replace import Inpainting
 
 
 def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
@@ -135,24 +111,16 @@ class ImageExtension(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        try:
-            from ..image_text.image_to_text import load_caption_inferencer
-            from .replace import load_inpainting
-        except ImportError as e:
-            raise ImportError(f'Failed to run the tool for {e}')
 
-        self.ImageCaption = load_caption_inferencer(
-            self.toolmeta.model['model'], self.device)
+        from mmpretrain.apis import ImageCaptionInferencer
 
-        self.inpainting = load_inpainting(self.device)
+        self.image_caption_inferencer = load_or_build_object(
+            ImageCaptionInferencer,
+            model=self.toolmeta.model['model'],
+            device=self.device)
 
-        self.a_prompt = 'best quality, extremely detailed'
-        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
-                        ' missing fingers, extra digit, fewer digits, '\
-                        'cropped, worst quality, low quality'\
-                        'bad lighting, bad background, bad color, '\
-                        'bad aliasing, bad distortion, bad motion blur '\
-                        'bad consistency with the background '
+        self.inpainting_inferencer = load_or_build_object(
+            Inpainting, device=self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:
@@ -166,7 +134,8 @@ class ImageExtension(BaseTool):
         return output_path
 
     def get_BLIP_caption(self, image_path):
-        BLIP_caption = self.ImageCaption(image_path)[0]['pred_caption']
+        BLIP_caption = self.image_caption_inferencer(
+            image_path)[0]['pred_caption']
         return BLIP_caption
 
     def resize_image(self, image, max_size=1000000, multiple=8):
@@ -198,7 +167,7 @@ class ImageExtension(BaseTool):
             temp_mask.paste(0, (x, y, x + old_img.width, y + old_img.height))
             resized_temp_canvas, resized_temp_mask = \
                 self.resize_image(temp_canvas), self.resize_image(temp_mask)
-            image = self.inpainting(
+            image = self.inpainting_inferencer(
                 prompt=prompt,
                 image=resized_temp_canvas,
                 mask_image=resized_temp_mask,
