@@ -4,7 +4,7 @@ from mmengine import is_installed
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 @skipIf(not is_installed('transformers'), reason='requires transformers')
@@ -16,7 +16,7 @@ class TestTranslation(ToolTestCase):
         target_lang = 'French'
 
         tool = load_tool(
-            'Translation', parser=VisualChatGPTParser(), device='cuda')
+            'Translation', parser=LangChainParser(), device='cuda')
         res = tool(text, source_lang, target_lang)
         assert isinstance(res, str)
 

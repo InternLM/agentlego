@@ -2,14 +2,14 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 class TestImageExtension(ToolTestCase):
 
     def test_call(self):
         tool = load_tool(
-            'ImageExtension', parser=VisualChatGPTParser(), device='cpu')
+            'ImageExtension', parser=LangChainParser(), device='cpu')
         img_path = 'tests/data/images/test.jpg'
         res = tool(img_path, '2000x1000')
         assert isinstance(res, str)

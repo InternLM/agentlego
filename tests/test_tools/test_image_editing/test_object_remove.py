@@ -5,7 +5,7 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 @skipIf(
@@ -15,7 +15,7 @@ class TestObjectRemove(ToolTestCase):
     def test_call(self):
         img_path = 'tests/data/images/test.jpg'
         tool = load_tool(
-            'ObjectRemove', parser=VisualChatGPTParser(), device='cpu')
+            'ObjectRemove', parser=LangChainParser(), device='cpu')
         res = tool(img_path, 'dog')
         assert isinstance(res, str)
 

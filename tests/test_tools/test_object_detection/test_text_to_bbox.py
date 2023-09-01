@@ -8,23 +8,22 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
-@skipIf(not is_installed('mmpose'), reason='requires mmpose')
-class TestHumanBodyPose(ToolTestCase):
+@skipIf(not is_installed('mmdet'), reason='requires mmdet')
+class TestTextToBbox(ToolTestCase):
 
     def test_call(self):
-        tool = load_tool(
-            'HumanBodyPose', parser=VisualChatGPTParser(), device='cuda')
+        tool = load_tool('TextToBbox', parser=LangChainParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
-        res = tool(img_path)
+        res = tool(f'{img_path}, man')
         assert isinstance(res, str)
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'HumanBodyPose', parser=HuggingFaceAgentParser(), device='cuda')
-        res = tool(img)
+            'TextToBbox', parser=HuggingFaceAgentParser(), device='cuda')
+        res = tool(img, 'man')
         assert isinstance(res, Image.Image)
