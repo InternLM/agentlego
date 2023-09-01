@@ -2,13 +2,13 @@
 from typing import Optional
 
 import torch
-from models.imagebind_model import imagebind_huge as ib
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
+from .models.imagebind_model import imagebind_huge as ib
 
 
 class AnythingToImage:
@@ -77,7 +77,7 @@ class AudioToImage(BaseTool):
         embeddings = embeddings[ib.ModalityType.AUDIO]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'AudioToImage')
+        new_img_name = get_new_file_path(audio_paths[0], 'AudioToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -129,7 +129,7 @@ class ThermalToImage(BaseTool):
         embeddings = embeddings[ib.ModalityType.THERMAL]
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(thermal_data[0], 'ThermalToImage')
+        new_img_name = get_new_file_path(thermal_data[0], 'ThermalToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -194,7 +194,7 @@ class AudioImageToImage(BaseTool):
         embeddings = (img_embeddings + audio_embeddings) / 2
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_path, 'AudioImageToImage')
+        new_img_name = get_new_file_path(audio_path, 'AudioImageToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:
@@ -254,7 +254,7 @@ class AudioTextToImage(BaseTool):
         embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5
         images = self.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
-        new_img_name = get_new_image_path(audio_paths[0], 'AudioTextToImage')
+        new_img_name = get_new_file_path(audio_paths[0], 'AudioTextToImage')
         images[0].save(new_img_name)
 
         if self.eco_mode:

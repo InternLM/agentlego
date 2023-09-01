@@ -10,7 +10,7 @@ import torch
 import wget
 from PIL import Image
 
-from mmlmtools.utils.cache import CACHED_OBJECTS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ...utils.file import get_new_file_path
 from ..base_tool import BaseTool
@@ -20,9 +20,8 @@ GLOBAL_SEED = 1912
 
 
 def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
-    if CACHED_OBJECTS.get('sam', None) is not None:
-        sam = CACHED_OBJECTS['sam'][model]
-    else:
+
+    def _load_sam(model, model_ckpt_path, eco_mode, device):
         try:
             from segment_anything import sam_model_registry
         except ImportError as e:
@@ -39,14 +38,14 @@ def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
         sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
         if eco_mode is not True:
             sam.to(device=device)
-        CACHED_OBJECTS['sam'][model] = sam
+        return sam
 
-    if CACHED_OBJECTS.get('sam_predictor', None) is not None:
-        sam_predictor = CACHED_OBJECTS['sam_predictor'][model]
-    else:
+    def _load_sam_predictor(sam):
+        return SamPredictor(sam)
 
-        sam_predictor = SamPredictor(sam)
-        CACHED_OBJECTS['sam_predictor'][model] = sam_predictor
+    sam = load_or_build_object(_load_sam, model, model_ckpt_path, eco_mode,
+                               device)
+    sam_predictor = load_or_build_object(_load_sam_predictor, sam)
     return sam, sam_predictor
 
 

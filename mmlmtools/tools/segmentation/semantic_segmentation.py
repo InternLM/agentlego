@@ -5,7 +5,7 @@ import mmcv
 
 from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
-from ...utils.file import get_new_image_path
+from ...utils.file import get_new_file_path
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
 
@@ -40,7 +40,7 @@ class SemanticSegmentation(BaseTool):
             raise NotImplementedError
         else:
             results = self._inferencer(inputs, return_datasamples=True)
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 inputs, func_name='semseg-something')
             img = mmcv.imread(inputs)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

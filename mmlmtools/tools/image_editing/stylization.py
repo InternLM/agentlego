@@ -4,7 +4,7 @@ from typing import Optional
 import torch
 from PIL import Image
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cache import CACHED_OBJECTS
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -71,7 +71,7 @@ class InstructPix2Pix(BaseTool):
                 image=original_image,
                 num_inference_steps=40,
                 image_guidance_scale=1.2).images[0]
-            updated_image_path = get_new_image_path(
+            updated_image_path = get_new_file_path(
                 image_path, func_name='stylization')
             image.save(updated_image_path)
         return updated_image_path

@@ -4,7 +4,7 @@ from typing import Optional
 
 import mmcv
 
-from mmlmtools.utils import get_new_image_path
+from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
@@ -52,7 +52,7 @@ class ObjectDetection(BaseTool):
         else:
             results = self._inferencer(
                 image_path, no_save_vis=True, return_datasample=True)
-            output_path = get_new_image_path(
+            output_path = get_new_file_path(
                 image_path, func_name='detect-something')
             img = mmcv.imread(image_path)
             img = mmcv.imconvert(img, 'bgr', 'rgb')

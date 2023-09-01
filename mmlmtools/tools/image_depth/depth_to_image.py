@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 
 from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cache import CACHED_OBJECTS
+from mmlmtools.utils.cache import load_or_build_object
 from mmlmtools.utils.toolmeta import ToolMeta
 from ..base_tool import BaseTool
 from ..parsers import BaseParser
@@ -23,33 +23,29 @@ def load_diffusion_inferencer(model, device):
             inferencer.
     """
 
-    if CACHED_OBJECTS.get('diffusion_inferencer', None) is not None:
-        diffusion_inferencer = CACHED_OBJECTS['diffusion_inferencer'][model]
-    else:
-        try:
-            from diffusers import (ControlNetModel,
-                                   StableDiffusionControlNetPipeline,
-                                   UniPCMultistepScheduler)
-            from diffusers.pipelines.stable_diffusion import \
-                StableDiffusionSafetyChecker
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `diffusers` correctly')
+    try:
+        from diffusers import (ControlNetModel,
+                               StableDiffusionControlNetPipeline,
+                               UniPCMultistepScheduler)
+        from diffusers.pipelines.stable_diffusion import \
+            StableDiffusionSafetyChecker
+    except ImportError as e:
+        raise ImportError(
+            f'Failed to run the tool for {e}, please check if you have '
+            'install `diffusers` correctly')
 
-        torch_dtype = torch.float16 if 'cuda' in device else torch.float32
-        controlnet = ControlNetModel.from_pretrained(
-            model, torch_dtype=torch_dtype)
-        diffusion_inferencer = StableDiffusionControlNetPipeline.from_pretrained(  # noqa
-            'runwayml/stable-diffusion-v1-5',
-            controlnet=controlnet,
-            safety_checker=StableDiffusionSafetyChecker.from_pretrained(
-                'CompVis/stable-diffusion-safety-checker'),
-            torch_dtype=torch_dtype)
-        diffusion_inferencer.scheduler = UniPCMultistepScheduler.from_config(
-            diffusion_inferencer.scheduler.config)
-        diffusion_inferencer.to(device)
-        CACHED_OBJECTS['diffusion_inferencer'][model] = diffusion_inferencer
+    torch_dtype = torch.float16 if 'cuda' in device else torch.float32
+    controlnet = ControlNetModel.from_pretrained(
+        model, torch_dtype=torch_dtype)
+    diffusion_inferencer = StableDiffusionControlNetPipeline.from_pretrained(  # noqa
+        'runwayml/stable-diffusion-v1-5',
+        controlnet=controlnet,
+        safety_checker=StableDiffusionSafetyChecker.from_pretrained(
+            'CompVis/stable-diffusion-safety-checker'),
+        torch_dtype=torch_dtype)
+    diffusion_inferencer.scheduler = UniPCMultistepScheduler.from_config(
+        diffusion_inferencer.scheduler.config)
+    diffusion_inferencer.to(device)
     return diffusion_inferencer
 
 
@@ -72,7 +68,8 @@ class DepthTextToImage(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self.pipe = load_diffusion_inferencer(
+        self.pipe = load_or_build_object(
+            load_diffusion_inferencer,
             'fusing/stable-diffusion-v1-5-controlnet-depth', self.device)
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
