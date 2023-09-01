@@ -6,7 +6,7 @@ from PIL import Image
 
 from mmlmtools.testing import ToolTestCase
 from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangchainParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 class DummyTool(BaseTool):
@@ -24,7 +24,7 @@ class DummyTool(BaseTool):
 class TestBaseTool(ToolTestCase):
 
     def test_call_with_visual_chatgpt(self):
-        tool = DummyTool(parser=LangchainParser())
+        tool = DummyTool(parser=LangChainParser())
 
         expected_description = 'This is a dummy tool. It takes an image ' \
             'represented by path and a text represented by string as the ' \

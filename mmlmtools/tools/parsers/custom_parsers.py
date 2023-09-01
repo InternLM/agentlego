@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 from .type_mapping_parser import TypeMappingParser
 
 
-class LangchainParser(TypeMappingParser):
+class LangChainParser(TypeMappingParser):
     _default_agent_cat2type = {
         'image': 'path',
         'text': 'string',

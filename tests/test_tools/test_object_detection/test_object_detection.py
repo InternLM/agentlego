@@ -8,27 +8,25 @@ from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
-@skipIf(not is_installed('mmpretrain'), reason='requires mmpretrain')
-class TestVisionQuestionAnswering(ToolTestCase):
+@skipIf(not is_installed('mmdet'), reason='requires mmdet')
+class TestObjectDetectionTool(ToolTestCase):
 
     def test_call(self):
         tool = load_tool(
-            'VisualQuestionAnswering',
-            parser=VisualChatGPTParser(),
-            device='cuda')
+            'ObjectDetectionTool', parser=LangChainParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
-        res = tool(img_path, 'prompt')
+        res = tool(img_path)
         assert isinstance(res, str)
 
-        img = Image.fromarray(img)
         tool = load_tool(
-            'VisualQuestionAnswering',
+            'ObjectDetectionTool',
             parser=HuggingFaceAgentParser(),
             device='cuda')
-        res = tool(img, 'prompt')
-        assert isinstance(res, str)
+        img = Image.fromarray(img)
+        res = tool(img)
+        assert isinstance(res, Image.Image)

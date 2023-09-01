@@ -4,12 +4,12 @@ import weakref
 
 from mmlmtools import tools
 from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import LangchainParser
+from mmlmtools.tools.parsers import LangChainParser
 
 
-def wrapped_init(self, *args, parser=LangchainParser(), **kwargs):
+def wrapped_init(self, *args, parser=LangChainParser(), **kwargs):
     return self.__class__.__bases__[0].__init__(
-        self, *args, parser=LangchainParser(), **kwargs)
+        self, *args, parser=LangChainParser(), **kwargs)
 
 
 class _Inference:

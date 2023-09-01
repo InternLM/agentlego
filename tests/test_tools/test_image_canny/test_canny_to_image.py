@@ -1,19 +1,22 @@
 import os.path as osp
+from unittest import skipIf
 
 import cv2
 import numpy as np
+from mmengine import is_installed
 from PIL import Image
 
 from mmlmtools import load_tool
 from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, VisualChatGPTParser
+from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
-class TestDepthTextToImage(ToolTestCase):
+@skipIf(not is_installed('mmagic'), reason='requires mmagic')
+class TestCannyTextToImage(ToolTestCase):
 
-    def test_all(self):
+    def test_call(self):
         tool = load_tool(
-            'DepthTextToImage', parser=VisualChatGPTParser(), device='cuda')
+            'CannyTextToImage', parser=LangChainParser(), device='cuda')
         img = np.ones([224, 224, 3]).astype(np.uint8)
         img_path = osp.join(self.tempdir.name, 'temp.jpg')
         cv2.imwrite(img_path, img)
@@ -22,6 +25,6 @@ class TestDepthTextToImage(ToolTestCase):
 
         img = Image.fromarray(img)
         tool = load_tool(
-            'DepthTextToImage', parser=HuggingFaceAgentParser(), device='cuda')
+            'CannyTextToImage', parser=HuggingFaceAgentParser(), device='cuda')
         res = tool(img, 'prompt')
         assert isinstance(res, Image.Image)

@@ -5,7 +5,7 @@ from mmengine import is_installed
 
 from mmlmtools import load_tool
 from mmlmtools.tools.parsers import (Audio, HuggingFaceAgentParser,
-                                     LangchainParser)
+                                     LangChainParser)
 
 
 @skipIf(not is_installed('transformers') or not is_installed('torchaudio'),
@@ -13,7 +13,7 @@ from mmlmtools.tools.parsers import (Audio, HuggingFaceAgentParser,
 class TestSpeechToText(TestCase):
 
     def test_call_langchain_agent(self):
-        parser = LangchainParser()
+        parser = LangChainParser()
         tool = load_tool('SpeechToText', parser=parser, device='cuda')
         audio_path = osp.join(
             osp.dirname(__file__), '..', '..', 'data', 'audio',
