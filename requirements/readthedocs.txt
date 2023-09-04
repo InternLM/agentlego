@@ -1,0 +1,6 @@
+
+mmcv-lite>=2.0.0
+mmengine
+torch
+torchvision
+transformers
