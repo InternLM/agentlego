@@ -218,8 +218,7 @@ notfound_template = '404.html'
 
 
 def builder_inited_handler(app):
-    if subprocess.run(['./stat.py']).returncode != 0:
-        raise RuntimeError('Failed to run the script `stat.py`.')
+    pass
 
 
 def setup(app):
