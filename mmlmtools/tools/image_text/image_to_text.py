@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from typing import Callable, Union
 
 from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
@@ -21,7 +21,7 @@ class ImageCaption(BaseTool):
     @require('mmpretrain')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: type = DefaultParser,
+                 parser: Callable = DefaultParser,
                  model: str = 'blip-base_3rdparty_caption',
                  device: str = 'cpu'):
         super().__init__(toolmeta=toolmeta, parser=parser)

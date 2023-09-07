@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from typing import Callable, Union
 
 import cv2
 import numpy as np
@@ -31,7 +31,7 @@ class ObjectRemove(BaseTool):
     @require('diffusers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: type = DefaultParser,
+                 parser: Callable = DefaultParser,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
                  grounding_model:
                  str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',

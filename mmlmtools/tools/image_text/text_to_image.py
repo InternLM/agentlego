@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab.All rights reserved.
-from typing import Union
+from typing import Callable, Union
 
 from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
@@ -22,7 +22,7 @@ class TextToImage(BaseTool):
     @require('mmagic')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: type = DefaultParser,
+                 parser: Callable = DefaultParser,
                  model: str = 'stable_diffusion',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)

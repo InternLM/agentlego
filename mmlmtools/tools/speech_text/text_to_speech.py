@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO
-from typing import Union
+from typing import Callable, Union
 
 import numpy as np
 import torch
@@ -42,7 +42,7 @@ class TextToSpeech(BaseTool):
     @require('transformers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: callable = DefaultParser,
+                 parser: Callable = DefaultParser,
                  post_processor: str = 'microsoft/speecht5_hifigan',
                  model='microsoft/speecht5_tts',
                  speaker_embeddings: Union[str, torch.Tensor] = (

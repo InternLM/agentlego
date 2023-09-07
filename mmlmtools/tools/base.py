@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from abc import ABCMeta, abstractmethod
-from typing import Any, Union
+from typing import Any, Callable, Union
 
 import torch
 
@@ -10,7 +10,7 @@ from mmlmtools.schema import ToolMeta
 
 class BaseTool(metaclass=ABCMeta):
 
-    def __init__(self, toolmeta: Union[dict, ToolMeta], parser: type):
+    def __init__(self, toolmeta: Union[dict, ToolMeta], parser: Callable):
         if isinstance(toolmeta, dict):
             toolmeta = ToolMeta(**toolmeta)
         self.toolmeta = toolmeta
@@ -21,7 +21,7 @@ class BaseTool(metaclass=ABCMeta):
     def name(self) -> str:
         return self.toolmeta.name
 
-    def set_parser(self, parser: type):
+    def set_parser(self, parser: Callable):
         self.parser = parser(self)
 
     @property

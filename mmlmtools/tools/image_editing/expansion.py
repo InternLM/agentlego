@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import Union
+from typing import Callable, Union
 
 import cv2
 import numpy as np
@@ -110,7 +110,7 @@ class ImageExpansion(BaseTool):
     @require('diffusers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: type = DefaultParser,
+                 parser: Callable = DefaultParser,
                  caption_model: str = 'blip-base_3rdparty_caption',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)

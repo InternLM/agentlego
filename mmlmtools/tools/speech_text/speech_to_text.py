@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from typing import Callable, Union
 
 import torch
 from mmengine.utils import apply_to
@@ -36,7 +36,7 @@ class SpeechToText(BaseTool):
     def __init__(
         self,
         toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-        parser: callable = DefaultParser,
+        parser: Callable = DefaultParser,
         model='openai/whisper-base',
         device='cuda',
     ):

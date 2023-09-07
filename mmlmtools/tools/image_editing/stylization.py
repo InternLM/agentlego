@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from typing import Callable, Union
 
 import torch
 
@@ -42,7 +42,7 @@ class ImageStylization(BaseTool):
     @require('diffusers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: type = DefaultParser,
+                 parser: Callable = DefaultParser,
                  model: str = 'timbrooks/instruct-pix2pix',
                  inference_steps: int = 20,
                  device: str = 'cuda'):
