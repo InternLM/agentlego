@@ -213,12 +213,9 @@ autodoc_mock_imports = ['rich', 'attr', 'einops', 'mat4py']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 
-# The not found page
-notfound_template = '404.html'
-
 
 def builder_inited_handler(app):
-    pass
+    subprocess.run(['./collect_docs.sh'])
 
 
 def setup(app):
