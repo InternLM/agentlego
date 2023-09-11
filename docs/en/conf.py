@@ -215,7 +215,7 @@ autodoc_typehints = 'none'
 
 
 def builder_inited_handler(app):
-    subprocess.run(['./collect_docs.sh'])
+    subprocess.run(['./collect_docs.py'])
 
 
 def setup(app):

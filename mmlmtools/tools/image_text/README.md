@@ -88,11 +88,11 @@ This tool generates image from text descriptions.
 
 #### Offline (w/o. Agent)
 
-TBD.
+WIP.
 
 #### HuggingFace Agent
 
-TBD.
+WIP.
 
 ### Set Up
 
@@ -105,4 +105,4 @@ mim install -U mmagic
 
 ### Attribution
 
-TBD.
+WIP.
