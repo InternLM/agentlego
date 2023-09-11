@@ -16,16 +16,18 @@ tools = load_tools_for_hfagent(
 )
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
-    additional_tools=tools)
+    chat_prompt_template=(Path(__file__).parent /
+                          'hf_demo_prompts.txt').read_text(),
+    additional_tools=tools,
+)
 # Remove the huggingface tools and only reserve mmtools.
 for k in list(agent.toolbox.keys()):
     if agent.toolbox[k] not in tools:
         agent.toolbox.pop(k)
-agent.chat_prompt_template += 'Now you can only use tools starts with `mm`'
 
 demo_img = (Path(__file__).parent / 'demo.png').absolute()
 
-user = f'Please tell me the description of `{demo_img}`'
+user = f'Describe the image `{demo_img}` and save to variable `description`.'
 print(f'\033[92mUser\033[0m: {user}')
 print('\033[92mBot\033[0m:', agent.chat(user))
 
