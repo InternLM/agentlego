@@ -6,8 +6,8 @@ import mmcv
 from mmlmtools.parsers import DefaultParser
 from mmlmtools.types import ImageIO
 from mmlmtools.utils import get_new_file_path, load_or_build_object, require
-from mmlmtools.utils.schema import ToolMeta
-from ..base_tool import BaseTool
+from mmlmtools.schema import ToolMeta
+from ..base import BaseTool
 
 
 class TextToBbox(BaseTool):
@@ -15,7 +15,7 @@ class TextToBbox(BaseTool):
         name='Detect the Given Object',
         description=('A useful tool when you only want to show the location '
                      'of given objects, or detect or find out given objects '
-                     'in the picture. '),
+                     'in the picture. like: locate persons in the picture'),
         inputs=['image', 'text'],
         outputs=['image'],
     )
@@ -36,6 +36,7 @@ class TextToBbox(BaseTool):
             DetInferencer, model=self.model, device=self.device)
 
     def apply(self, image: ImageIO, text: str) -> ImageIO:
+        image = image.to_path()
         results = self._inferencer(
             inputs=image, texts=text, no_save_vis=True, return_datasample=True)
 

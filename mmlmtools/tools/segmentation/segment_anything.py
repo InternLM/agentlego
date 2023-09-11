@@ -333,6 +333,7 @@ class SegmentAnything(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO) -> ImageIO:
+        image = image.to_path()
         annos = self.segment_anything(image)
         full_img, _ = self.show_annos(annos)
         seg_all_output = get_new_file_path(image, 'sam')
@@ -443,6 +444,8 @@ class SegmentClicked(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO, mask: ImageIO) -> ImageIO:
+        image = image.to_path().strip()
+        mask = mask.to_path().strip()
         img = Image.open(image).convert('RGB')
         img = np.array(img, dtype=np.uint8)
         features = self.get_image_embedding(img)
@@ -453,11 +456,10 @@ class SegmentClicked(BaseTool):
         res_mask = self.segment_by_mask(clicked_mask, features)
 
         res_mask = res_mask.astype(np.uint8) * 255
-        filaname = get_new_file_path(image, 'sam-clicked')
+        output_image = get_new_file_path(image, 'sam-clicked')
         mask_img = Image.fromarray(res_mask)
-        mask_img.save(filaname, 'PNG')
-
-        return ImageIO(filaname)
+        mask_img.save(output_image, 'png')
+        return ImageIO(output_image)
 
     def segment_by_mask(self, mask, features):
         if not self._is_setup:

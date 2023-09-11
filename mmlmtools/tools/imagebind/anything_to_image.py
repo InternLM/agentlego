@@ -7,7 +7,7 @@ from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
 from mmlmtools.types import AudioIO, ImageIO
 from mmlmtools.utils import get_new_file_path, load_or_build_object, require
-from ..base_tool import BaseTool
+from ..base import BaseTool
 from .models.imagebind_model import imagebind_huge as ib
 
 
@@ -19,6 +19,8 @@ class AnythingToImage:
 
         pipe = load_or_build_object(
             StableUnCLIPImg2ImgPipeline.from_pretrained,
+            pretrained_model_name_or_path='stabilityai/'
+            'stable-diffusion-2-1-unclip',
             torch_dtype=torch.float16,
             variation='fp16')
 

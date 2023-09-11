@@ -12,11 +12,11 @@ from ..base import BaseTool
 
 class SemanticSegmentation(BaseTool):
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment the Image',
+        name='Semantic Segment the Image',
         description=(
             'This is a useful tool when you only want to segment the '
             'picture or segment all objects in the picture. like: '
-            'segment all objects. '),
+            'semantic segment all objects in the image. '),
         inputs=['image'],
         outputs=['image'],
     )
@@ -41,6 +41,7 @@ class SemanticSegmentation(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO) -> ImageIO:
+        image = image.to_path()
         results = self._inferencer(image, return_datasamples=True)
         output_path = get_new_file_path(
             image, func_name='semseg-something')

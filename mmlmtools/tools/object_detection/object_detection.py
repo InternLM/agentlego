@@ -8,7 +8,7 @@ from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
 from mmlmtools.types import ImageIO
 from mmlmtools.utils import get_new_file_path, load_or_build_object, require
-from ..base_tool import BaseTool
+from ..base import BaseTool
 
 
 class ObjectDetection(BaseTool):
@@ -16,7 +16,7 @@ class ObjectDetection(BaseTool):
         name='Detect All Objects',
         description=('A useful tool when you only want to detect the picture '
                      'or detect all objects in the picture. like: detect all '
-                     'object or object. '),
+                     'objects. '),
         inputs=['image'],
         outputs=['image'],
     )
@@ -37,6 +37,8 @@ class ObjectDetection(BaseTool):
             DetInferencer, model=self.model, device=self.device)
 
     def apply(self, image: ImageIO) -> ImageIO:
+        image = image.to_path()
+        print(image)
         results = self._inferencer(
             image, no_save_vis=True, return_datasample=True)
         output_image = get_new_file_path(image, func_name='detect-something')

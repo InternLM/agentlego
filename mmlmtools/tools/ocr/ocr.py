@@ -7,8 +7,8 @@ from PIL import Image
 from mmlmtools.parsers import DefaultParser
 from mmlmtools.types import ImageIO
 from mmlmtools.utils import load_or_build_object, require
-from mmlmtools.utils.schema import ToolMeta
-from ..base_tool import BaseTool
+from mmlmtools.schema import ToolMeta
+from ..base import BaseTool
 
 
 class OCR(BaseTool):
@@ -20,7 +20,7 @@ class OCR(BaseTool):
         outputs=['text'],
     )
 
-    @require(['mmocr>=1.0.1'])
+    @require('mmocr>=1.0.1')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -41,8 +41,12 @@ class OCR(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO) -> str:
+        
+        image = image.to_path()
+        # print('!!!!!!!!!!!!!', image)
         ocr_results = self._inferencer(image, show=False)['predictions'][0]
-        outputs = ocr_results['rec_texts']
+        outputs = '\n'.join(ocr_results['rec_texts'])
+        # print(outputs)
         return outputs
 
 
@@ -57,7 +61,7 @@ class ImageMaskOCR(BaseTool):
         outputs=['text'],
     )
 
-    @require(['mmocr>=1.0.1'])
+    @require('mmocr>=1.0.1')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -78,8 +82,8 @@ class ImageMaskOCR(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO, mask: ImageIO) -> str:
-        image = image.strip()
-        mask = mask.strip()
+        image = image.to_path().strip()
+        mask = mask.to_path().strip()
         mask = Image.open(mask).convert('L')
         mask = np.array(mask, dtype=np.uint8)
         ocr_results = self._inferencer(image, show=False)
