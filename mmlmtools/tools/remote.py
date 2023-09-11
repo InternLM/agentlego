@@ -21,7 +21,10 @@ class RemoteTool(BaseTool):
         input_fields: Optional[List[str]] = None,
         parser=DefaultParser,
     ):
+        if not url.endswith('/'):
+            url += '/'
         self.url = url
+
         if toolmeta is None or input_fields is None:
             toolmeta, input_fields = self.request_meta()
 

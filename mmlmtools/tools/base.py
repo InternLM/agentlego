@@ -52,8 +52,8 @@ class BaseTool(metaclass=ABCMeta):
 
     def __repr__(self) -> str:
         repr_str = (f'{type(self).__name__}('
-                    'toolmeta={self.toolmeta}, '
-                    'parser={type(self.parser).__name__})')
+                    f'toolmeta={self.toolmeta}, '
+                    f'parser={type(self.parser).__name__})')
         return repr_str
 
     @property

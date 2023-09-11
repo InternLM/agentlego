@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from transformers.tools import Tool
 
@@ -14,7 +14,9 @@ class HFAgentTool(Tool):
     def __init__(self, tool: BaseTool):
         self.tool = tool
 
-        self.name: str = tool.name
+        # remove spaces in the tool name which is not allowed in the hugging
+        # face agent system
+        self.name: str = 'mm_' + tool.name.lower().replace(' ', '_')
         self.description: str = tool.description
         self.inputs: List = list(tool.toolmeta.inputs)
         self.outputs: List = list(tool.toolmeta.outputs)
@@ -23,27 +25,31 @@ class HFAgentTool(Tool):
         return self.tool(*args, **kwargs)
 
 
-def load_tools_for_hfagent(tool_names: Optional[List[str]] = None,
-                           device: str = 'cpu') -> List[HFAgentTool]:
-    """Load a set of tools and adapt them to the transformers agent tool
+def load_tools_for_hfagent(
+    tools: Optional[List[Union[BaseTool, str]]] = None,
+    device: str = 'cpu',
+) -> List[HFAgentTool]:
+    """Load a set of tools and adapt them to the hugginface agent tool
     interface.
 
     Args:
-        tool_names (list[str]): list of tool names. Defaults to None, which
-            means all tools will be loaded.
-        device (str): device to load tools. Defaults to 'cpu'.
+        tools (List[BaseTool, str] | None): A list of tool names or tools.
+            If None, construct all available tools. Defaults to None.
+        device (str): The device to load tools. If ``tools`` is a list of
+            tool instances, it won't be used. Defaults to 'cpu'.
 
     Returns:
-    list(HFAgentTool): loaded tools
+        list(HFAgentTool): loaded tools
     """
-    tool_names = tool_names or list_tools()
+    tools = tools if tools is not None else list_tools()
+
     loaded_tools = []
-    for name in tool_names:
-        tool = load_tool(name, device=device, parser=HuggingFaceAgentParser)
-        # remove spaces in the tool name which is not allowed in the hugging
-        # face agent system
-        name = 'mm_' + tool.name.lower().replace(' ', '_')
-        tool.toolmeta.name = name
+    for tool in tools:
+        if isinstance(tool, str):
+            tool = load_tool(
+                tool, device=device, parser=HuggingFaceAgentParser)
+        else:
+            tool.set_parser(HuggingFaceAgentParser)
         loaded_tools.append(HFAgentTool(tool))
 
     return loaded_tools

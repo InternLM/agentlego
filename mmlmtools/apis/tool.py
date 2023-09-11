@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
 import sys
-from typing import Callable, Union
 
 import mmlmtools.tools as tools
 from mmlmtools.tools.base import BaseTool
@@ -24,12 +24,13 @@ def list_tools():
     return NAMES2TOOLS.keys()
 
 
-def load_tool(tool_name: str, **kwargs) -> Union[Callable, BaseTool]:
+def load_tool(tool_name: str, device=None, **kwargs) -> BaseTool:
     """Load a configurable callable tool for different task.
 
     Args:
         tool_name (str): tool name for specific task. You can find more
             description about supported tools in `Capability Matrix`_
+        device (str): The device to load the tool. Defaults to None.
         **kwargs: key-word arguments to build the specific tools.
             These arguments are related ``tool``. You can find the arguments
             of the specific tool type according to the given tool in the
@@ -58,5 +59,7 @@ def load_tool(tool_name: str, **kwargs) -> Union[Callable, BaseTool]:
                          '\n'.join(map(repr, NAMES2TOOLS.keys())))
 
     tool_type = NAMES2TOOLS[tool_name]
+    if 'device' in inspect.getfullargspec(tool_type).args:
+        kwargs['device'] = device
     tool_obj = load_or_build_object(tool_type, **kwargs)
     return tool_obj

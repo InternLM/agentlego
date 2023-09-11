@@ -88,7 +88,11 @@ class LagentParser(DefaultParser):
     def parse_inputs(self, input_: str) -> Tuple[Tuple, Dict]:
 
         # split single string into multiple inputs
-        args = tuple(json.loads(input_.strip(' .\'"\n')).values())
+        try:
+            args = tuple(json.loads(input_.strip(' .\'"\n')).values())
+        except json.JSONDecodeError:
+            raise ValueError(
+                'The arguments should be format as a json string.')
 
         return super().parse_inputs(*args)
 
