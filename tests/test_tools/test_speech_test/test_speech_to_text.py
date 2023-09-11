@@ -1,45 +1,40 @@
-import os.path as osp
-from unittest import TestCase, skipIf
+from pathlib import Path
 
-from mmengine import is_installed
+import pytest
 
-from mmlmtools import load_tool
-from mmlmtools.tools.parsers import (Audio, HuggingFaceAgentParser,
-                                     LangChainParser)
+from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from mmlmtools.parsers import NaiveParser
+from mmlmtools.testing import setup_tool
+
+data_dir = Path(__file__).parents[2] / 'data'
+test_audio = (data_dir / 'audio/speech_to_text.flac').absolute()
 
 
-@skipIf(not is_installed('transformers') or not is_installed('torchaudio'),
-        'only test TestSpeechToTextTool when `transformers` is installed')
-class TestSpeechToText(TestCase):
+@pytest.fixture()
+def tool():
+    from mmlmtools.tools import SpeechToText
+    return setup_tool(SpeechToText, device='cuda')
 
-    def test_call_langchain_agent(self):
-        parser = LangChainParser()
-        tool = load_tool('SpeechToText', parser=parser, device='cuda')
-        audio_path = osp.join(
-            osp.dirname(__file__), '..', '..', 'data', 'audio',
-            'speech_to_text.flac')
-        text = tool(audio_path)
-        self.assertIn('going along slushy country', text)
 
-        # pass kwargs to the parser
-        text = tool(audio=audio_path)
-        self.assertIn('going along slushy country', text)
+def test_call(tool):
+    tool.set_parser(NaiveParser)
+    res = tool(str(test_audio))
+    assert isinstance(res, str)
 
-    def test_call_huggingface_agent(self):
-        parser = HuggingFaceAgentParser()
-        tool = load_tool('SpeechToText', parser=parser, device='cuda')
-        audio_path = osp.join(
-            osp.dirname(__file__), '..', '..', 'data', 'audio',
-            'speech_to_text.flac')
 
-        # audio input
-        text = tool(Audio.from_path(audio_path))
-        self.assertIn('going along slushy country', text)
+def test_hf_agent(tool, hf_agent):
+    tools = load_tools_for_hfagent([tool])
+    hf_agent.prepare_for_new_chat()
+    hf_agent._toolbox = {t.name: t for t in tools}
 
-        # audio_path input
-        text = tool(audio_path)
-        self.assertIn('going along slushy country', text)
+    out = hf_agent.chat(f'Convert the audio `{test_audio}` to text.')
+    assert 'going along slushy country' in out
 
-        # pass kwargs to the parser
-        text = tool(audio=audio_path)
-        self.assertIn('going along slushy country', text)
+
+def test_lagent(tool, lagent_agent):
+    tools = load_tools_for_lagent([tool])
+    lagent_agent.new_session(tools)
+
+    out = lagent_agent.chat(f'Convert the audio `{test_audio}` to text.')
+    assert out.actions[-1].valid == 1
+    assert 'going along slushy country' in out.response

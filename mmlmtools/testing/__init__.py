@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .tool_test_case import ToolTestCase
+from .setup_tool import setup_tool
 
-__all__ = ['ToolTestCase']
+__all__ = ['setup_tool']
