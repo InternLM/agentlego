@@ -1,47 +1,36 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Callable, Union
 
-from PIL import Image
-
-from mmlmtools.parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
-from mmlmtools.utils import get_new_file_path
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
 class ImageToScribble(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Scribble Conditioned On Image',
-        model=None,
-        description='This is a useful tool when you want to do '
-        'the sketch detection on the image and generate the scribble. '
-        'It takes an {{{input:image}}} as the input, and returns a '
-        '{{{output:image}}} representing the scribble of the image. ')
+        description='This tool can generate a sketch scribble of an image.',
+        inputs=['image'],
+        outputs=['image'],
+    )
 
+    @require('controlnet_aux')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
                  device: str = 'cuda'):
-
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.device = device
 
     def setup(self):
-        try:
-            from controlnet_aux import HEDdetector
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `controlnet_aux` correctly')
+        from controlnet_aux import HEDdetector
+        self.detector = load_or_build_object(
+            HEDdetector.from_pretrained,
+            'lllyasviel/Annotators',
+        ).to(self.device)
 
-        self.detector = HEDdetector.from_pretrained('lllyasviel/Annotators')
-
-    def apply(self, image_path: str) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            image = Image.open(image_path)
-            scribble = self.detector(image, scribble=True)
-            output_path = get_new_file_path(image_path, func_name='scribble')
-            scribble.save(output_path)
-        return output_path
+    def apply(self, image: ImageIO) -> ImageIO:
+        scribble = self.detector(image.to_pil(), scribble=True)
+        return ImageIO(scribble)
