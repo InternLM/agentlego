@@ -4,9 +4,9 @@ from typing import Callable, Union
 import mmcv
 
 from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.types import ImageIO
 from mmlmtools.utils import get_new_file_path, load_or_build_object, require
-from mmlmtools.schema import ToolMeta
 from ..base import BaseTool
 
 
@@ -40,8 +40,7 @@ class TextToBbox(BaseTool):
         results = self._inferencer(
             inputs=image, texts=text, no_save_vis=True, return_datasample=True)
 
-        output_image = get_new_file_path(
-            image, func_name='detect-something')['predictions'][0]
+        output_image = get_new_file_path(image, func_name='detect-something')
 
         img = mmcv.imread(image, channel_order='rgb')
 

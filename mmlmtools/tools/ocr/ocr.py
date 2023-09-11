@@ -5,9 +5,9 @@ import numpy as np
 from PIL import Image
 
 from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.types import ImageIO
 from mmlmtools.utils import load_or_build_object, require
-from mmlmtools.schema import ToolMeta
 from ..base import BaseTool
 
 
@@ -41,12 +41,10 @@ class OCR(BaseTool):
             device=self.device)
 
     def apply(self, image: ImageIO) -> str:
-        
+
         image = image.to_path()
-        # print('!!!!!!!!!!!!!', image)
         ocr_results = self._inferencer(image, show=False)['predictions'][0]
         outputs = '\n'.join(ocr_results['rec_texts'])
-        # print(outputs)
         return outputs
 
 
