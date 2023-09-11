@@ -1,52 +1,41 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Callable, Union
 
 import numpy as np
-from PIL import Image
 
-from mmlmtools.parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
-from mmlmtools.utils.file import get_new_file_path
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
 class ImageToDepth(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Depth Image On Image',
-        model=None,
-        description='This is a useful tool when you want to'
-        'generate the depth image of an image. It takes an {{{input:image}}} '
-        'as the input, and returns a {{{output:image}}} representing the '
-        'depth image of the input image. ')
+        description='This tool can generate the depth image of an image.',
+        inputs=['image'],
+        outputs=['image'],
+    )
 
+    @require('transformers')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
                  device: str = 'cuda'):
-
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.device = device
 
     def setup(self):
-        try:
-            from transformers import pipeline
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `transformers` correctly')
+        from transformers import pipeline
+        self.depth_estimator = load_or_build_object(
+            pipeline,
+            'depth-estimation',
+        )
 
-        self.depth_estimator = pipeline('depth-estimation')
-
-    def apply(self, image_path: str) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            image = Image.open(image_path)
-            depth = self.depth_estimator(image)['depth']
-            depth = np.array(depth)
-            depth = depth[:, :, None]
-            depth = np.concatenate([depth, depth, depth], axis=2)
-            depth = Image.fromarray(depth)
-            output_path = get_new_file_path(image_path, func_name='depth')
-            depth.save(output_path)
-            return output_path
+    def apply(self, image: ImageIO) -> ImageIO:
+        depth = self.depth_estimator(image.to_pil())['depth']
+        depth = np.array(depth)
+        depth = depth[:, :, None]
+        depth = np.concatenate([depth, depth, depth], axis=2)
+        return ImageIO(depth)
