@@ -93,7 +93,6 @@ def add_tool(tool_name: str):
                 data = AudioIO(raw, sampling_rate=sr)
             args[name] = data
 
-        print(f"\033[92m'args'\033[0m: {args}")
         outs = tool(**args)
         if not isinstance(outs, tuple):
             outs = [outs]

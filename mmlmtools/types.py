@@ -33,7 +33,9 @@ class IOType:
                 self.value = value
                 self.type = name
         if self.type is None:
-            raise NotImplementedError()
+            raise NotImplementedError(
+                f'The value type `{type(value)}` is not '
+                f'supported by `{self.__class__.__name__}`')
 
     def to(self, dst_type: str):
         if self.type == dst_type:

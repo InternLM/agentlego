@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import json
-from typing import List, Union
+from typing import List, Optional, Union
 
 from lagent.actions import BaseAction
 from lagent.schema import ActionReturn, ActionStatusCode
@@ -30,33 +29,35 @@ class LagentTool(BaseAction):
                 args=args,
                 result=dict(text=str(result)),
             )
-        except json.JSONDecodeError:
+        except Exception as e:
             return ActionReturn(
                 type=self.name,
-                errmsg='The arguments should be format as a json string.',
+                errmsg=str(e),
                 args=args,
                 state=ActionStatusCode.ARGS_ERROR,
             )
 
 
-def load_tools_for_lagent(tools: List[Union[BaseTool, str]],
-                          device: str = 'cpu') -> List[LagentTool]:
-    """Load a set of tools and adapt them to the transformers agent tool
-    interface.
+def load_tools_for_lagent(
+    tools: Optional[List[Union[BaseTool, str]]] = None,
+    device: str = 'cpu',
+) -> List[LagentTool]:
+    """Load a set of tools and adapt them to the Lagent tool interface.
 
     Args:
-        tool_names (list[str]): list of tool names
-        device (str): device to load tools. Defaults to 'cpu'.
+        tools (List[BaseTool, str] | None): A list of tool names or tools.
+            If None, construct all available tools. Defaults to None.
+        device (str): The device to load tools. If ``tools`` is a list of
+            tool instances, it won't be used. Defaults to 'cpu'.
 
     Returns:
         List[LagentTool]: loaded tools.
     """
-    default_tools = list_tools()
-    loaded_tools = []
+    tools = tools if tools is not None else list_tools()
 
+    loaded_tools = []
     for tool in tools:
         if isinstance(tool, str):
-            assert tool in default_tools, f'{tool} is not a valid tool name.'
             tool = load_tool(tool, device=device, parser=LagentParser)
         else:
             tool.set_parser(LagentParser)

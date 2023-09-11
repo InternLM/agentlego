@@ -13,7 +13,7 @@ class TextToImage(BaseTool):
         name='Generate Image From Text',
         description='This is a useful tool to generate an image from the '
         'input text. The input text should be a series of keywords '
-        'separated by comma',
+        'separated by comma, and all keywords must be in English.',
         inputs=['text'],
         outputs=['image'],
     )
@@ -26,7 +26,12 @@ class TextToImage(BaseTool):
                  model: str = 'stable_diffusion',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
-        self.aux_prompt = ', best quality, extremely detailed'
+        self.aux_prompt = (
+            'best quality, extremely detailed, master piece, perfect, 4k')
+        self.negative_prompt = (
+            'longbody, lowres, bad anatomy, bad hands, '
+            'missing fingers, extra digit, fewer digits, cropped, '
+            'worst quality, low quality')
         self.model_name = model
         self.device = device
 
@@ -36,13 +41,11 @@ class TextToImage(BaseTool):
             MMagicInferencer,
             model_name=self.model_name,
             model_setting=None,
-            extra_parameters=dict(
-                negative_prompt='longbody, lowres, bad anatomy, bad hands, '
-                'missing fingers, extra digit, fewer digits, cropped, '
-                'worst quality, low quality'),
             device=self.device)
 
     def apply(self, text: str) -> ImageIO:
-        text += self.aux_prompt
-        image = self._inferencer.infer(text=text)[0]['infer_results']
+        text += ', ' + self.aux_prompt
+        image = self._inferencer.infer(
+            text=text,
+            negative_prompt=self.negative_prompt)[0]['infer_results']
         return ImageIO(image)

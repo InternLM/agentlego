@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from huggingface_hub import login
 from transformers import HfAgent
 
 from mmlmtools.apis.agents.transformers_agent import load_tools_for_hfagent
 
-login()
+#  from huggingface_hub import login
+#  login()
 
 tools = load_tools_for_hfagent(
     [
@@ -21,6 +21,7 @@ agent = HfAgent(
 for k in list(agent.toolbox.keys()):
     if agent.toolbox[k] not in tools:
         agent.toolbox.pop(k)
+agent.chat_prompt_template += 'Now you can only use tools starts with `mm`'
 
 demo_img = (Path(__file__).parent / 'demo.png').absolute()
 
