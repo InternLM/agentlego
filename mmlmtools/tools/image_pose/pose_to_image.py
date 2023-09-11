@@ -1,50 +1,72 @@
 # Copyright (c) OpenMMLab.All rights reserved.
-from typing import Optional
+from typing import Callable, Tuple, Union
 
-from mmlmtools.parsers import BaseParser
+from PIL import Image
+
+from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
-from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cache import load_or_build_object
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
 class PoseToImage(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image Condition On Pose Image',
-        model={
-            'model_name': 'controlnet',
-            'model_setting': 2
-        },
-        description='This is a useful tool when you want to generate a new '
-        'real image from a human pose image and the user description. like: '
-        'generate a real image of a human from this human pose image. or '
-        'generate a real image of a human from this pose. The input to this '
-        'tool should be an {{{input:image}}} and a {{{input:text}}} '
-        'representing the image and the text description. It returns a '
-        '{{{output:image}}} representing the generated image.')
+        description='This tool can generate an image from a '
+        'human pose image and a description.',
+        inputs=['image', 'text'],
+        outputs=['image'],
+    )
 
+    @require('mmagic')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
+                 model: str = 'controlnet',
+                 model_setting: int = 2,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.aux_prompt = (
+            'best quality, extremely detailed, master piece, perfect, 4k')
+        self.negative_prompt = (
+            'longbody, lowres, bad anatomy, bad hands, '
+            'missing fingers, extra digit, fewer digits, cropped, '
+            'worst quality, low quality')
+        self.model_name = model
+        self.model_setting = model_setting
+        self.device = device
 
     def setup(self):
         from mmagic.apis import MMagicInferencer
+
         self._inferencer = load_or_build_object(
             MMagicInferencer,
-            model_name=self.toolmeta.model['model_name'],
-            model_setting=self.toolmeta.model['model_setting'],
-            device=self.device)
+            model_name=self.model_name,
+            model_setting=self.model_setting,
+            device=self.device,
+        )
 
-    def apply(self, image_path: str, text: str) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            output_path = get_new_file_path(
-                'image/controlnet-res.png',
-                func_name='generate-image-from-pose')
-            self._inferencer.infer(
-                text=text, control=image_path, result_out_dir=output_path)
-        return output_path
+    def apply(self, image: ImageIO, text: str) -> ImageIO:
+        text = f'{text}, {self.aux_prompt}'
+        width, height = self.get_image_size(image.to_pil())
+        res = self._inferencer.infer(
+            text=text,
+            negative_prompt=self.negative_prompt,
+            control=image.to_path(),
+            extra_parameters=dict(height=height, width=width))
+        generated = res[0]['infer_results']
+        return ImageIO(generated)
+
+    @staticmethod
+    def get_image_size(image: Image.Image, canvas_size=512) -> Tuple[int, int]:
+        # The sd canvas size must can be divided by 8.
+
+        aspect_ratio = image.width / image.height
+        width = int((canvas_size * canvas_size * aspect_ratio)**0.5)
+        height = int(width / aspect_ratio)
+
+        width = width - (width % 8)
+        height = height - (height % 8)
+
+        return width, height

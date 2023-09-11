@@ -1,67 +1,56 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Callable, Union
 
-from mmlmtools.parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
-from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cache import load_or_build_object
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
 class HumanBodyPose(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Human Body Pose Detection On Image',
-        model={'pose2d': 'human'},
-        description='This is a useful tool when you want to draw '
-        'or show the skeleton of human, or estimate the pose or keypoints '
-        'of human in a photo. It takes an {{{input:image}}} as the input, '
-        'and returns a {{{output:image}}} representing the image with '
-        'skeletons. ')
+        description='This tool can estimate the pose or keypoints of '
+        'human in an image and draw the skeleton image',
+        inputs=['image'],
+        outputs=['image'],
+    )
 
+    @require('mmpose')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
+                 model='human',
                  device: str = 'cuda'):
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.model_name = model
+        self.device = device
 
     def setup(self):
-        if self.remote:
-            from mmpose.datasets.datasets.utils import parse_pose_metainfo
-            from mmpose.registry import DATASETS, VISUALIZERS
-            self._inferencer = True
-            visualizer_cfg = {
-                'type': 'PoseLocalVisualizer',
-                'vis_backends': [{
-                    'type': 'LocalVisBackend'
-                }],
-                'name': 'visualzier',
-                '_scope_': 'mmpose',
-                'radius': 3,
-                'alpha': 0.8,
-                'line_width': 1,
-            }
-            metainfo = DATASETS.get('CocoDataset').METAINFO
-            dataset_meta = parse_pose_metainfo(metainfo)
-            self.visualizer = VISUALIZERS.build(visualizer_cfg)
-            self.visualizer.set_dataset_meta(
-                dataset_meta, skeleton_style='openpose')
-        else:
-            from mmpose.apis import MMPoseInferencer
-            self._inferencer = load_or_build_object(
-                MMPoseInferencer,
-                pose2d=self.toolmeta.model['pose2d'],
-                device=self.device)
+        from mmpose.apis import MMPoseInferencer
+        self._inferencer = load_or_build_object(
+            MMPoseInferencer, pose2d=self.model_name, device=self.device)
 
-    def apply(self, image: str) -> str:
-        output_path = get_new_file_path(image, func_name='pose-estimation')
-        if self.remote:
-            raise NotImplementedError
-        else:
-            next(
-                self._inferencer(
-                    inputs=image,
-                    vis_out_dir=output_path,
-                    skeleton_style='openpose',
-                ))
-        return output_path
+    def apply(self, image: ImageIO) -> ImageIO:
+        image = image.to_array()[:, :, ::-1]
+        vis_params = self.adaptive_vis_params(*image.shape[:2])
+        results = next(
+            self._inferencer(
+                inputs=image,
+                skeleton_style='openpose',
+                black_background=True,
+                return_vis=True,
+                **vis_params,
+            ))
+        skeleton_image = results['visualization'][0][:, :, ::-1]
+        return ImageIO(skeleton_image)
+
+    @staticmethod
+    def adaptive_vis_params(width, height) -> dict:
+        scale = (width * height)**0.5
+
+        radius = max(round((3 / 256) * scale), 3)
+        thickness = max(round((1 / 256) * scale), 3)
+
+        return dict(radius=int(radius), thickness=int(thickness))
