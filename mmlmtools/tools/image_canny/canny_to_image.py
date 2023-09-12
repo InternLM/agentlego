@@ -1,56 +1,45 @@
 # Copyright (c) OpenMMLab.All rights reserved.
-from typing import Optional
+from typing import Callable, Union
 
-from mmlmtools.parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
 from mmlmtools.schema import ToolMeta
-from mmlmtools.utils import get_new_file_path
-from mmlmtools.utils.cache import load_or_build_object
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import require, load_or_build_object
 from ..base import BaseTool
 
 
 class CannyTextToImage(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image Condition On Canny Image',
-        model={
-            'model_name': 'controlnet',
-            'model_setting': 1
-        },
-        description='This is a useful tool when you want to generate a new '
-        'real image from a canny image and the user description. like: '
-        'generate a real image of a object or something from this canny image.'
-        'The input to this tool should be an {{{input:image}}} and a '
-        '{{{input:text}}} representing the image and the text description. '
-        'It returns a {{{output:image}}} representing the generated image.')
+        description='This tool can generate an image from a '
+        'canny edge image and a description.',
+        inputs=['image', 'text'],
+        outputs=['image'],
+    )
 
+    @require('mmagic')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
+                 model: str = 'controlnet',
+                 model_setting: int = 1,
                  device: str = 'cuda'):
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.model_name = model
+        self.model_setting = model_setting
+        self.device = device
 
     def setup(self):
-        try:
-            from mmagic.apis import MMagicInferencer
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `mmagic` correctly')
+        from mmagic.apis import MMagicInferencer
 
         self._inferencer = load_or_build_object(
             MMagicInferencer,
-            model_name=self.toolmeta.model['model_name'],
-            model_setting=self.toolmeta.model['model_setting'],
+            model_name=self.model_name,
+            model_setting=self.model_setting,
             device=self.device,
         )
 
-    def apply(self, image_path: str, text: str) -> str:
-        output_path = get_new_file_path(
-            'image/controlnet-res.png', func_name='generate-image-from-canny')
-
-        if self.remote:
-            raise NotImplementedError
-        else:
-            self._inferencer.infer(
-                text=text, control=image_path, result_out_dir=output_path)
-        return output_path
+    def apply(self, image: ImageIO, text: str) -> ImageIO:
+        res = self._inferencer.infer(text=text, control=image.to_path())
+        generated = res[0]['infer_results']
+        return ImageIO(generated)
