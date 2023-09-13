@@ -1,48 +1,41 @@
 #!/usr/bin/env python
 
-import glob
-import os
-import os.path as osp
 import shutil
+from pathlib import Path
+
+root_dir = Path(__file__).parents[2]
+doc_dir = Path(__file__).parent
+tmp_dir = doc_dir / '_tmp'
 
 
 def format_tool_readme(fn):
 
     with open(fn, 'r') as f:
-        readme = f.readlines()
+        contents = f.readlines()
 
     in_code_block = False
-    for i, line in enumerate(readme):
-        if in_code_block:
-            if line.startswith('```'):
-                in_code_block = False
-            else:
-                continue
-
+    h1 = []
+    for lineno, line in enumerate(contents):
         if line.startswith('```'):
-            in_code_block = True
-            continue
+            in_code_block = not in_code_block
 
-        # add indent level for all section titles
-        if line.startswith('#'):
-            readme[i] = '#' + line
+        if line.startswith('# ') and not in_code_block:
+            h1.append(lineno)
 
-    # write formatted content
-    with open(fn, 'w') as f:
-        f.writelines(readme)
+    for start, end in zip(h1, h1[1:] + [len(contents)]):
+        cls_name = contents[start][2:].strip()
+        target = tmp_dir / 'tools' / (cls_name + '.md')
+        target.write_text(''.join(contents[start:end]))
 
 
 if __name__ == '__main__':
-    if osp.isdir('_tmp'):
-        shutil.rmtree('_tmp')
 
-    os.makedirs('_tmp/tools', exist_ok=True)
+    if tmp_dir.is_dir():
+        shutil.rmtree(tmp_dir)
+
+    (tmp_dir / 'tools').mkdir(exist_ok=True, parents=True)
 
     # collect README.md of tools
-    for readme_fn in glob.glob('../../mmlmtools/tools/**/README.md'):
-        tgt_fn = osp.join('_tmp/tools',
-                          osp.basename(osp.dirname(readme_fn)) + '.md')
-        shutil.copy(readme_fn, tgt_fn)
-
+    for readme_fn in root_dir.glob('mmlmtools/tools/*/README.md'):
         # format readme content
-        format_tool_readme(tgt_fn)
+        format_tool_readme(readme_fn)

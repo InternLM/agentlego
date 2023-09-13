@@ -2,6 +2,7 @@
 import inspect
 from abc import ABCMeta, abstractmethod
 from typing import Any, Callable, Union
+from copy import deepcopy
 
 import torch
 
@@ -11,6 +12,7 @@ from mmlmtools.schema import ToolMeta
 class BaseTool(metaclass=ABCMeta):
 
     def __init__(self, toolmeta: Union[dict, ToolMeta], parser: Callable):
+        toolmeta = deepcopy(toolmeta)
         if isinstance(toolmeta, dict):
             toolmeta = ToolMeta(**toolmeta)
         self.toolmeta = toolmeta

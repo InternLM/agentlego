@@ -200,18 +200,17 @@ intersphinx_mapping = {
     'transformers':
     ('https://huggingface.co/docs/transformers/main/en/', None),
 }
-napoleon_custom_sections = [
-    # Custom sections for data elements.
-    ('Meta fields', 'params_style'),
-    ('Data fields', 'params_style'),
-]
 
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['rich', 'attr', 'einops', 'mat4py']
+autodoc_mock_imports = [
+    'diffusers', 'mmagic', 'mmpretrain', 'mmdet', 'mmocr', 'mmpose'
+]
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
+# Disable evaluate the default value.
+autodoc_preserve_defaults = True
 
 
 def builder_inited_handler(app):

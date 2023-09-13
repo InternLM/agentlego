@@ -11,10 +11,25 @@ from ..base import BaseTool
 
 
 class PoseToImage(BaseTool):
+    """A tool to generate image according to a human pose image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``MMagic`` repository.
+            Defaults to `controlnet`.
+        model_setting (int): The index of the model settings. Defaults to 2.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image Condition On Pose Image',
-        description='This tool can generate an image from a '
-        'human pose image and a description.',
+        description='This tool can generate an image from a human pose '
+        'image and a text. The text should be a series of English keywords '
+        'separated by comma.',
         inputs=['image', 'text'],
         outputs=['image'],
     )

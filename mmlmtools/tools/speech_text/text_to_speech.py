@@ -15,11 +15,7 @@ from ..base import BaseTool
 
 
 def resampling_audio(audio: dict, new_rate):
-    try:
-        import torchaudio
-    except ImportError as e:
-        raise ImportError(f'Failed to run the tool: {e} '
-                          '`torchaudio` is not installed correctly')
+    import torchaudio
     array, ori_sampling_rate = audio['array'], audio['sampling_rate']
     array = torch.from_numpy(array).reshape(-1, 1)
     torchaudio.functional.resample(array, ori_sampling_rate, new_rate)
@@ -31,10 +27,28 @@ def resampling_audio(audio: dict, new_rate):
 
 
 class TextToSpeech(BaseTool):
+    """A tool to convert input text to speech audio.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``HuggingFace`` model page.
+            Defaults to ``microsoft/speecht5_tts``.
+        post_processor (str): The post-processor of the output audio.
+            Defaults to ``microsoft/speecht5_hifigan``.
+        speaker_embeddings (str | torch.Tensor): The speaker embedding
+            of the Speech-T5 model. Defaults to an embedding from
+            ``Matthijs/speecht5-tts-demo``.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     SAMPLING_RATE = 16000
     DEFAULT_TOOLMETA = ToolMeta(
         name='Text Reader',
-        description='This is a tool that can speak the input text into audio.',
+        description='This is a tool that can speak the input English text into audio.',
         inputs=['text'],
         outputs=['audio'],
     )
@@ -43,8 +57,8 @@ class TextToSpeech(BaseTool):
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
+                 model: str = 'microsoft/speecht5_tts',
                  post_processor: str = 'microsoft/speecht5_hifigan',
-                 model='microsoft/speecht5_tts',
                  speaker_embeddings: Union[str, torch.Tensor] = (
                      'https://huggingface.co/spaces/Matthijs/'
                      'speecht5-tts-demo/resolve/main/spkemb/'

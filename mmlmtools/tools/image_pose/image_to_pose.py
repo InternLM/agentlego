@@ -9,6 +9,19 @@ from ..base import BaseTool
 
 
 class HumanBodyPose(BaseTool):
+    """A tool to extract human body keypoints from an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``MMPose`` repository.
+            Defaults to `human`.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Human Body Pose Detection On Image',
         description='This tool can estimate the pose or keypoints of '
@@ -21,7 +34,7 @@ class HumanBodyPose(BaseTool):
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model='human',
+                 model: str = 'human',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
         self.model_name = model

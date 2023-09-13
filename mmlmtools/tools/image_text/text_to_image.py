@@ -9,6 +9,19 @@ from ..base import BaseTool
 
 
 class TextToImage(BaseTool):
+    """A tool to generate image according to some keywords.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``MMagic`` repository.
+            Defaults to `stable_diffusion`.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image From Text',
         description='This is a useful tool to generate an image from the '

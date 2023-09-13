@@ -10,10 +10,24 @@ from ..utils.diffusers import load_diffusion_inferencer
 
 
 class DepthTextToImage(BaseTool):
+    """A tool to generate image according to a depth image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``diffusers`` repository.
+            Defaults to 'lllyasviel/sd-controlnet-depth'.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image Condition On Depth Image',
-        description='This tool can generate an image from a '
-        'depth image and a description.',
+        description='This tool can generate an image from a depth '
+        'image and a text. The text should be a series of English keywords '
+        'separated by comma.',
         inputs=['image', 'text'],
         outputs=['image'],
     )
@@ -23,7 +37,7 @@ class DepthTextToImage(BaseTool):
             self,
             toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
             parser: Callable = DefaultParser,
-            model: str = 'fusing/stable-diffusion-v1-5-controlnet-scribble',
+            model: str = 'lllyasviel/sd-controlnet-depth',
             device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
         self.model_name = model

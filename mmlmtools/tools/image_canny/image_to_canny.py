@@ -11,6 +11,15 @@ from ..base import BaseTool
 
 
 class ImageToCanny(BaseTool):
+    """A tool to do edge detection by canny algorithm on an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Edge Detection On Image',
         description='This tool can extract the edge image from an image.',

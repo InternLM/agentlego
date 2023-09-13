@@ -11,6 +11,16 @@ from ..base import BaseTool
 
 
 class ImageToDepth(BaseTool):
+    """A tool to estimation depth of an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Depth Image On Image',
         description='This tool can generate the depth image of an image.',
