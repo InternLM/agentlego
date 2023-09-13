@@ -4,9 +4,9 @@ from typing import Optional
 import cv2
 import numpy as np
 
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
+from ..base import BaseTool
 
 
 class ImageToCanny(BaseTool):

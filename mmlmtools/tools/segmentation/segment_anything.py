@@ -1,27 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import random
+from pathlib import Path
 from typing import Optional, Tuple
 
 import cv2
-import mmengine
 import numpy as np
 import torch
-import wget
 from PIL import Image
 
-from mmlmtools.utils.cache import load_or_build_object
-from mmlmtools.utils.toolmeta import ToolMeta
-from ...utils.file import get_new_file_path
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.utils import (download_checkpoint, download_url_to_file,
+                             get_new_file_path, load_or_build_object)
+from ..base import BaseTool
 
 GLOBAL_SEED = 1912
 
 
-def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
+def load_sam_and_predictor(model, eco_mode=False, device=None, ckpt_path=None):
 
-    def _load_sam(model, model_ckpt_path, eco_mode, device):
+    def _load_sam(model, ckpt_path, eco_mode, device):
         try:
             from segment_anything import sam_model_registry
         except ImportError as e:
@@ -29,22 +27,22 @@ def load_sam_and_predictor(model, model_ckpt_path, eco_mode, device):
                 f'Failed to run the tool for {e}, please check if you have '
                 'install `segment_anything` correctly')
 
-        url = ('https://dl.fbaipublicfiles.com/segment_anything/'
-               f'{model}')
-        mmengine.mkdir_or_exist('model_zoo')
-        if not os.path.exists(model_ckpt_path):
-            wget.download(url, out=model_ckpt_path)
+        url = f'https://dl.fbaipublicfiles.com/segment_anything/{model}'
+        if ckpt_path is not None:
+            Path(ckpt_path).parent.mkdir(exist_ok=True, parents=True)
+            download_url_to_file(url, ckpt_path)
+        else:
+            ckpt_path = download_checkpoint(url)
 
-        sam = sam_model_registry['vit_h'](checkpoint=f'model_zoo/{model}')
-        if eco_mode is not True:
+        sam = sam_model_registry['vit_h'](checkpoint=ckpt_path)
+        if not eco_mode:
             sam.to(device=device)
         return sam
 
     def _load_sam_predictor(sam):
         return SamPredictor(sam)
 
-    sam = load_or_build_object(_load_sam, model, model_ckpt_path, eco_mode,
-                               device)
+    sam = load_or_build_object(_load_sam, model, ckpt_path, eco_mode, device)
     sam_predictor = load_or_build_object(_load_sam_predictor, sam)
     return sam, sam_predictor
 
@@ -331,11 +329,11 @@ class SegmentAnything(BaseTool):
 
     def setup(self):
 
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.eco_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
-            self.device)
+            self.toolmeta.model['model'],
+            eco_mode=self.eco_mode,
+            device=self.device)
 
     def apply(self, image_path: str) -> str:
         if self.remote:
@@ -463,11 +461,11 @@ class SegmentClicked(BaseTool):
         super().__init__(toolmeta, parser, remote, device)
 
     def setup(self):
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.eco_mode = True
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
-            self.device)
+            self.toolmeta.model['model'],
+            eco_mode=self.eco_mode,
+            device=self.device)
 
     def apply(self, image_path: str, mask_path: str) -> str:
         if self.remote:
@@ -571,10 +569,10 @@ class ObjectSegmenting(BaseTool):
             model=self.toolmeta.model['grounding'], device=self.device)
 
         self.eco_mode = True
-        self.model_ckpt_path = f"model_zoo/{self.toolmeta.model['model']}"
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.toolmeta.model['model'], self.model_ckpt_path, self.eco_mode,
-            self.device)
+            self.toolmeta.model['model'],
+            eco_mode=self.eco_mode,
+            device=self.device)
 
     def apply(self, image_path: str, text: str) -> str:
         if self.remote:

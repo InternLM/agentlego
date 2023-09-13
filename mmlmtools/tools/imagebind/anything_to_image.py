@@ -3,12 +3,11 @@ from typing import Optional
 
 import torch
 
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cache import load_or_build_object
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
-from .models.imagebind_model import imagebind_huge as ib
+from ..base import BaseTool
 
 
 class AnythingToImage:
@@ -16,6 +15,8 @@ class AnythingToImage:
     def __init__(self, device, eco_mode):
         try:
             from diffusers import StableUnCLIPImg2ImgPipeline
+
+            from .models.imagebind_model import imagebind_huge as ib
         except ImportError as e:
             raise ImportError(
                 f'Failed to run the tool for {e}, please check if you have '
@@ -64,8 +65,7 @@ class AudioToImage(BaseTool):
         self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, audio: str) -> str:
-        if self.remote:
-            raise NotImplementedError
+        from .models.imagebind_model import imagebind_huge as ib
 
         if self.eco_mode:
             self.pipe.to(self.device)
@@ -114,8 +114,7 @@ class ThermalToImage(BaseTool):
         self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, thermal_path: str) -> str:
-        if self.remote:
-            raise NotImplementedError
+        from .models.imagebind_model import imagebind_huge as ib
 
         if self.eco_mode:
             self.pipe.to(self.device)
@@ -167,8 +166,7 @@ class AudioImageToImage(BaseTool):
         self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, image_path: str, audio_path: str) -> str:
-        if self.remote:
-            raise NotImplementedError
+        from .models.imagebind_model import imagebind_huge as ib
 
         if self.eco_mode:
             self.pipe.to(self.device)
@@ -233,8 +231,7 @@ class AudioTextToImage(BaseTool):
         self.eco_mode = self._inferencer.eco_mode
 
     def apply(self, audio_path: str, prompt: str) -> str:
-        if self.remote:
-            raise NotImplementedError
+        from .models.imagebind_model import imagebind_huge as ib
 
         if self.eco_mode:
             self.pipe.to(self.device)

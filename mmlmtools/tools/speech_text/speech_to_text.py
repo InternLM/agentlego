@@ -1,64 +1,66 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Callable, Union
+
 import torch
 from mmengine.utils import apply_to
 
-from ..base_tool import BaseTool
-from ..parsers import Audio
+from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.types import AudioIO
+from mmlmtools.utils import require
+from mmlmtools.utils.cache import load_or_build_object
+from ..base import BaseTool
 
 
-def resampling_audio(audio: Audio, new_rate):
+def resampling_audio(audio: AudioIO, new_rate):
     try:
         import torchaudio
     except ImportError as e:
         raise ImportError(f'Failed to run the tool: {e} '
                           '`torchaudio` is not installed correctly')
-    array, ori_sampling_rate = audio.array, audio.sampling_rate
-    array = torch.from_numpy(array).reshape(-1, 1)
-    torchaudio.functional.resample(array, ori_sampling_rate, new_rate)
-    return Audio(
-        array=array.reshape(-1).numpy(),
-        sampling_rate=new_rate,
-        path=audio.path)
+    tensor, ori_sampling_rate = audio.to_tensor(), audio.sampling_rate
+    tensor = torchaudio.functional.resample(tensor, ori_sampling_rate,
+                                            new_rate)
+    return AudioIO(tensor, sampling_rate=new_rate)
 
 
 class SpeechToText(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Transcriber',
+        description='This is a tool that transcribes an audio into text.',
+        inputs=['audio'],
+        outputs=['text'],
+    )
+
+    @require('transformers')
+    def __init__(
+        self,
+        toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+        parser: Callable = DefaultParser,
         model='openai/whisper-base',
-        description='This is a tool that transcribes an audio into text. It '
-        'It takes an {{{input:audio}}} as the input, and returns a '
-        '{{{output:text}}} representing the description of the audio')
+        device='cuda',
+    ):
+        super().__init__(toolmeta, parser)
+        self.model_name = model
+        self.device = device
 
     def setup(self) -> None:
-        try:
-            from transformers.models.whisper import (
-                WhisperForConditionalGeneration, WhisperProcessor)
-        except ImportError as e:
-            raise ImportError(
-                f'Failed to run the tool for {e}, please check if you have '
-                'install `transformers` correctly')
-        self.processor = WhisperProcessor.from_pretrained(self.toolmeta.model)
-        self.model = WhisperForConditionalGeneration.from_pretrained(
-            self.toolmeta.model)
-        self.model.to(self.device)
+        from transformers.models.whisper import (
+            WhisperForConditionalGeneration, WhisperProcessor)
+        self.processor = load_or_build_object(WhisperProcessor.from_pretrained,
+                                              self.model_name)
+        self.model = load_or_build_object(
+            WhisperForConditionalGeneration.from_pretrained,
+            self.model_name).to(self.device)
 
-    def apply(self, audio: Audio) -> str:
-        # For `HuggingfaceAgent`, we need to make output audio
-        # a `Audio` object since jupyter notebook could display it.
-        # Therefore the mapping of
-        # `HuggingFaceAgentParser._default_agent_cat2type` should be
-        # 'audio': 'audio'
-        # However, the audio should be a `path` when it is used as input,
-        # since it is hard for LLM to construct a `Audio` object.
-        # Consider the case that we've set 'audio': 'audio' in the mapping, and
-        # `HuggingFaceParser` is used. the `audio` will be a string.
-        if isinstance(audio, str):
-            audio = Audio.from_path(audio)
+    def apply(self, audio: AudioIO) -> str:
         target_sampling_rate = self.processor.feature_extractor.sampling_rate
         if target_sampling_rate != audio.sampling_rate:
             audio = resampling_audio(audio, target_sampling_rate)
         encoded_inputs = self.processor(
-            audio.array, return_tensors='pt').input_features
+            audio.to_tensor().numpy().reshape(-1),
+            return_tensors='pt',
+            sampling_rate=target_sampling_rate).input_features
         encoded_inputs = apply_to(encoded_inputs,
                                   lambda x: isinstance(x, torch.Tensor),
                                   lambda x: x.to(self.device))

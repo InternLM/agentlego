@@ -4,11 +4,11 @@ from typing import Optional
 
 import mmcv
 
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.utils import get_new_file_path
 from mmlmtools.utils.cache import load_or_build_object
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from ..base import BaseTool
 
 
 class ObjectDetection(BaseTool):

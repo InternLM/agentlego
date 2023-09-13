@@ -1,41 +1,38 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Callable, Union
 
-import numpy as np
-
-from mmlmtools.utils.cache import load_or_build_object
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from mmlmtools.parsers import DefaultParser
+from mmlmtools.schema import ToolMeta
+from mmlmtools.types import ImageIO
+from mmlmtools.utils import load_or_build_object, require
+from ..base import BaseTool
 
 
 class ImageCaption(BaseTool):
 
-    DEFAULT_TOOLMETA = dict(
-        name='Get Photo Description',
-        model={'model': 'blip-base_3rdparty_caption'},
-        description='This is a useful tool when you want to know '
-        'what is inside the image. It takes an {{{input:image}}} as the '
-        'input, and returns a {{{output:text}}} representing the description '
-        'of the image. ')
+    DEFAULT_TOOLMETA = ToolMeta(
+        name='Image Description',
+        description=('A useful tool that returns the '
+                     'description of the input image.'),
+        inputs=['image'],
+        outputs=['text'],
+    )
 
+    @require('mmpretrain')
     def __init__(self,
-                 toolmeta: Optional[ToolMeta] = None,
-                 parser: Optional[BaseParser] = None,
-                 remote: bool = False,
+                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
+                 parser: Callable = DefaultParser,
+                 model: str = 'blip-base_3rdparty_caption',
                  device: str = 'cpu'):
-
-        super().__init__(toolmeta, parser, remote, device)
+        super().__init__(toolmeta=toolmeta, parser=parser)
+        self.model = model
+        self.device = device
 
     def setup(self):
         from mmpretrain.apis import ImageCaptionInferencer
         self._inferencer = load_or_build_object(
-            ImageCaptionInferencer,
-            model=self.toolmeta.model['model'],
-            device=self.device)
+            ImageCaptionInferencer, model=self.model, device=self.device)
 
-    def apply(self, image: np.ndarray) -> str:
-        if self.remote:
-            raise NotImplementedError
-        else:
-            return self._inferencer(image)[0]['pred_caption']
+    def apply(self, image: ImageIO) -> str:
+        image = image.to_array()[:, :, ::-1]
+        return self._inferencer(image)[0]['pred_caption']

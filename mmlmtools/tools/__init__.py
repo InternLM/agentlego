@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .image_canny import CannyTextToImage, ImageToCanny
 from .image_depth import DepthTextToImage, ImageToDepth
-from .image_editing import (ImageExtension, ImageStylization, ObjectRemove,
+from .image_editing import (ImageExpansion, ImageStylization, ObjectRemove,
                             ObjectReplace)
 from .image_pose import HumanBodyPose, HumanFaceLandmark, PoseToImage
 from .image_scribble import ImageToScribble, ScribbleTextToImage
@@ -17,12 +17,35 @@ from .translation import Translation
 from .vqa import VisualQuestionAnswering
 
 __all__ = [
-    'CannyTextToImage', 'ImageToCanny', 'DepthTextToImage', 'ImageToDepth',
-    'ImageExtension', 'ObjectRemove', 'ObjectReplace', 'HumanFaceLandmark',
-    'HumanBodyPose', 'PoseToImage', 'ImageToScribble', 'ScribbleTextToImage',
-    'ImageCaption', 'TextToImage', 'VisualQuestionAnswering',
-    'ObjectDetection', 'TextToBbox', 'ImageMaskOCR', 'OCR', 'ObjectSegmenting',
-    'SegmentAnything', 'SegmentClicked', 'SemanticSegmentation',
-    'ImageStylization', 'AudioToImage', 'ThermalToImage', 'AudioImageToImage',
-    'AudioTextToImage', 'SpeechToText', 'TextToSpeech', 'Translation'
+    'CannyTextToImage',
+    'ImageToCanny',
+    'DepthTextToImage',
+    'ImageToDepth',
+    'ImageExpansion',
+    'ObjectRemove',
+    'ObjectReplace',
+    'HumanFaceLandmark',
+    'HumanBodyPose',
+    'PoseToImage',
+    'ImageToScribble',
+    'ScribbleTextToImage',
+    'ImageCaption',
+    'TextToImage',
+    'VisualQuestionAnswering',
+    'ObjectDetection',
+    'TextToBbox',
+    'ImageMaskOCR',
+    'OCR',
+    'ObjectSegmenting',
+    'SegmentAnything',
+    'SegmentClicked',
+    'SemanticSegmentation',
+    'ImageStylization',
+    'AudioToImage',
+    'ThermalToImage',
+    'AudioImageToImage',
+    'AudioTextToImage',
+    'SpeechToText',
+    'TextToSpeech',
+    'Translation',
 ]

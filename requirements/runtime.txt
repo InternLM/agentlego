@@ -1,5 +1,11 @@
-mmpretrain>=1.0.0rc8
-modelindex
+importlib_metadata
+mmengine
 numpy
 opencv-python
+packaging
+Pillow
+prompt_toolkit
 torch>=1.8.0
+torchaudio
+torchvision
+tqdm

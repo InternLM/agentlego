@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -22,8 +22,5 @@ class ToolMeta:
     """
     name: str
     description: str
-    model: Optional[Dict] = None
-    input_description: Optional[str] = None
-    output_description: Optional[str] = None
-    inputs: Optional[Tuple[str, ...]] = None
-    outputs: Optional[Tuple[str, ...]] = None
+    inputs: Optional[Tuple[str, ...]]
+    outputs: Optional[Tuple[str, ...]]

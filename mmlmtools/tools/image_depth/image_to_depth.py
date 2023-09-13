@@ -4,10 +4,10 @@ from typing import Optional
 import numpy as np
 from PIL import Image
 
+from mmlmtools.parsers import BaseParser
+from mmlmtools.schema import ToolMeta
 from mmlmtools.utils.file import get_new_file_path
-from mmlmtools.utils.toolmeta import ToolMeta
-from ..base_tool import BaseTool
-from ..parsers import BaseParser
+from ..base import BaseTool
 
 
 class ImageToDepth(BaseTool):
