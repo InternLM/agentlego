@@ -12,7 +12,7 @@ class HumanBodyPose(BaseTool):
     DEFAULT_TOOLMETA = ToolMeta(
         name='Human Body Pose Detection On Image',
         description='This tool can estimate the pose or keypoints of '
-        'human in an image and draw the skeleton image',
+        'human in an image and draw the human pose image',
         inputs=['image'],
         outputs=['image'],
     )
