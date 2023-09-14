@@ -9,6 +9,18 @@ from ..base import BaseTool
 
 
 class ImageCaption(BaseTool):
+    """A tool to describe an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``MMPreTrain`` repository.
+            Defaults to ``blip-base_3rdparty_caption``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
 
     DEFAULT_TOOLMETA = ToolMeta(
         name='Image Description',

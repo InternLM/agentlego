@@ -32,7 +32,7 @@ class LagentTool(BaseAction):
         except Exception as e:
             return ActionReturn(
                 type=self.name,
-                errmsg=str(e),
+                errmsg=repr(e),
                 args=args,
                 state=ActionStatusCode.ARGS_ERROR,
             )

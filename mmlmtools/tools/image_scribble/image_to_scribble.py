@@ -9,6 +9,16 @@ from ..base import BaseTool
 
 
 class ImageToScribble(BaseTool):
+    """A tool to convert image to a scribble sketch.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Scribble Conditioned On Image',
         description='This tool can generate a sketch scribble of an image.',

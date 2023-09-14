@@ -7,8 +7,7 @@ def load_diffusion_inferencer(model, device):
         device (str): The device to use.
 
     Returns:
-        diffusion_inferencer (StableDiffusionControlNetPipeline): The diffusion
-            inferencer.
+        StableDiffusionControlNetPipeline: The diffusion inferencer.
     """
 
     import torch
@@ -19,13 +18,12 @@ def load_diffusion_inferencer(model, device):
 
     dtype = torch.float16 if 'cuda' in device else torch.float32
     controlnet = ControlNetModel.from_pretrained(model, torch_dtype=dtype)
-    diffusion_inferencer = StableDiffusionControlNetPipeline.from_pretrained(
+    pipe = StableDiffusionControlNetPipeline.from_pretrained(
         'runwayml/stable-diffusion-v1-5',
         controlnet=controlnet,
         safety_checker=StableDiffusionSafetyChecker.from_pretrained(
             'CompVis/stable-diffusion-safety-checker'),
         torch_dtype=dtype,
     )
-    diffusion_inferencer.scheduler = UniPCMultistepScheduler.from_config(
-        diffusion_inferencer.scheduler.config)
-    return diffusion_inferencer.to(device)
+    pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
+    return pipe.to(device)

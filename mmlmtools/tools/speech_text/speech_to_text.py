@@ -13,11 +13,7 @@ from ..base import BaseTool
 
 
 def resampling_audio(audio: AudioIO, new_rate):
-    try:
-        import torchaudio
-    except ImportError as e:
-        raise ImportError(f'Failed to run the tool: {e} '
-                          '`torchaudio` is not installed correctly')
+    import torchaudio
     tensor, ori_sampling_rate = audio.to_tensor(), audio.sampling_rate
     tensor = torchaudio.functional.resample(tensor, ori_sampling_rate,
                                             new_rate)
@@ -25,6 +21,19 @@ def resampling_audio(audio: AudioIO, new_rate):
 
 
 class SpeechToText(BaseTool):
+    """A tool to recognize speech and convert to text.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``HuggingFace`` model page.
+            Defaults to ``openai/whisper-base``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Transcriber',
         description='This is a tool that transcribes an audio into text.',
