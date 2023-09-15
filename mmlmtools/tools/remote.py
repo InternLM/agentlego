@@ -48,7 +48,23 @@ class RemoteTool(BaseTool):
                 raise NotImplementedError()
 
         url = urljoin(self.url, 'call')
-        response = requests.post(url, files=form).json()
+        try:
+            response = requests.post(url, files=form).json()
+        except requests.ConnectionError as e:
+            raise ConnectionError(
+                f'Failed to connect the remote tool `{self.name}`.') from e
+        except requests.JSONDecodeError:
+            raise RuntimeError('Unexcepted server response.')
+
+        if isinstance(response, dict):
+            if 'error' in response:
+                # Tool internel error
+                raise RuntimeError(response['error'])
+            elif 'detail' in response:
+                # FastAPI validation error
+                msg = response['detail']['msg']
+                err_type = response['detail']['type']
+                raise ValueError(f'{err_type}({msg})')
 
         parsed_res = []
         for res in response:

@@ -92,7 +92,7 @@ class LagentParser(DefaultParser):
             args = tuple(json.loads(input_.strip(' .\'"\n')).values())
         except json.JSONDecodeError:
             raise ValueError(
-                'The arguments should be format as a json string.')
+                'All arguments should be combined into one json string.')
 
         return super().parse_inputs(*args)
 

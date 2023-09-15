@@ -77,7 +77,7 @@ def add_tool(tool_name: str):
     tool: BaseTool = tools[tool_name]
     inputs = tool.toolmeta.inputs
 
-    def call(**kwargs):
+    def _call(**kwargs):
         args = {}
         for name, in_category in zip(tool.input_fields, inputs):
             data = kwargs[name]
@@ -124,6 +124,12 @@ def add_tool(tool_name: str):
             else:
                 raise NotImplementedError
         return res
+    
+    def call(**kwargs):
+        try:
+            return _call(**kwargs)
+        except Exception as e:
+            return dict(error=repr(e))
 
     call_args = {}
     call_params = []
