@@ -8,6 +8,17 @@ from ..base import BaseTool
 
 
 class VisualQuestionAnswering(BaseTool):
+    """A tool to answer the question about an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        remote (bool): Whether to use the remote model. Defaults to False.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = dict(
         name='Visual Question Answering',
         model={'model': 'ofa-base_3rdparty-zeroshot_vqa'},

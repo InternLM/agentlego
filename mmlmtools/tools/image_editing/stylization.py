@@ -28,6 +28,20 @@ def load_instruct_pix2pix(model, device):
 
 
 class ImageStylization(BaseTool):
+    """A tool to stylize an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to inference. Which can be found
+            in the ``diffusers`` repository.
+            Defaults to 'timbrooks/instruct-pix2pix'.
+        inference_steps (int): The number of inference steps. Defaults to 20.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Image Modification',
         description=(
