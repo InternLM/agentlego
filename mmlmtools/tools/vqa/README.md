@@ -1,3 +1,1 @@
-# Visual Question Answering Tool
-
-## VisualQuestionAnswering
+# VisualQuestionAnswering
