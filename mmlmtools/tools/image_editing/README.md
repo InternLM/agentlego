@@ -23,7 +23,7 @@ from mmlmtools.apis import load_tool
 tool = load_tool('ImageExpansion', device='cuda')
 
 # apply tool
-image = tool('example/demo.png', '1.25')
+image = tool('examples/demo.png', '1.25')
 print(image)
 ```
 
@@ -39,7 +39,7 @@ tools = load_tools_for_lagent(tools=['ImageExpansion'], device='cuda')
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
 
 # agent running with the tool.
-img_path = 'image.png'
+img_path = 'examples/demo.png'
 ret = agent.chat(f'According to the image `{img_path}`, expand its size to 1.25 times')
 for step in ret.inner_steps[1:]:
     print('------')
@@ -122,7 +122,7 @@ tools = load_tools_for_lagent(tools=['ObjectRemove'], device='cuda')
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
 
 # agent running with the tool.
-img_path = ''
+img_path = 'examples/demo.png'
 ret = agent.chat(f'According to the image `{img_path}`, remove the dog in the image.')
 for step in ret.inner_steps[1:]:
     print('------')
@@ -218,7 +218,7 @@ tools = load_tools_for_lagent(tools=['ObjectReplace'], device='cuda')
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
 
 # agent running with the tool.
-img_path = ''
+img_path = 'examples/demo.png'
 ret = agent.chat(f'According to the image `{img_path}`, replace the cat with a white dog in the image.')
 for step in ret.inner_steps[1:]:
     print('------')
@@ -314,7 +314,7 @@ tools = load_tools_for_lagent(tools=['ImageStylization'], device='cuda')
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
 
 # agent running with the tool.
-img_path = ''
+img_path = 'examples/demo.png'
 ret = agent.chat(f'According to the image `{img_path}`, turn the cat into a cartoon cat.')
 for step in ret.inner_steps[1:]:
     print('------')
