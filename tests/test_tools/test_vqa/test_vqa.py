@@ -1,32 +1,40 @@
-import os.path as osp
-from unittest import skipIf
+from pathlib import Path
 
-import cv2
-import numpy as np
-from mmengine import is_installed
-from PIL import Image
+import pytest
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from mmlmtools.parsers import NaiveParser
+from mmlmtools.testing import setup_tool
+from mmlmtools.types import ImageIO
+
+data_dir = Path(__file__).parents[2] / 'data'
+test_image = (data_dir / 'images/dog-image.jpg').absolute()
 
 
-@skipIf(not is_installed('mmpretrain'), reason='requires mmpretrain')
-class TestVisionQuestionAnswering(ToolTestCase):
+@pytest.fixture()
+def tool():
+    from mmlmtools.tools import VisualQuestionAnswering
+    return setup_tool(VisualQuestionAnswering, device='cuda')
 
-    def test_call(self):
-        tool = load_tool(
-            'VisualQuestionAnswering', parser=LangChainParser(), device='cuda')
-        img = np.ones([224, 224, 3]).astype(np.uint8)
-        img_path = osp.join(self.tempdir.name, 'temp.jpg')
-        cv2.imwrite(img_path, img)
-        res = tool(img_path, 'prompt')
-        assert isinstance(res, str)
 
-        img = Image.fromarray(img)
-        tool = load_tool(
-            'VisualQuestionAnswering',
-            parser=HuggingFaceAgentParser(),
-            device='cuda')
-        res = tool(img, 'prompt')
-        assert isinstance(res, str)
+def test_call(tool):
+    tool.set_parser(NaiveParser)
+    assert isinstance(tool(ImageIO(str(test_image)), 'prompt'), str)
+
+
+def test_hf_agent(tool, hf_agent):
+    tools = load_tools_for_hfagent([tool])
+    hf_agent.prepare_for_new_chat()
+    hf_agent._toolbox = {t.name: t for t in tools}
+
+    out = hf_agent.chat(f'Please describe the `{test_image}`')
+    assert isinstance(out, str)
+
+
+def test_lagent(tool, lagent_agent):
+    tools = load_tools_for_lagent([tool])
+    lagent_agent.new_session(tools)
+
+    out = lagent_agent.chat(f'Please describe the `{test_image}`')
+    assert out.actions[-1].valid == 1
+    assert isinstance(out.response, str)
