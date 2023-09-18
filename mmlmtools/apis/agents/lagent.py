@@ -14,6 +14,7 @@ class LagentTool(BaseAction):
 
     def __init__(self, tool: BaseTool):
         self.tool = tool
+        self.outputs = self.tool.toolmeta.outputs
 
         super().__init__(
             description=tool.description,
@@ -24,10 +25,20 @@ class LagentTool(BaseAction):
     def run(self, *args, **kwargs):
         try:
             result = self.tool(*args, **kwargs)
+            if not isinstance(result, tuple):
+                res_tuple = [result]
+            else:
+                res_tuple = result
+
+            res_dict = {}
+            for res, out_category in zip(res_tuple, self.outputs):
+                res_dict[out_category] = res
+            res_dict['text'] = str(result)
+
             return ActionReturn(
                 type=self.name,
                 args=args,
-                result=dict(text=str(result)),
+                result=res_dict,
             )
         except Exception as e:
             return ActionReturn(
