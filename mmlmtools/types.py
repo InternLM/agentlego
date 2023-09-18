@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
-import cv2 as cv
 import numpy as np
 import torch
 import torchaudio
@@ -56,6 +55,8 @@ class ImageIO(IOType):
 
     def __init__(self, value: Union[str, np.ndarray, Image.Image]):
         super().__init__(value)
+        if self.type == 'path' and not Path(self.value).exists():
+            raise FileNotFoundError(f"No such file: '{self.value}'")
 
     def to_path(self) -> str:
         return self.to('path')
@@ -72,10 +73,7 @@ class ImageIO(IOType):
 
     @staticmethod
     def _path_to_array(path: str) -> np.ndarray:
-        image = cv.imread(path)
-        if image is None:
-            raise RuntimeError(f'Failed to read {path}')
-        return cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        return np.array(Image.open(path))
 
     @staticmethod
     def _pil_to_path(image: Image.Image) -> str:
@@ -94,7 +92,7 @@ class ImageIO(IOType):
     @staticmethod
     def _array_to_path(image: np.ndarray) -> str:
         filename = _temp_path('image', '.png')
-        cv.imwrite(filename, cv.cvtColor(image, cv.COLOR_RGB2BGR))
+        Image.fromarray(image).save(filename)
         return filename
 
 
@@ -112,6 +110,9 @@ class AudioIO(IOType):
 
         super().__init__(value=value)
         self._sampling_rate = sampling_rate
+
+        if self.type == 'path' and not Path(self.value).exists():
+            raise FileNotFoundError(f"No such file: '{self.value}'")
 
     @property
     def sampling_rate(self) -> int:

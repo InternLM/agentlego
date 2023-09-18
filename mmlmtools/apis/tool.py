@@ -1,23 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-import sys
+import importlib
 
-import mmlmtools.tools as tools
+import mmlmtools.tools
 from mmlmtools.tools.base import BaseTool
 from mmlmtools.utils.cache import load_or_build_object
 
-NAMES2TOOLS = {
-    k: v
-    for k, v in tools.__dict__.items()
-    if isinstance(v, type) and issubclass(v, BaseTool)
-}
+NAMES2TOOLS = {}
 
 
-def import_all_tools_to(target_dir):
-    global_dict = sys.modules[target_dir].__dict__
-    for k, v in tools.__dict__.items():
-        if isinstance(v, type) and issubclass(v, BaseTool):
-            global_dict[k] = v
+def register_all_tools(module):
+    if isinstance(module, str):
+        module = importlib.import_module(module)
+
+    for k, v in module.__dict__.items():
+        if (isinstance(v, type) and issubclass(v, BaseTool)
+                and (v is not BaseTool)):
+            NAMES2TOOLS[k] = v
+
+
+register_all_tools(mmlmtools.tools)
 
 
 def list_tools():
@@ -55,8 +57,7 @@ def load_tool(tool_name: str, device=None, **kwargs) -> BaseTool:
     if tool_name not in NAMES2TOOLS:
         # Using ValueError to show error msg cross lines.
         raise ValueError(f'{tool_name} is not supported now, the available '
-                         'tools are:\n' +
-                         '\n'.join(map(repr, NAMES2TOOLS.keys())))
+                         'tools are:\n' + '\n'.join(NAMES2TOOLS.keys()))
 
     tool_type = NAMES2TOOLS[tool_name]
     if 'device' in inspect.getfullargspec(tool_type).args:
