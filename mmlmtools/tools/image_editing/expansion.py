@@ -93,6 +93,19 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
 
 
 class ImageExpansion(BaseTool):
+    """A tool to expand the given image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        caption_model (str): The model name used to inference. Which can be
+            found in the ``MMPreTrain`` repository.
+            Defaults to ``blip-base_3rdparty_caption``.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = ToolMeta(
         name='Image Expansion',
         description='This tool can expand the peripheral area of '

@@ -63,6 +63,22 @@ class Inpainting:
 
 
 class ObjectReplace(BaseTool):
+    """A tool to replace the certain objects in the image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        sam_model (str): The model name used to inference. Which can be found
+            in the ``segment_anything`` repository.
+            Defaults to ``sam_vit_h_4b8939.pth``.
+        grounding_model (str): The model name used to inference. Which can be
+            found in the ``MMdetection`` repository.
+            Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
+        device (str): The device to load the model. Defaults to 'cuda'.
+    """
+
     DEFAULT_TOOLMETA = dict(
         name='Replace Object In Image',
         description='This is a useful tool when you want to replace the '
