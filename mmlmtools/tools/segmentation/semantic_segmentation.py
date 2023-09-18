@@ -49,6 +49,6 @@ class SemanticSegmentation(BaseTool):
 
     def apply(self, image: ImageIO) -> ImageIO:
         image = image.to_path()
-        results = self._inferencer(image)
+        results = self._inferencer(image, return_vis=True)
         output_image = results['visualization']
         return ImageIO(output_image)
