@@ -79,7 +79,7 @@ class ObjectReplace(BaseTool):
         device (str): The device to load the model. Defaults to 'cuda'.
     """
 
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Replace Object In Image',
         description='This is a useful tool when you want to replace the '
         'certain objects in the image with another object, like replacing '

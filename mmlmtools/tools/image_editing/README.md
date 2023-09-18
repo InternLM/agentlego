@@ -1,4 +1,4 @@
-## ImageExpansion
+# ImageExpansion
 
 ```{eval-rst}
 .. autoclass:: mmlmtools.tools.ImageExpansion
@@ -58,7 +58,7 @@ mim install -U mmpretrain
 
 ## Reference
 
-This tool uses a **BLIP** model in default settings. See the following paper for details.
+This tool uses **BLIP** and **Stable Diffusion** in default settings. See the following papers for details.
 
 ```bibtex
 @inproceedings{li2022blip,
@@ -68,8 +68,6 @@ This tool uses a **BLIP** model in default settings. See the following paper for
       booktitle={ICML},
 }
 ```
-
-This tool also uses a **Stable Diffusion** model in default settings. See the following paper for details.
 
 ```bibtex
 @InProceedings{Rombach_2022_CVPR,
@@ -81,6 +79,7 @@ This tool also uses a **Stable Diffusion** model in default settings. See the fo
     pages     = {10684-10695}
 }
 ```
+
 # ObjectRemove
 
 ```{eval-rst}
@@ -142,7 +141,7 @@ mim install -U mmdet
 
 ## Reference
 
-This tool uses a **SAM** model in default settings. See the following paper for details.
+This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. See the following papers for details.
 
 ```bibtex
 @article{kirillov2023segany,
@@ -152,8 +151,6 @@ This tool uses a **SAM** model in default settings. See the following paper for 
   year={2023}
 }
 ```
-
-This tool also uses a **Stable Diffusion** model in default settings. See the following paper for details.
 
 ```bibtex
 @InProceedings{Rombach_2022_CVPR,
@@ -165,8 +162,6 @@ This tool also uses a **Stable Diffusion** model in default settings. See the fo
     pages     = {10684-10695}
 }
 ```
-
-This tool also uses a **GLIP** model in default settings. See the following paper for details.
 
 ```bibtex
 @article{zhang2022glipv2,
@@ -202,7 +197,7 @@ from mmlmtools.apis import load_tool
 tool = load_tool('ObjectReplace', device='cuda')
 
 # apply tool
-image = tool('examples/demo.png','cat','a white dog')
+image = tool('examples/demo.png', 'cat', 'a white dog')
 print(image)
 ```
 
@@ -238,7 +233,7 @@ mim install -U mmdet
 
 ## Reference
 
-This tool uses a **SAM** model in default settings. See the following paper for details.
+This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. See the following papers for details.
 
 ```bibtex
 @article{kirillov2023segany,
@@ -248,8 +243,6 @@ This tool uses a **SAM** model in default settings. See the following paper for 
   year={2023}
 }
 ```
-
-This tool also uses a **Stable Diffusion** model in default settings. See the following paper for details.
 
 ```bibtex
 @InProceedings{Rombach_2022_CVPR,
@@ -261,8 +254,6 @@ This tool also uses a **Stable Diffusion** model in default settings. See the fo
     pages     = {10684-10695}
 }
 ```
-
-This tool also uses a **GLIP** model in default settings. See the following paper for details.
 
 ```bibtex
 @article{zhang2022glipv2,
@@ -298,7 +289,7 @@ from mmlmtools.apis import load_tool
 tool = load_tool('ImageStylization', device='cuda')
 
 # apply tool
-image = tool('examples/demo.png','turn the cat into a cartoon cat')
+image = tool('examples/demo.png', 'turn the cat into a cartoon cat')
 print(image)
 ```
 

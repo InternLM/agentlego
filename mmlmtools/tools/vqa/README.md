@@ -23,7 +23,7 @@ from mmlmtools.apis import load_tool
 tool = load_tool('VisualQuestionAnswering', device='cuda')
 
 # apply tool
-answer = tool('examples/demo.png','What is the color of the cat?')
+answer = tool('examples/demo.png', 'What is the color of the cat?')
 print(answer)
 ```
 
