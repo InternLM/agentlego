@@ -33,6 +33,15 @@ class AnythingToImage:
 
 
 class AudioToImage(BaseTool):
+    """A tool to generate image from an audio.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Audio',
         description=(
@@ -69,6 +78,15 @@ class AudioToImage(BaseTool):
 
 
 class ThermalToImage(BaseTool):
+    """A tool to generate image from an thermal image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Thermal Image',
         description=(
@@ -107,6 +125,15 @@ class ThermalToImage(BaseTool):
 
 
 class AudioImageToImage(BaseTool):
+    """A tool to generate image from an audio and an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Image and Audio',
         description=('This is a useful tool when you want to generate a real '
@@ -153,6 +180,15 @@ class AudioImageToImage(BaseTool):
 
 
 class AudioTextToImage(BaseTool):
+    """A tool to generate image from an audio and texts.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Audio and Text',
         description=('This is a useful tool when you want to  generate a real '

@@ -10,6 +10,18 @@ from ..base import BaseTool
 
 
 class ObjectDetection(BaseTool):
+    """A tool to detection all objects defined in COCO 80 classes.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to detect texts.
+            Which can be found in the ``MMDetection`` repository.
+            Defaults to ``rtmdet_l_8xb32-300e_coco``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Detect All Objects',
         description=('A useful tool when you only want to detect the picture '

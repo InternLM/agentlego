@@ -307,6 +307,18 @@ class SamPredictor:
 
 
 class SegmentAnything(BaseTool):
+    """A tool to segment all objects on an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        sam_model (str): The model name used to inference. Which can be found
+            in the ``segment_anything`` repository.
+            Defaults to ``sam_vit_h_4b8939.pth``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Segment Anything On Image',
         description=(
@@ -414,6 +426,18 @@ class SegmentAnything(BaseTool):
 
 
 class SegmentClicked(BaseTool):
+    """A tool to segment the clicked region in an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        sam_model (str): The model name used to inference. Which can be found
+            in the ``segment_anything`` repository.
+            Defaults to ``sam_vit_h_4b8939.pth``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Segment The Clicked Region In The Image',
         description=('This is a useful tool when you want to segment the '
@@ -487,6 +511,21 @@ class SegmentClicked(BaseTool):
 
 
 class ObjectSegmenting(BaseTool):
+    """A tool to segment all objects on an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        sam_model (str): The model name used to inference. Which can be found
+            in the ``segment_anything`` repository.
+            Defaults to ``sam_vit_h_4b8939.pth``.
+        grounding_model (str): The model name used to grounding.
+            Which can be found in the ``MMDetection`` repository.
+            Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Segment The Given Object In The Image',
         description=(

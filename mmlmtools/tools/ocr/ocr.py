@@ -12,6 +12,21 @@ from ..base import BaseTool
 
 
 class OCR(BaseTool):
+    """A tool to recognize the optical characters on an image.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        det_model (str): The model name used to detect texts.
+            Which can be found in the ``MMOCR`` repository.
+            Defaults to ``dbnetpp``.
+        rec_model (str): The model name used to recognize texts.
+            Which can be found in the ``MMOCR`` repository.
+            Defaults to ``svtr-small``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Recognize the Optical Characters On Image',
         description=('This is a useful tool when you want to recognize the '
@@ -49,6 +64,21 @@ class OCR(BaseTool):
 
 
 class ImageMaskOCR(BaseTool):
+    """A tool to recognize the optical characters on an image with mask.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        det_model (str): The model name used to detect texts.
+            Which can be found in the ``MMOCR`` repository.
+            Defaults to ``dbnetpp``.
+        rec_model (str): The model name used to recognize texts.
+            Which can be found in the ``MMOCR`` repository.
+            Defaults to ``svtr-small``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Recognize The Optical Characters On Image With Mask',
         description=('This is a useful tool when you want to recognize the '

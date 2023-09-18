@@ -9,6 +9,18 @@ from ..base import BaseTool
 
 
 class TextToBbox(BaseTool):
+    """A tool to detection the given object.
+
+    Args:
+        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
+            the :attr:`DEFAULT_TOOLMETA`.
+        parser (Callable): The parser constructor, Defaults to
+            :class:`DefaultParser`.
+        model (str): The model name used to detect texts.
+            Which can be found in the ``MMDetection`` repository.
+            Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
+        device (str): The device to load the model. Defaults to 'cpu'.
+    """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Detect the Given Object',
         description=('A useful tool when you only want to show the location '
