@@ -9,7 +9,7 @@ from ..base import BaseTool
 
 
 class VisualQuestionAnswering(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Visual Question Answering',
         description='This is a useful tool '
         'when you want to know some information about the image.'
