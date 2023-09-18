@@ -47,6 +47,6 @@ class TextToBbox(BaseTool):
 
     def apply(self, image: ImageIO, text: str) -> ImageIO:
         image = image.to_path()
-        results = self._inferencer(image, texts=text)
-        output_image = results['visualization']
+        results = self._inferencer(image, texts=text, return_vis=True)
+        output_image = results['visualization'][0]
         return ImageIO(output_image)

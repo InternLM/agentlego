@@ -48,6 +48,6 @@ class ObjectDetection(BaseTool):
 
     def apply(self, image: ImageIO) -> ImageIO:
         image = image.to_path()
-        results = self._inferencer(image)
-        output_image = results['visualization']
+        results = self._inferencer(image, return_vis=True)
+        output_image = results['visualization'][0]
         return ImageIO(output_image)
