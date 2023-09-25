@@ -13,7 +13,9 @@ from urllib.request import Request, urlopen
 from tqdm import tqdm
 
 
-def get_new_file_path(org_file_path: str, func_name: str = 'update'):
+def get_new_file_path(org_file_path: str,
+                      func_name: str = 'update',
+                      file_ext: str = None):
     """Create a new file path for the tool output based on the original file
     path and tool function. The file path is unique and can be identified by
     the agent. The file name consists of uuid, function name of all appled
@@ -22,6 +24,7 @@ def get_new_file_path(org_file_path: str, func_name: str = 'update'):
     Args:
         org_file_path (str): Original file path
         func_name (str, optional): Descriptions. Defaults to `'update'`
+        file_ext (str, optional): The file extension. Defaults to `None`.
 
     Returns:
         str: The new file path
@@ -30,6 +33,7 @@ def get_new_file_path(org_file_path: str, func_name: str = 'update'):
     os.makedirs(dirname, exist_ok=True)
     basename_splits = basename.split('.')
 
+    file_ext = file_ext if file_ext is not None else basename_splits[-1]
     name_split = basename_splits[0].split('_')
     this_new_uuid = str(uuid.uuid4())[:4]
     most_org_file_name = name_split[-1]
@@ -45,7 +49,7 @@ def get_new_file_path(org_file_path: str, func_name: str = 'update'):
         new_file_name = '_'.join([
             this_new_uuid, func_name, recent_prev_file_name, most_org_file_name
         ])
-    new_file_name += '.png'
+    new_file_name += f'.{file_ext}'
     new_file_path = os.path.join(dirname, new_file_name)
     return new_file_path
 
