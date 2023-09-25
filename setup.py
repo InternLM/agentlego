@@ -7,7 +7,7 @@ def readme():
     return content
 
 
-version_file = 'mmlmtools/version.py'
+version_file = 'agentlego/version.py'
 
 
 def get_version():
@@ -102,21 +102,19 @@ def parse_requirements(fname='requirements.txt', with_version=True):
 
 if __name__ == '__main__':
     setup(
-        name='mmlmtools',
+        name='agentlego',
         version=get_version(),
-        description='OpenMMLab Pose Estimation Toolbox and Benchmark.',
-        author='OpenMMLab Contributors',
-        author_email='openmmlab@gmail.com',
+        description='AgentLego is a versatile tool library '
+        'for enhancing LLM-based agents.',
+        author='AgentLego Contributors',
         keywords='computer vision',
         long_description=readme(),
         long_description_content_type='text/markdown',
         packages=find_packages(),
         include_package_data=True,
-        url='https://github.com/open-mmlab/mmlmtools',
+        url='https://github.com/open-mmlab/agentlego',
         license='Apache License 2.0',
-        python_requires='>=3.7',
         install_requires=parse_requirements('requirements/runtime.txt'),
         extras_require={
             'all': parse_requirements('requirements.txt'),
-            'optional': parse_requirements('requirements/optional.txt'),
         })

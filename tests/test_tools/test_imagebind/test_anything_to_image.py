@@ -2,8 +2,8 @@ from unittest import skipIf
 
 from mmengine import is_installed
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
 
 
 @skipIf(not is_installed('diffusers'), reason='requires diffusers')
@@ -29,7 +29,7 @@ class TestAudioImageToImage(ToolTestCase):
 
     def test_call(self):
         tool = load_tool('AudioImageToImage', device='cpu')
-        res = tool('tests/data/images/dog-image.jpg, tests/data/audio/cat.wav')
+        res = tool('tests/data/images/dog.jpg, tests/data/audio/cat.wav')
         assert isinstance(res, str)
 
 

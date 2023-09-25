@@ -6,9 +6,9 @@ import numpy as np
 from mmengine import is_installed
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
+from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 @skipIf(not is_installed('mmdet'), reason='requires mmdet')

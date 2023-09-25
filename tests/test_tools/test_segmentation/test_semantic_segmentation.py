@@ -6,8 +6,8 @@ import numpy as np
 from mmengine import is_installed
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
 
 
 @skipIf(not is_installed('mmsegmentation'), reason='mmsegmentation')

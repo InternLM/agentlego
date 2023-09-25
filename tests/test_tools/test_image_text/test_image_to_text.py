@@ -3,17 +3,17 @@ from pathlib import Path
 
 import pytest
 
-from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.testing import setup_tool
+from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from agentlego.parsers import NaiveParser
+from agentlego.testing import setup_tool
 
 data_dir = Path(__file__).parents[2] / 'data'
-test_img = (data_dir / 'images/dog-image.jpg').absolute()
+test_img = (data_dir / 'images/dog.jpg').absolute()
 
 
 @pytest.fixture()
 def tool():
-    from mmlmtools.tools import ImageCaption
+    from agentlego.tools import ImageCaption
     return setup_tool(ImageCaption, device='cuda')
 
 

@@ -2,7 +2,7 @@
 
 ## About LLM Agent
 
-## Supported Agents in MMTools
+## Supported Agents in AgentLego
 
 ### Lagent
 

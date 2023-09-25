@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.testing import setup_tool
+from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from agentlego.parsers import NaiveParser
+from agentlego.testing import setup_tool
 
 data_dir = Path(__file__).parents[2] / 'data'
 test_audio = (data_dir / 'audio/speech_to_text.flac').absolute()
@@ -12,7 +12,7 @@ test_audio = (data_dir / 'audio/speech_to_text.flac').absolute()
 
 @pytest.fixture()
 def tool():
-    from mmlmtools.tools import SpeechToText
+    from agentlego.tools import SpeechToText
     return setup_tool(SpeechToText, device='cuda')
 
 

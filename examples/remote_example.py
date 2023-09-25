@@ -5,8 +5,8 @@ from lagent.agents.react import ReAct
 from lagent.llms.openai import GPTAPI
 from prompt_toolkit import ANSI, prompt
 
-from mmlmtools.apis.agents.lagent import load_tools_for_lagent
-from mmlmtools.tools.remote import RemoteTool
+from agentlego.apis.agents.lagent import load_tools_for_lagent
+from agentlego.tools.remote import RemoteTool
 
 try:
     import transformers
@@ -43,7 +43,7 @@ def main():
     )
     system = chatbot._protocol.format([], [],
                                       chatbot._action_executor)[0]['content']
-    print(f"\033[92mSystem\033[0m:\n{system}")
+    print(f'\033[92mSystem\033[0m:\n{system}')
 
     while True:
         try:

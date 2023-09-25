@@ -1,4 +1,4 @@
-Welcome to the documentation of MMTools!
+Welcome to the documentation of AgentLego!
 ============================================
 
 

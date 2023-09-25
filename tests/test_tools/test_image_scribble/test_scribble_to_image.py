@@ -4,9 +4,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
+from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 class TestScribbleTextToImage(ToolTestCase):

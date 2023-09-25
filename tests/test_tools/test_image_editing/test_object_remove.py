@@ -3,9 +3,9 @@ from unittest import skipIf
 from mmengine import is_installed
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
+from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 @skipIf(
@@ -13,7 +13,7 @@ from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
 class TestObjectRemove(ToolTestCase):
 
     def test_call(self):
-        img_path = 'tests/data/images/test.jpg'
+        img_path = 'tests/data/images/dog2.jpg'
         tool = load_tool(
             'ObjectRemove', parser=LangChainParser(), device='cpu')
         res = tool(img_path, 'dog')

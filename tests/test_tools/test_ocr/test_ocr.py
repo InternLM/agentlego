@@ -6,9 +6,9 @@ import numpy as np
 from mmengine import is_installed
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego import load_tool
+from agentlego.testing import ToolTestCase
+from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 @skipIf(not is_installed('mmocr'), reason='requires mmocr')
@@ -34,6 +34,6 @@ class TestImageMaskOCR(ToolTestCase):
     def test_call(self):
         tool = load_tool(
             'ImageMaskOCR', parser=LangChainParser(), device='cuda')
-        res = tool('tests/data/images/test-image.png, '
-                   'tests/data/images/test-mask.png')
+        res = tool('tests/data/images/cups.png, '
+                   'tests/data/images/cups_mask.png')
         assert isinstance(res, str)

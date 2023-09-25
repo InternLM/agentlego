@@ -9,10 +9,10 @@ import uvicorn
 from fastapi import APIRouter, FastAPI, File, Form, UploadFile
 from typing_extensions import Annotated
 
-from mmlmtools.apis import load_tool
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.tools.base import BaseTool
-from mmlmtools.types import AudioIO, ImageIO
+from agentlego.apis import load_tool
+from agentlego.parsers import NaiveParser
+from agentlego.tools.base import BaseTool
+from agentlego.types import AudioIO, ImageIO
 
 prog_description = """\
 Start a server for several tools.
@@ -124,7 +124,7 @@ def add_tool(tool_name: str):
             else:
                 raise NotImplementedError
         return res
-    
+
     def call(**kwargs):
         try:
             return _call(**kwargs)
