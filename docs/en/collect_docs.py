@@ -36,6 +36,6 @@ if __name__ == '__main__':
     (tmp_dir / 'tools').mkdir(exist_ok=True, parents=True)
 
     # collect README.md of tools
-    for readme_fn in root_dir.glob('mmlmtools/tools/*/README.md'):
+    for readme_fn in root_dir.glob('agentlego/tools/*/README.md'):
         # format readme content
         format_tool_readme(readme_fn)

@@ -1,14 +1,14 @@
 import pytest
 
-import mmlmtools.types as types
-from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.testing import setup_tool
+import agentlego.types as types
+from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from agentlego.parsers import NaiveParser
+from agentlego.testing import setup_tool
 
 
 @pytest.fixture()
 def tool():
-    from mmlmtools.tools import TextToImage
+    from agentlego.tools import TextToImage
     return setup_tool(TextToImage, device='cuda')
 
 

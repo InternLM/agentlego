@@ -3,7 +3,7 @@ from lagent.agents.react import ReAct
 from lagent.llms.openai import GPTAPI
 from prompt_toolkit import ANSI, prompt
 
-from mmlmtools.apis.agents.lagent import load_tools_for_lagent
+from agentlego.apis.agents.lagent import load_tools_for_lagent
 
 try:
     import transformers

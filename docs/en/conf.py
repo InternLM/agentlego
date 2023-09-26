@@ -22,12 +22,12 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MMTools'
+project = 'AgentLego'
 copyright = '2020, OpenMMLab'
-author = 'MMTools Authors'
+author = 'AgentLego Authors'
 
 # The full version, including alpha/beta/rc tags
-version_file = '../../mmlmtools/version.py'
+version_file = '../../agentlego/version.py'
 
 
 def get_version():
@@ -93,7 +93,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmlmtools'
+            'url': 'https://github.com/open-mmlab/agentlego'
         },
     ],
     # Specify the language of shared menu
@@ -117,7 +117,7 @@ html_js_files = [
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'mmtoolsdoc'
+htmlhelp_basename = 'agentlegodoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -139,14 +139,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (root_doc, 'mmtools.tex', 'MMTools Documentation', author, 'manual'),
+    (root_doc, 'agentlego.tex', 'AgentLego Documentation', author, 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(root_doc, 'mmtools', 'MMTools Documentation', [author], 1)]
+man_pages = [(root_doc, 'agentlego', 'AgentLego Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -154,8 +154,9 @@ man_pages = [(root_doc, 'mmtools', 'MMTools Documentation', [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (root_doc, 'mmtools', 'MMTools Documentation', author, 'mmtools',
-     'OpenMMLab Toolkit for LLM Enhancement', 'Miscellaneous'),
+    (root_doc, 'agentlego', 'AgentLego Documentation', author, 'agentlego',
+     'A versatile tool library for enhancing LLM-based agents',
+     'Miscellaneous'),
 ]
 
 # -- Options for Epub output -------------------------------------------------

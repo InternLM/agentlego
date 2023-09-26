@@ -1,17 +1,17 @@
 import argparse
 import inspect
-from pathlib import Path
-from mmlmtools.apis.tool import NAMES2TOOLS
+
+from agentlego.apis.tool import NAMES2TOOLS
 
 prog_description = """\
-A tool to genreate a README template for a tool.
+A tool to generate a README template for a tool.
 """
 
 README_TMPL = '''\
 # {cls_name}
 
 ```{{eval-rst}}
-.. autoclass:: mmlmtools.tools.{cls_name}
+.. autoclass:: agentlego.tools.{cls_name}
     :noindex:
 ```
 
@@ -28,7 +28,7 @@ README_TMPL = '''\
 **Use the tool directly (without agent)**
 
 ```python
-from mmlmtools.apis import load_tool
+from agentlego.apis import load_tool
 
 # load tool
 tool = load_tool('{cls_name}'{init_args})
@@ -41,7 +41,7 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from mmlmtools.apis.agents import load_tools_for_lagent
+from agentlego.apis.agents import load_tools_for_lagent
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
@@ -66,7 +66,7 @@ TODO
 ## Reference
 
 TODO
-'''
+'''  # noqa: E501
 
 
 def parse_args():
@@ -75,6 +75,7 @@ def parse_args():
         'tools', type=str, nargs='+', help='The tool class to generate.')
     args = parser.parse_args()
     return args
+
 
 def generate_readme(tool: type):
     toolmeta = tool.DEFAULT_TOOLMETA
@@ -112,5 +113,5 @@ def main():
         print(generate_readme(NAMES2TOOLS.get(tool)))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

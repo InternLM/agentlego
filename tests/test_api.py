@@ -5,8 +5,8 @@ from importlib.util import find_spec
 import pytest
 from mmengine.hub import get_config
 
-from mmlmtools.apis.tool import custom_tool, load_tool
-from mmlmtools.tools import ImageCaptionTool
+from agentlego.apis.tool import custom_tool, load_tool
+from agentlego.tools import ImageCaptionTool
 
 REPOS = ['mmpretrain', 'mmdet', 'mmagic']
 

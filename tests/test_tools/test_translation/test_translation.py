@@ -1,8 +1,8 @@
 import pytest
 
-from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.testing import setup_tool
+from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from agentlego.parsers import NaiveParser
+from agentlego.testing import setup_tool
 
 text = 'Legumes share resources with nitrogen-fixing bacteria'
 source_lang = 'English'

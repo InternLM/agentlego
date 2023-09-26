@@ -4,9 +4,9 @@ import tempfile
 import numpy as np
 from PIL import Image
 
-from mmlmtools.testing import ToolTestCase
-from mmlmtools.tools.base_tool import BaseTool
-from mmlmtools.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego.testing import ToolTestCase
+from agentlego.tools.base_tool import BaseTool
+from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
 
 
 class DummyTool(BaseTool):

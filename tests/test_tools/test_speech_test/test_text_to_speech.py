@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
-from mmlmtools.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
-from mmlmtools.parsers import NaiveParser
-from mmlmtools.testing import setup_tool
-from mmlmtools.types import AudioIO
+from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
+from agentlego.parsers import NaiveParser
+from agentlego.testing import setup_tool
+from agentlego.types import AudioIO
 
 
 @pytest.fixture()
 def tool():
-    from mmlmtools.tools import TextToSpeech
+    from agentlego.tools import TextToSpeech
     return setup_tool(TextToSpeech, device='cuda')
 
 

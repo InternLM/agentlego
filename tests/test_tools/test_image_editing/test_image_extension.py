@@ -1,8 +1,8 @@
 from PIL import Image
 
-from mmlmtools import load_tool
-from mmlmtools.parsers import HuggingFaceAgentParser, LangChainParser
-from mmlmtools.testing import ToolTestCase
+from agentlego import load_tool
+from agentlego.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego.testing import ToolTestCase
 
 
 class TestImageExpansion(ToolTestCase):
@@ -10,7 +10,7 @@ class TestImageExpansion(ToolTestCase):
     def test_call(self):
         tool = load_tool(
             'ImageExpansion', parser=LangChainParser(), device='cpu')
-        img_path = 'tests/data/images/test.jpg'
+        img_path = 'tests/data/images/dog2.jpg'
         res = tool(img_path, '2000x1000')
         assert isinstance(res, str)
 
