@@ -1,4 +1,4 @@
-mmagic
-mmdet>=3.0.0
-mmocr>=1.0.0
-mmpretrain>=1.0.0rc8
+sentence-transformers
+torch
+torchaudio
+torchvision

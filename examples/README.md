@@ -45,7 +45,7 @@ export OPENAI_API_KEY={Your_Private_Openai_Key}
 
 我们在 `examples/visual_chatgpt/` 下给了一个简化过的 visual chatgpt 代码。
 
-在本例中，我们使用了 visual chatgpt 中原生支持的 `ImageCaptioning` 和 mmtools 提供的 `OCRTool` 两个工具，来演示如何将 mmtools 集成到已有的项目中。
+在本例中，我们使用了 visual chatgpt 中原生支持的 `ImageCaptioning` 和 AgentLego 提供的 `OCRTool` 两个工具，来演示如何将 AgentLego 集成到已有的项目中。
 
 ```bash
 python visual_chatgpt.py --load "ImageCaptioning_cpu,OCRTool_cpu"

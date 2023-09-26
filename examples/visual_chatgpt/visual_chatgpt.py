@@ -3,7 +3,6 @@
 
 import argparse
 import inspect
-
 # coding: utf-8
 import os
 import random
@@ -20,7 +19,7 @@ from langchain.llms.openai import OpenAI
 from PIL import Image
 from transformers import BlipForConditionalGeneration, BlipProcessor
 
-from mmlmtools.apis.agents.visual_chatgpt import load_tools_for_visual_chatgpt
+from agentlego.apis.agents.visual_chatgpt import load_tools_for_visual_chatgpt
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
