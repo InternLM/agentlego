@@ -2,7 +2,7 @@ from pathlib import Path
 
 from transformers import HfAgent
 
-from agentlego.apis.agents.transformers_agent import load_tools_for_hfagent
+from agentlego.apis.agents.huggingface_agent import load_tools_for_hfagent
 
 #  from huggingface_hub import login
 #  login()

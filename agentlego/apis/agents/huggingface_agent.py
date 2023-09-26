@@ -16,7 +16,7 @@ class HFAgentTool(Tool):
 
         # remove spaces in the tool name which is not allowed in the hugging
         # face agent system
-        self.name: str = 'mm_' + tool.name.lower().replace(' ', '_')
+        self.name: str = 'agentlego_' + tool.name.lower().replace(' ', '_')
         self.description: str = tool.description
         self.inputs: List = list(tool.toolmeta.inputs)
         self.outputs: List = list(tool.toolmeta.outputs)
