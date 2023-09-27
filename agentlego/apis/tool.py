@@ -22,8 +22,22 @@ def register_all_tools(module):
 register_all_tools(agentlego.tools)
 
 
-def list_tools():
-    return NAMES2TOOLS.keys()
+def list_tools(with_description=False):
+    """List all the registered tools.
+
+    Args:
+        with_description (bool): Whether to return the description of tools.
+            Defaults to `False`
+
+    Returns:
+        list: list of tool names by default, or list of tuples
+        `(tool_name, description)` if `with_description` is `True`.
+    """
+    if with_description:
+        return list((name, cls.DEFAULT_TOOLMETA.description)
+                    for name, cls in NAMES2TOOLS.items())
+    else:
+        return list(NAMES2TOOLS.keys())
 
 
 def load_tool(tool_name: str, device=None, **kwargs) -> BaseTool:

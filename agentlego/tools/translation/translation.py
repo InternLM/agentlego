@@ -8,7 +8,7 @@ from ..base import BaseTool
 
 
 class Translation(BaseTool):
-    DEFAULT_TOOLMETA = dict(
+    DEFAULT_TOOLMETA = ToolMeta(
         name='Text translation',
         description='This is a useful tool that translates a text from one '
         'language to another.',

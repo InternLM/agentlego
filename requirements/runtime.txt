@@ -5,4 +5,5 @@ opencv-python
 packaging
 Pillow
 prompt_toolkit
+thefuzz
 tqdm

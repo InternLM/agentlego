@@ -1,3 +1,5 @@
+openai
+sentence-transformers
 torch
 torchaudio
 torchvision
