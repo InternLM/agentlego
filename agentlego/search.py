@@ -2,10 +2,8 @@
 from typing import List
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
-from thefuzz import process
 
-from .apis.tool import list_tool_and_descriptions
+from .apis.tool import list_tools
 
 
 def _cosine_similarity(a: np.array, b: np.array) -> list:
@@ -68,6 +66,8 @@ def _serach_with_sentence_transformers(
     Returns:
         list: List of tool descriptions.
     """
+    from sentence_transformers import SentenceTransformer
+
     model = SentenceTransformer(model)
     embeddings = model.encode([query] + choices)
     similarity = _cosine_similarity(embeddings[0], embeddings[1:])
@@ -83,6 +83,7 @@ def _serach_with_sentence_transformers(
 
 
 def _search_with_thefuzz(query, choices, topk=5):
+    from thefuzz import process
     result = process.extract(query, choices=choices, limit=topk)
     return [res for res, _ in result]
 
@@ -105,7 +106,7 @@ def search_tool(query: str, kind: str = 'thefuzz') -> List[str]:
         >>> search_tool('show the skeleton of person', kind='st')
     """
     choice2names = dict()
-    for name, description in list_tool_and_descriptions().items():
+    for name, description in list_tools(with_description=True):
         choice2names[description] = name
 
     choices = list(choice2names.keys())
