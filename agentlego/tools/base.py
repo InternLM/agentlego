@@ -23,12 +23,20 @@ class BaseTool(metaclass=ABCMeta):
     def name(self) -> str:
         return self.toolmeta.name
 
-    def set_parser(self, parser: Callable):
-        self.parser = parser(self)
+    @name.setter
+    def name(self, val: str):
+        self.toolmeta.name = val
 
     @property
     def description(self) -> str:
         return self.parser.refine_description()
+
+    @description.setter
+    def description(self, val: str):
+        self.toolmeta.description = val
+
+    def set_parser(self, parser: Callable):
+        self.parser = parser(self)
 
     def setup(self):
         """Implement lazy initialization here that will be performed before the

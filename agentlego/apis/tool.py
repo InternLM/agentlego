@@ -40,12 +40,20 @@ def list_tools(with_description=False):
         return list(NAMES2TOOLS.keys())
 
 
-def load_tool(tool_name: str, device=None, **kwargs) -> BaseTool:
+def load_tool(tool_name: str,
+              override_name: str = None,
+              description: str = None,
+              device=None,
+              **kwargs) -> BaseTool:
     """Load a configurable callable tool for different task.
 
     Args:
         tool_name (str): tool name for specific task. You can find more
             description about supported tools in `Capability Matrix`_
+        override_name (str | None): The name to override the default name.
+            Defaults to None.
+        description (str): The description to override the default description.
+            Defaults to None.
         device (str): The device to load the tool. Defaults to None.
         **kwargs: key-word arguments to build the specific tools.
             These arguments are related ``tool``. You can find the arguments
@@ -76,5 +84,15 @@ def load_tool(tool_name: str, device=None, **kwargs) -> BaseTool:
     tool_type = NAMES2TOOLS[tool_name]
     if 'device' in inspect.getfullargspec(tool_type).args:
         kwargs['device'] = device
-    tool_obj = load_or_build_object(tool_type, **kwargs)
+        
+    if override_name or description:
+        tool_obj = tool_type(**kwargs)
+        if override_name:
+            tool_obj.name = override_name
+        if description:
+            tool_obj.description = description
+    else:
+        # Only enable cache if no overrided attribution
+        # to avoid the cached tool is changed.
+        tool_obj = load_or_build_object(tool_type, **kwargs)
     return tool_obj
