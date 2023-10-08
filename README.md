@@ -29,8 +29,23 @@ English | [简体中文](/README_zh-CN.md)
 
 ## Installation
 
+**Install the AgentLego package**
+
 ```shell
 pip install agentlego
+```
+
+**Install tool-specific dependencies**
+
+Some tools requires extra packages, please check the readme file of the tool, and confirm all requirements are
+satisfied.
+
+For example, if we want to use the `ImageCaption` tool. We need to check the **Set up** section of
+[readme](agentlego/tools/image_text/README.md#ImageCaption) and install the requirements.
+
+```bash
+pip install -U openmim
+mim install -U mmpretrain
 ```
 
 ## Use tools directly
@@ -62,13 +77,13 @@ caption = image_caption_tool(image)
 - [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): Describe the input image.
 - [OCR](agentlego/tools/ocr/README.md#OCR): Recognize the text from a photo.
 - [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): Answer the question according to the image.
-- [HumanBodyPose](agentlego/tools/image_pose/README.md#HumanBodyPose): Estimate the pose or keypoints of human in an image and draw the human pose image
-- [HumanFaceLandmark](agentlego/tools/image_pose/README.md#HumanFaceLandmark): Estimate the landmark or keypoints of human faces in an image and draw the image with landmarks.
+- [HumanBodyPose](agentlego/tools/image_pose/README.md#HumanBodyPose): Estimate the pose or keypoints of human in an image.
+- [HumanFaceLandmark](agentlego/tools/image_pose/README.md#HumanFaceLandmark): Estimate the landmark or keypoints of human faces in an image.
 - [ImageToCanny](agentlego/tools/image_canny/README.md#ImageToCanny): Extract the edge image from an image.
 - [ImageToDepth](agentlego/tools/image_depth/README.md#ImageToDepth): Generate the depth image of an image.
 - [ImageToScribble](agentlego/tools/image_scribble/README.md#ImageToScribble): Generate a sketch scribble of an image.
 - [ObjectDetection](agentlego/tools/object_detection/README.md#ObjectDetection): Detect all objects in the image.
-- [TextToBbox](agentlego/tools/object_detection/README.md#TextToBbox): Detect the given objects in the image.
+- [TextToBbox](agentlego/tools/object_detection/README.md#TextToBbox): Detect specific objects described by the given text in the image.
 - Segment Anything series
   - [SegmentAnything](agentlego/tools/segmentation/README.md#SegmentAnything): Segment all items in the image.
   - [SegmentClicked](agentlego/tools/segmentation/README.md#SegmentClicked): Segment the masked region in the image.

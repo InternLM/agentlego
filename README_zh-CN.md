@@ -29,8 +29,21 @@
 
 ## 安装环境
 
+**安装 AgentLego 包**
+
 ```shell
 pip install agentlego
+```
+
+**安装工具特定的依赖**
+
+一些工具需要额外的软件包，请查看工具的自述文件，并确认所有要求都得到满足。
+
+例如，如果我们想要使用`ImageCaption`工具。我们需要查看工具 [readme](agentlego/tools/image_text/README.md#ImageCaption) 的 **Set up** 小节并安装所需的软件。
+
+```bash
+pip install -U openmim
+mim install -U mmpretrain
 ```
 
 ## 直接使用工具
