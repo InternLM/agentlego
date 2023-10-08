@@ -73,7 +73,7 @@ class ImageIO(IOType):
 
     @staticmethod
     def _path_to_array(path: str) -> np.ndarray:
-        return np.array(Image.open(path))
+        return np.array(Image.open(path).convert('RGB'))
 
     @staticmethod
     def _pil_to_path(image: Image.Image) -> str:

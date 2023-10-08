@@ -8,14 +8,14 @@ from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO, ImageIO
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
-from .models.imagebind_model import imagebind_huge as ib
 
 
 class AnythingToImage:
 
-    @require('diffusers')
+    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self, device):
         from diffusers import StableUnCLIPImg2ImgPipeline
+        from .models.imagebind_model import imagebind_huge as ib
 
         pipe = load_or_build_object(
             StableUnCLIPImg2ImgPipeline.from_pretrained,
@@ -52,7 +52,7 @@ class AudioToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('diffusers')
+    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -65,6 +65,8 @@ class AudioToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO) -> ImageIO:
+        from .models.imagebind_model import imagebind_huge as ib
+
         audio_paths = [audio]
         audio_data = ib.load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self._inferencer.model.forward(
@@ -98,7 +100,7 @@ class ThermalToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('diffusers')
+    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -111,6 +113,8 @@ class ThermalToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, thermal: ImageIO) -> ImageIO:
+        from .models.imagebind_model import imagebind_huge as ib
+
         thermal_paths = [thermal]
         thermal_data = ib.load_and_transform_thermal_data(
             thermal_paths, self.device)
@@ -144,7 +148,7 @@ class AudioImageToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('diffusers')
+    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -157,6 +161,8 @@ class AudioImageToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, image: ImageIO, audio: AudioIO) -> ImageIO:
+        from .models.imagebind_model import imagebind_huge as ib
+
         # process image data
         vision_data = ib.load_and_transform_vision_data([image], self.device)
         embeddings = self._inferencer.model.forward(
@@ -200,7 +206,7 @@ class AudioTextToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('diffusers')
+    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -213,6 +219,8 @@ class AudioTextToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO, prompt: str) -> ImageIO:
+        from .models.imagebind_model import imagebind_huge as ib
+
         audio_paths = [audio]
         text = ib.load_and_transform_text([prompt], self.device)
         embeddings = self._inferencer.model.forward(
