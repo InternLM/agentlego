@@ -1,270 +1,109 @@
-# OpenMMLab Visual Toolbox for LLMs
+<div align="center">
+<img src="docs/src/agentlego-logo.png" width="450"/>
+</div>
 
-## Visual ChatGPT
+<div align="center">
 
-### 基础使用
+[English](./README.md) | 简体中文
+
+</div>
+
+- [简介](#简介)
+- [快速开始](#快速开始)
+  - [安装环境](#安装环境)
+  - [直接使用工具](#直接使用工具)
+  - [集成至智能体框架](#集成至智能体框架)
+- [工具列表](#工具列表)
+- [开源许可证](#开源许可证)
+
+# 简介
+
+<span style="color:blue"> *Agent Lego* </span> 是一个开源的多功能工具 API 库，用于扩展和增强基于大型语言模型（LLM）的智能体（Agent），具有以下突出特点：
+
+- **丰富的多模态扩展工具集**，包括视觉感知、图像生成和编辑、语音处理和视觉语言推理等。
+- **灵活的工具接口**，允许用户轻松扩展具有任意类型参数和输出的自定义工具。
+- **与基于LLM的代理程序框架轻松集成**，如 [LangChain](https://github.com/langchain-ai/langchain)、[Transformers Agent](https://huggingface.co/docs/transformers/transformers_agents)、[Lagent](https://github.com/InternLM/lagent)。
+- **支持部署工具服务和远程访问**，这对于需要大型机器学习模型（例如 ViT）或特殊环境（例如 GPU 和 CUDA）的工具特别有用。
+
+# 快速开始
+
+## 安装环境
+
+**安装 AgentLego 包**
+
+```shell
+pip install agentlego
+```
+
+**安装工具特定的依赖**
+
+一些工具需要额外的软件包，请查看工具的自述文件，并确认所有要求都得到满足。
+
+例如，如果我们想要使用`ImageCaption`工具。我们需要查看工具 [readme](agentlego/tools/image_text/README.md#ImageCaption) 的 **Set up** 小节并安装所需的软件。
+
+```bash
+pip install -U openmim
+mim install -U mmpretrain
+```
+
+## 直接使用工具
 
 ```Python
 from agentlego import list_tools, load_tool
 
-tools = []
-models = {}
+print(list_tools())  # list tools in AgentLego
 
-agentlego_tools = list_tools()  # list tools in AgentLego
-# dict_keys([
-# 'Image2CannyTool',
-# 'ImageCaptionTool',
-# 'Text2BoxTool',
-# 'Text2ImageTool',
-# 'OCRTool',
-# 'Canny2ImageTool',
-# 'ObjectDetectionTool',
-# 'HumanBodyPoseTool',
-# 'SemSegTool',
-# ])
-
-for tool_name in agentlego_tools:
-    # obtain tool instance via `load_tool()`
-    tool = load_tool(tool_name, device='cpu')
-
-    models[tool_name] = tool
-    tools.append(
-        Tool(
-            name=tool.toolmeta.name,
-            description=tool.toolmeta.description,
-            func=tool))
+image_caption_tool = load_tool('ImageCaption', device='cuda')
+print(image_caption_tool.description)
+image = './examples/demo.png'
+caption = image_caption_tool(image)
 ```
 
-### 适配已有 Agents
+## 集成至智能体框架
 
-我们提供了方便的接口来适配已有的 Agents，包括：
+- [**Lagent**](examples/lagent_example.py)
+- [**HuggingFace Agent**](examples/hf_agent/hf_agent_example.py)
+- [**VisualChatGPT**](examples/visual_chatgpt/visual_chatgpt.py)
 
-- 直接返回 langchain Tool
-- 将 MMLMTool 转为 Visual ChatGPT / InterGPT 的模型
-- 将 MMLMTool 转为 Transformer Agent 的模型
+# 工具列表
 
-通过两行代码可以快速将 AgentLego 集成到 VisualChatGPT / InterGPT 项目中：
+**语音相关**
+- [TextToSpeech](agentlego/tools/speech_text/README.md#TextToSpeech): 将输入文本转换为音频。
+- [SpeechToText](agentlego/tools/speech_text/README.md#SpeechToText): 将音频转录为文本。
 
-#### VisualChatGPT
+**图像处理相关**
+- [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): 描述输入图像。
+- [OCR](agentlego/tools/ocr/README.md#OCR): 从照片中识别文本。
+- [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): 根据图片回答问题。
+- [HumanBodyPose](agentlego/tools/image_pose/README.md#HumanBodyPose): 估计图像中人体的姿态或关键点，并绘制人体姿态图像
+- [HumanFaceLandmark](agentlego/tools/image_pose/README.md#HumanFaceLandmark): 识别图像中人脸的关键点，并绘制带有关键点的图像。
+- [ImageToCanny](agentlego/tools/image_canny/README.md#ImageToCanny): 从图像中提取边缘图像。
+- [ImageToDepth](agentlego/tools/image_depth/README.md#ImageToDepth): 生成图像的深度图像。
+- [ImageToScribble](agentlego/tools/image_scribble/README.md#ImageToScribble): 生成一张图像的涂鸦草图。
+- [ObjectDetection](agentlego/tools/object_detection/README.md#ObjectDetection): 检测图像中的所有物体。
+- [TextToBbox](agentlego/tools/object_detection/README.md#TextToBbox): 检测图像中的给定对象。
+- Segment Anything 系列工具
+  - [SegmentAnything](agentlego/tools/segmentation/README.md#SegmentAnything): 分割图像中的所有物体。
+  - [SegmentClicked](agentlego/tools/segmentation/README.md#SegmentClicked): 分割图像中指定区域的物体。
+  - [ObjectSegmenting](agentlego/tools/segmentation/README.md#ObjectSegmenting): 根据给定的物体名称，在图像中分割出特定的物体。
 
-```Python
-from agentlego.adapter.load_mmtools_for_langchain
+**AIGC 相关**
+- [TextToImage](agentlego/tools/image_text/README.md#TextToImage): 根据输入文本生成一张图片。
+- [ImageExpansion](agentlego/tools/image_editing/README.md#ImageExpansion): 根据图像的内容扩展图像的周边区域。
+- [ObjectRemove](agentlego/tools/image_editing/README.md#ObjectRemove): 删除图像中的特定对象。
+- [ObjectReplace](agentlego/tools/image_editing/README.md#ObjectReplace): 替换图像中的特定对象。
+- [ImageStylization](agentlego/tools/image_editing/README.md#ImageStylization): 根据指令修改一张图片。
+- ControlNet 系列工具
+  - [CannyTextToImage](agentlego/tools/image_canny/README.md#CannyTextToImage): 根据 Canny 边缘图像和描述生成图像。
+  - [DepthTextToImage](agentlego/tools/image_depth/README.md#DepthTextToImage): 根据深度图像和描述生成图像。
+  - [PoseToImage](agentlego/tools/image_pose/README.md#PoseToImage): 根据人体姿势图像和描述生成图像。
+  - [ScribbleTextToImage](agentlego/tools/image_scribble/README.md#ScribbleTextToImage): 根据涂鸦草图和描述生成图像。
+- ImageBind 系列工具
+  - [AudioToImage](agentlego/tools/imagebind/README.md#AudioToImage): 根据音频生成图像。
+  - [ThermalToImage](agentlego/tools/imagebind/README.md#ThermalToImage): 根据热成像图生成一张图像。
+  - [AudioImageToImage](agentlego/tools/imagebind/README.md#AudioImageToImage): 根据音频和图像生成新的图像。
+  - [AudioTextToImage](agentlego/tools/imagebind/README.md#AudioTextToImage): 从音频和文本提示生成图像。
 
-# class ConversationBot:
-#     def __init__(self, load_dict):
-#         # load_dict = {'VisualQuestionAnswering':'cuda:0', 'ImageCaptioning':'cuda:1',...}
-#         print(f"Initializing VisualChatGPT, load_dict={load_dict}")
-#         if 'ImageCaptioning' not in load_dict:
-#             raise ValueError("You have to load ImageCaptioning as a basic function for VisualChatGPT")
+## 开源许可证
 
-          # Load AgentLego as langchain Tool
-          self.tools = load_mmtools_for_langchain(load_dict)
-
-#         self.llm = OpenAI(temperature=0)
-#         self.memory = ConversationBufferMemory(memory_key="chat_history", output_key='output')
-```
-
-#### InternGPT
-
-```Python
-from agentlego.adapter.convert_tools_for_igpt
-
-#class ConversationBot:
-#    def __init__(self, load_dict, chat_disabled=False):
-#        print(f"Initializing InternGPT, load_dict={load_dict}")
-#
-#        self.chat_disabled = chat_disabled
-#        self.models = {}
-#        self.audio_model = whisper.load_model("small").to('cuda:0')
-        #self.audio_model = whisper.load_model("small")
-        # Load Basic Foundation Models
-#        for class_name, device in load_dict.items():
-#            self.models[class_name] = globals()[class_name](device=device)
-
-        # Convert MMLMTools into iGPT style
-        convert_tools_for_igpt(self.models)
-
-#        # Load Template Foundation Models
-#        for class_name, module in globals().items():
-#            if getattr(module, 'template_model', False):
-#                template_required_names = {k for k in inspect.signature(module.__init__).parameters.keys() if k!='self'}
-#                loaded_names = set([type(e).__name__ for e in self.models.values()])
-#                if template_required_names.issubset(loaded_names):
-#                    self.models[class_name] = globals()[class_name](
-#                        **{name: self.models[name] for name in template_required_names})
-#        self.tools = []
-#        for instance in self.models.values():
-#            for e in dir(instance):
-#                if e.startswith('inference'):
-#                    func = getattr(instance, e)
-#                    self.tools.append(Tool(name=func.name, description=func.description, func=func))
-#
-#        print("Current allocated memory:", torch.cuda.memory_allocated())
-#        print("models",set([type(e).__name__ for e in self.models.values()]))
-```
-
-#### Transformer Agent
-
-```Python
-# from transformers import HfAgent
-from agentlego.adapter.transformers_agent import load_tools_for_hfagent
-tools = load_tools_for_hfagent()
-agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder",
-                additional_tools=tools)
-```
-
-### 高级使用
-
-`load_tool()` 允许用户在实例化每个 Tool 时手动修改默认配置：
-
-- `device`: 模型加载的设备
-- `name`: 提供给 Agent 的工具名称
-- `model`: 推理所使用的模型
-- `description`: 工具的功能描述
-- `input_description`: 工具的输入格式描述
-- `output_description`: 工具的输出格式描述
-- `input_style`: Agent 输入到工具的内容格式
-- `output_style`: 工具输出给 Agent 的内容格式
-
-```Python
-
-mmtool = load_tool('ImageCaptionTool',
-                   device='cuda:0',
-                   name='Get Photo Description',
-                   description='This is a useful tool '
-                               'when you want to know what is inside the image.'
-                   input_description='It takes a string as the input, representing the image_path. ',
-                   output_description='It returns a text that contains the description of the input image. '
-                   )
-
-```
-
-## 添加新工具
-
-### 1. 创建文件
-
-- 在 tools/ 目录下新建对应工具的文件，例如：image_caption.py
-- Tool 命名要能体现功能，可以参考 Inferencer 命名，例如：Text2ImageTool, OCRTool
-- 新的工具必须继承基类 BaseTool
-- 需要定义一个 `dict` 类型的成员 `DEFAULT_TOOLMETA` 作为该工具默认加载的 `ToolMeta`，否则用户必须在实例化这个 Tool 的时候手动定义这些信息（通过 `load_tool(..., model='xxx', description='xxx')`）
-
-```Python
-class ImageCaptionTool(BaseTool):
-    DEFAULT_TOOLMETA = dict(
-        name='Get Photo Description',
-        model='blip-base_3rdparty_caption',
-        description='This is a useful tool '
-        'when you want to know what is inside the image.')
-    ...
-```
-
-- `description` 部分只需要提供**功能描述**，不需要写输入输出格式相关的描述。
-- 输入输出相关的描述会根据 `self.input_style` 和 `self.output_tyle` 自动生成。
-- 最终的工具描述由 `{功能描述} {输入描述} {输出描述}` 拼接而成。
-- 你也可以通过添加 `input_description` 和 `output_description` 字段来提供更加精准的输入输出格式描述。
-
-```Python
-class ImageCaptionTool(BaseTool):
-    DEFAULT_TOOLMETA = dict(
-        ...
-        input_description='The input to this tool should be a string, representing the image_path. ',
-        output_description='It returns a text that contains the description of the input image. ')
-    ...
-```
-
-### 2. 定义 setup
-
-定义推理所使用的 inferencer，`setup()` 会在每次 Tool 被调用时运行一次，在首次运行时完成 inferencer 的实例化。
-
-```Python
-def setup(self):
-    if self._inferencer is None:
-        self._inferencer = MMSegInferencer(
-            self.toolmeta.model, device=self.device)
-```
-
-### 3. 重载两个 convert （可选）
-
-在这里例子中，我们的 `Tool` 输入输出都是 `image_path` ，因此在 `apply()` 中直接调用了 `visualizer` 来把图片存到本地。
-
-但是假如我们的 `Tool` 想要适配不同的系统，`Tool` 的输出就需要在 `convert_inputs` 和 `convert_outputs` 中进行转码，可以转成 `image_path` 也可以转成 `PIL Image` 或者别的特定格式
-
-- convert_inputs 用于把 LLM 传给 Tool 的内容解析成推理接口需要的格式，例如：
-  - VisualChatGPT 使用 image_path 来传递图片
-  - Transformer Agents 使用 PIL Image 来传递图片
-  - 这个例子中的 Tool 输入是 image_path 格式，输出也是 image_path
-
-因此，我们需要在 convert_inputs 提供不同 LLM 格式的解析：
-
-```Python
-def convert_inputs(self, inputs, **kwargs):
-    if self.input_style == 'image_path':  # visual chatgpt style
-        return inputs
-    elif self.input_style == 'pil image':  # transformer agent style
-        temp_image_path = get_new_file_path(
-            'image/temp.jpg', func_name='temp')
-        inputs.save(temp_image_path)
-        return temp_image_path
-    else:
-        raise NotImplementedError
-```
-
-同理，在 Tool 完成推理后也需要 convert_outputs 转为 LLM 需要的格式：
-
-```Python
-def convert_outputs(self, outputs, **kwargs):
-    if self.output_style == 'image_path':  # visual chatgpt style
-        return outputs
-    elif self.output_style == 'pil image':  # transformer agent style
-        from PIL import Image
-        outputs = Image.open(outputs)
-        return outputs
-    else:
-        raise NotImplementedError
-```
-
-- 默认情况下 convert_inputs 和 convert_outputs 都会直接 return inputs 和 return outputs。
-- 如果你定义了一个新的 `input_style` 或 `output_style`，你需要到 `tools/base_tool.py` 下更新对应的 `generate_xxx_description()`，用来为该类型自动生成格式描述。
-
-### 4. 实现 apply
-
-最重要的是实现 apply ，apply 是整个工具推理的核心代码。
-
-对于ImageCaption工具而言，输入输出都是文本，所以实现比较简单，大家注意 scope 的切换就好
-
-```python
-def apply(self, inputs, **kwargs):
-    if self.remote:
-        raise NotImplementedError
-    else:
-        with Registry('scope').switch_scope_and_registry('mmpretrain'):
-            outputs = self._inferencer(inputs)[0]['pred_caption']
-    return outputs
-```
-
-对于检测工具 GLIP 而言，输入有两个：image_path 和 text，在convert_inputs已经完成了解析
-
-```Python
-def apply(self, inputs, **kwargs):
-    image_path, text = inputs
-    if self.remote:
-        ...
-    else:
-        with Registry('scope').switch_scope_and_registry('mmdet'):
-                results = self._inferencer(imgs=image_path, text_prompt=text)
-                output_path = get_new_file_path(
-                    image_path, func_name='detect-something')
-                img = mmcv.imread(image_path)
-                img = mmcv.imconvert(img, 'bgr', 'rgb')
-                self.visualizer.add_datasample(
-                    'results',
-                    img,
-                    data_sample=results,
-                    draw_gt=False,
-                    show=False,
-                    wait_time=0,
-                    out_file=output_path,
-                    pred_score_thr=0.5)
-
-        return output_path
-```
+该项目采用[Apache 2.0 开源许可证](LICENSE)。

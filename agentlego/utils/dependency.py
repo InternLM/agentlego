@@ -80,23 +80,27 @@ def require(dep, install=None):
     """A wrapper of function for extra package requirements.
 
     Args:
-        dep (str): The dependency package name, like ``transformers``
-            or ``transformers>=4.28.0``.
+        dep (Sequence[str) | str): The dependency package name,
+            like ``transformers`` or ``transformers>=4.28.0``.
         install (str, optional): The installation command hint. Defaults
             to None, which means to use "pip install dep".
     """
+    if isinstance(dep, str):
+        dep = [dep]
 
     def wrapper(fn):
         assert isfunction(fn)
 
         @wraps(fn)
         def ask_install(*args, **kwargs):
-            name = fn.__qualname__.replace('.__init__', '')
-            ins = install or f'pip install "{dep}"'
-            raise ImportError(
-                f'{name} requires {dep}, please install it by `{ins}`.')
+            msg = '{name} requires {dep}, please install by `{ins}`.'.format(
+                name=fn.__qualname__.replace('.__init__', ''),
+                dep=', '.join(dep),
+                ins=install
+                or 'pip install {}'.format(' '.join(repr(i) for i in dep)))
+            raise ImportError(msg)
 
-        if satisfy_requirement(dep):
+        if all(satisfy_requirement(item) for item in dep):
             fn._verify_require = getattr(fn, '_verify_require', lambda: None)
             return fn
 

@@ -11,7 +11,7 @@ target_lang = 'French'
 
 @pytest.fixture()
 def tool():
-    from mmlmtools.tools import Translation
+    from agentlego.tools import Translation
     return setup_tool(Translation, device='cuda')
 
 
