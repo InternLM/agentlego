@@ -22,10 +22,9 @@ class SemanticSegmentation(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Semantic Segment the Image',
-        description=('This is a useful tool when you only want to segment the '
-                     'picture or segment all objects in the picture. like: '
-                     'semantic segment all objects in the image. '),
+        name='Semantic Segment on urban scene',
+        description='This tool can segment all items in the input image and '
+        'return a segmentation result image. It focus on urban scene images.',
         inputs=['image'],
         outputs=['image'],
     )
@@ -35,7 +34,7 @@ class SemanticSegmentation(BaseTool):
             self,
             toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
             parser: Callable = DefaultParser,
-            seg_model: str = ('mask2former_r50_8xb2-90k_cityscapes-512x1024'),
+            seg_model: str = 'mask2former_r50_8xb2-90k_cityscapes-512x1024',
             device: str = 'cpu'):
         super().__init__(toolmeta=toolmeta, parser=parser)
         self.seg_model = seg_model

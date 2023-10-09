@@ -21,11 +21,9 @@ class VisualQuestionAnswering(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Visual Question Answering',
-        description='This is a useful tool '
-        'when you want to know some information about the image.'
-        'and this tool will return the answer to the question based on '
-        'the image.',
+        name='VQA',
+        description=('This tool can answer the input '
+                     'question based on the input image.'),
         inputs=['image', 'text'],
         outputs=['text'])
 

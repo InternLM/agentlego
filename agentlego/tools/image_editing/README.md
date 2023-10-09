@@ -7,8 +7,8 @@
 
 ## Default Tool Meta
 
-- **name**: Expand The Given Image
-- **description**: This tool can expand the peripheral area of an image based on its content. The text should be a float string or a string include two float separated by comma,representing the expand ratio.
+- **name**: Image Expansion
+- **description**: This tool can expand the peripheral area of an image based on its content, thus obtaining a larger image. You need to provide the target image and the expand ratio. The exapnd ratio can be a float string (for both width and height exapnd ratio, like "1.25") or a string include two float separated by comma (for width ratio and height ratio, like "1.25, 1.0")
 - **inputs**: image, text
 - **outputs**: image
 
@@ -90,7 +90,7 @@ This tool uses **BLIP** and **Stable Diffusion** in default settings. See the fo
 ## Default Tool Meta
 
 - **name**: Remove Object From Image
-- **description**: This is a useful tool to remove the certain objects in the image. The text should be the object you want to remove.
+- **description**: This tool can remove the specified object in the image. You need to input the image and the object name to remove.
 - **inputs**: image, text
 - **outputs**: image
 
@@ -182,7 +182,7 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 ## Default Tool Meta
 
 - **name**: Replace Object In Image
-- **description**: This is a useful tool to replace the certain objects in the image. There are two texts, the first one is the object you want to replace, the second one is the object you want to replace with.
+- **description**: This tool can replace the specified object in the input image with another object, like replacing a cat in an image with a dog. You need to input the image to edit, the object name to be replaced, and the object to replace with.
 - **inputs**: image, text, text
 - **outputs**: image
 
@@ -273,8 +273,8 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 
 ## Default Tool Meta
 
-- **name**: Stylize Image
-- **description**: This tool can modify an image according to the instructions.
+- **name**: Image Modification
+- **description**: This tool can modify the input image according to the input instruction. Here are some example instructions: "turn him into cyborg", "add fireworks to the sky", "make his jacket out of leather".
 - **inputs**: image, text
 - **outputs**: image
 

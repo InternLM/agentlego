@@ -95,7 +95,7 @@ This tool uses a **BLIP** model in default settings. See the following paper for
 ## Default Tool Meta
 
 - **name**: Generate Image From Text
-- **description**: This is a useful tool to generate an image from the input text. The input text should be a series of keywords separated by comma, and all keywords must be in English.
+- **description**: This tool can generate an image according to the input text. The input text should be a series of keywords separated by comma, and all keywords must be in English.
 - **inputs**: text
 - **outputs**: image
 
