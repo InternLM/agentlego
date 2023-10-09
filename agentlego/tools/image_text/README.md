@@ -8,7 +8,7 @@
 ## Default Tool Meta
 
 - **name**: Image Description
-- **description**: A useful tool that returns the description of the input image.
+- **description**: A useful tool that returns a brief description of the input image.
 - **inputs**: image
 - **outputs**: text
 

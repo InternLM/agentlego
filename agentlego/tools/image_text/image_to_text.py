@@ -24,7 +24,7 @@ class ImageCaption(BaseTool):
 
     DEFAULT_TOOLMETA = ToolMeta(
         name='Image Description',
-        description=('A useful tool that returns the '
+        description=('A useful tool that returns a brief '
                      'description of the input image.'),
         inputs=['image'],
         outputs=['text'],
