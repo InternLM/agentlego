@@ -2,12 +2,22 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
-import torch
-import torchaudio
 from PIL import Image
+
+from agentlego.utils import require
+
+try:
+    import torchaudio
+    from torch import Tensor
+except ImportError:
+    Tensor = None
+    torchaudio = None
+
+if TYPE_CHECKING:
+    assert Tensor is not None
 
 
 def _temp_path(category: str, suffix: str, root: str = 'generated'):
@@ -98,11 +108,13 @@ class ImageIO(IOType):
 
 class AudioIO(IOType):
     DEFAULT_SAMPLING_RATE = 16000
-    support_types = {'tensor': torch.Tensor, 'path': str}
+    support_types = {'tensor': Tensor, 'path': str}
 
+    @require(('torch', 'torchaudio'))
     def __init__(self,
-                 value: Union[torch.Tensor, str],
+                 value: Union[Tensor, str],
                  sampling_rate: Optional[int] = None):
+
         if value.__class__.__qualname__ == 'AgentAudio':
             # Handle hugginface agent
             sampling_rate = value.sampling_rate
@@ -124,18 +136,18 @@ class AudioIO(IOType):
         else:
             return self.DEFAULT_SAMPLING_RATE
 
-    def to_tensor(self) -> torch.Tensor:
+    def to_tensor(self) -> Tensor:
         return self.to('tensor')
 
     def to_path(self) -> str:
         return self.to('path')
 
-    def _path_to_tensor(self, path: str) -> torch.Tensor:
+    def _path_to_tensor(self, path: str) -> Tensor:
         audio, sampling_rate = torchaudio.load(path)
         self._sampling_rate = sampling_rate
         return audio
 
-    def _tensor_to_path(self, tensor: torch.Tensor) -> str:
+    def _tensor_to_path(self, tensor: Tensor) -> str:
         filename = _temp_path('audio', '.wav')
         torchaudio.save(filename, tensor, self.sampling_rate)
         return filename
