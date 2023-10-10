@@ -1,13 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Union
 
-import torch
-
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO, ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
+
+if is_package_available('torch'):
+    import torch
 
 
 class AnythingToImage:
@@ -15,6 +16,7 @@ class AnythingToImage:
     @require(['diffusers', 'ftfy', 'iopath', 'timm'])
     def __init__(self, device):
         from diffusers import StableUnCLIPImg2ImgPipeline
+
         from .models.imagebind_model import imagebind_huge as ib
 
         pipe = load_or_build_object(

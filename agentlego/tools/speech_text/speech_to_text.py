@@ -1,19 +1,23 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Union
 
-import torch
 from mmengine.utils import apply_to
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO
-from agentlego.utils import require
-from agentlego.utils.cache import load_or_build_object
+from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
 
+if is_package_available('torch'):
+    import torch
 
-def resampling_audio(audio: AudioIO, new_rate):
+if is_package_available('torchaudio'):
     import torchaudio
+
+
+@require('torchaudio')
+def resampling_audio(audio: AudioIO, new_rate):
     tensor, ori_sampling_rate = audio.to_tensor(), audio.sampling_rate
     tensor = torchaudio.functional.resample(tensor, ori_sampling_rate,
                                             new_rate)
@@ -41,7 +45,7 @@ class SpeechToText(BaseTool):
         outputs=['text'],
     )
 
-    @require('transformers')
+    @require(('torch', 'transformers'))
     def __init__(
         self,
         toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,

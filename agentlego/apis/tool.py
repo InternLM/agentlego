@@ -84,7 +84,7 @@ def load_tool(tool_name: str,
     tool_type = NAMES2TOOLS[tool_name]
     if 'device' in inspect.getfullargspec(tool_type).args:
         kwargs['device'] = device
-        
+
     if override_name or description:
         tool_obj = tool_type(**kwargs)
         if override_name:
@@ -92,7 +92,7 @@ def load_tool(tool_name: str,
         if description:
             tool_obj.description = description
     else:
-        # Only enable cache if no overrided attribution
+        # Only enable cache if no overrode attribution
         # to avoid the cached tool is changed.
         tool_obj = load_or_build_object(tool_type, **kwargs)
     return tool_obj
