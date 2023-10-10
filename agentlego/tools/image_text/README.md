@@ -1,10 +1,5 @@
 # ImageCaption
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageCaption
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Image Description
@@ -86,11 +81,6 @@ This tool uses a **BLIP** model in default settings. See the following paper for
 ```
 
 # TextToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.TextToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 

@@ -7,10 +7,17 @@ root_dir = Path(__file__).parents[2]
 doc_dir = Path(__file__).parent
 tmp_dir = doc_dir / '_tmp'
 
+AUTODOC_TMPL = '''
+```{{eval-rst}}
+.. autoclass:: agentlego.tools.{cls_name}
+    :noindex:
+```
+'''
 
-def format_tool_readme(fn):
 
-    with open(fn, 'r') as f:
+def format_tool_readme(path):
+
+    with open(path, 'r') as f:
         contents = f.readlines()
 
     in_code_block = False
@@ -23,9 +30,11 @@ def format_tool_readme(fn):
             h1.append(lineno)
 
     for start, end in zip(h1, h1[1:] + [len(contents)]):
-        cls_name = contents[start][2:].strip()
+        content = contents[start:end]
+        cls_name = content[0].strip('\n# ')
+        content.insert(1, AUTODOC_TMPL.format(cls_name=cls_name))
         target = tmp_dir / 'tools' / (cls_name + '.md')
-        target.write_text(''.join(contents[start:end]))
+        target.write_text(''.join(content))
 
 
 if __name__ == '__main__':

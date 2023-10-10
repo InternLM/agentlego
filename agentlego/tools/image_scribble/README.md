@@ -1,10 +1,5 @@
 # ImageToScribble
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageToScribble
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Scribble Conditioned On Image
@@ -60,11 +55,6 @@ The tool use [`controlnet_aux`](https://github.com/patrickvonplaten/controlnet_a
 scribble sketch that can be used in the ControlNet.
 
 # ScribbleTextToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.ScribbleTextToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 

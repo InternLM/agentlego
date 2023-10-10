@@ -1,11 +1,4 @@
-# ImageBind
-
 # AudioToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.AudioToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 
@@ -66,11 +59,6 @@ TODO
 
 # ThermalToImage
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ThermalToImage
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Image from Thermal Image
@@ -130,11 +118,6 @@ TODO
 
 # AudioImageToImage
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.AudioImageToImage
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Image from Image and Audio
@@ -193,11 +176,6 @@ pip install timm ftfy iopath diffusers
 TODO
 
 # AudioTextToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.AudioTextToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 

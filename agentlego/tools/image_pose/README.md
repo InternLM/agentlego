@@ -1,10 +1,5 @@
 # HumanBodyPose
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.HumanBodyPose
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Human Body Pose Detection On Image
@@ -79,11 +74,6 @@ This tool uses a **RTM Pose** model in default settings. See the following paper
 
 # PoseToImage
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.PoseToImage
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Image Condition On Pose Image
@@ -157,11 +147,6 @@ This tool uses a **Control Net** model in default settings. See the following pa
 ```
 
 # HumanFaceLandmark
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.HumanFaceLandmark
-    :noindex:
-```
 
 ## Default Tool Meta
 

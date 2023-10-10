@@ -1,10 +1,5 @@
 # SegmentAnything
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.SegmentAnything
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Segment Anything
@@ -64,11 +59,6 @@ TODO
 
 # SegmentObject
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.SegmentObject
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Segment specified object
@@ -127,11 +117,6 @@ pip install segment_anything
 TODO
 
 # SemanticSegmentation
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.SemanticSegmentation
-    :noindex:
-```
 
 ## Default Tool Meta
 

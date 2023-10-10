@@ -1,10 +1,5 @@
 # OCR
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.OCR
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: OCR

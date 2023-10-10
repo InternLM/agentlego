@@ -1,10 +1,5 @@
 # ImageExpansion
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageExpansion
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Image Expansion
@@ -81,11 +76,6 @@ This tool uses **BLIP** and **Stable Diffusion** in default settings. See the fo
 ```
 
 # ObjectRemove
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.ObjectRemove
-    :noindex:
-```
 
 ## Default Tool Meta
 
@@ -174,11 +164,6 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 
 # ObjectReplace
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ObjectReplace
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Replace Object In Image
@@ -265,11 +250,6 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 ```
 
 # ImageStylization
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageStylization
-    :noindex:
-```
 
 ## Default Tool Meta
 

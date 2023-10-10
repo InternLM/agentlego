@@ -1,10 +1,5 @@
 # TextToSpeech
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.TextToSpeech
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Text Reader
@@ -69,11 +64,6 @@ This tool uses a **Speech T5** model in default settings. See the following pape
 ```
 
 # SpeechToText
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.SpeechToText
-    :noindex:
-```
 
 ## Default Tool Meta
 

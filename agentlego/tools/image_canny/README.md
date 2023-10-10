@@ -1,10 +1,5 @@
 # ImageToCanny
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageToCanny
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Edge Detection On Image
@@ -47,11 +42,6 @@ for step in ret.inner_steps[1:]:
 ```
 
 # CannyTextToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.CannyTextToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 

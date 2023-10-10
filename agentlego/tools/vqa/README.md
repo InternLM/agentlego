@@ -1,10 +1,5 @@
 # VisualQuestionAnswering
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.VisualQuestionAnswering
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: VQA

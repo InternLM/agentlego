@@ -21,7 +21,7 @@ class OCR(BaseTool):
         device (str | bool): The device to load the model. Defaults to True,
             which means automatically select device.
         **read_args: Other keyword arguments for read text. Please check the
-            'EasyOCR docs <https://www.jaided.ai/easyocr/documentation/>'_.
+            `EasyOCR docs <https://www.jaided.ai/easyocr/documentation/>`_.
     """
     DEFAULT_TOOLMETA = ToolMeta(
         name='OCR',
