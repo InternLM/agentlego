@@ -7,3 +7,4 @@ Pillow
 prompt_toolkit
 thefuzz
 tqdm
+requests
