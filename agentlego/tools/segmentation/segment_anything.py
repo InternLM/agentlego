@@ -1,19 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
 import cv2
 import numpy as np
-import torch
 from PIL import Image
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
 from agentlego.utils import (download_checkpoint, download_url_to_file,
-                             load_or_build_object, require)
+                             is_package_available, load_or_build_object,
+                             require)
 from ..base import BaseTool
+
+if is_package_available('torch'):
+    import torch
+    from torch import Tensor
+else:
+    assert not TYPE_CHECKING, 'torch is not installed'
+    Tensor = None
 
 GLOBAL_SEED = 1912
 
@@ -49,7 +56,7 @@ def load_sam_and_predictor(model, device=None, ckpt_path=None):
 
 class SamPredictor:
 
-    @require('segment_anything')
+    @require(('torch', 'segment_anything'))
     def __init__(
         self,
         sam_model,
@@ -95,10 +102,9 @@ class SamPredictor:
 
         return self.set_torch_image(input_image_torch, image.shape[:2])
 
-    @torch.no_grad()
     def set_torch_image(
         self,
-        transformed_image: torch.Tensor,
+        transformed_image: Tensor,
         original_image_size: Tuple[int, ...],
     ) -> None:
         """Calculates the image embeddings for the provided image, allowing
@@ -106,7 +112,7 @@ class SamPredictor:
         image to be already transformed to the format expected by the model.
 
         Arguments:
-          transformed_image (torch.Tensor): The input image, with shape
+          transformed_image (Tensor): The input image, with shape
             1x3xHxW, which has been transformed with ResizeLongestSide.
           original_image_size (tuple(int, int)): The size of the image
             before transformation, in (H, W) format.
@@ -217,25 +223,24 @@ class SamPredictor:
         low_res_masks_np = low_res_masks[0].detach().cpu().numpy()
         return masks_np, iou_predictions_np, low_res_masks_np
 
-    @torch.no_grad()
     def predict_torch(
         self,
         features,
-        point_coords: Optional[torch.Tensor],
-        point_labels: Optional[torch.Tensor],
-        boxes: Optional[torch.Tensor] = None,
-        mask_input: Optional[torch.Tensor] = None,
+        point_coords: Optional[Tensor],
+        point_labels: Optional[Tensor],
+        boxes: Optional[Tensor] = None,
+        mask_input: Optional[Tensor] = None,
         multimask_output: bool = True,
         return_logits: bool = False,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[Tensor, Tensor, Tensor]:
         """Predict masks for the given input prompts, using the currently set
         image. Input prompts are batched torch tensors and are expected to
         already be transformed to the input frame using ResizeLongestSide.
 
         Arguments:
-          point_coords (torch.Tensor or None): A BxNx2 array of point prompts
+          point_coords (Tensor or None): A BxNx2 array of point prompts
             to the model. Each point is in (X,Y) in pixels.
-          point_labels (torch.Tensor or None): A BxN array of labels for the
+          point_labels (Tensor or None): A BxN array of labels for the
             point prompts. 1 indicates a foreground point and 0 indicates a
             background point.
           boxes (np.ndarray or None): A Bx4 array given a box prompt to the
@@ -255,11 +260,11 @@ class SamPredictor:
             instead of a binary mask.
 
         Returns:
-          (torch.Tensor): The output masks in BxCxHxW format, where C is the
+          (Tensor): The output masks in BxCxHxW format, where C is the
             number of masks, and (H, W) is the original image size.
-          (torch.Tensor): An array of shape BxC containing the model's
+          (Tensor): An array of shape BxC containing the model's
             predictions for the quality of each mask.
-          (torch.Tensor): An array of shape BxCxHxW, where C is the number
+          (Tensor): An array of shape BxCxHxW, where C is the number
             of masks and H=W=256. These low res logits can be passed to
             a subsequent iteration as mask input.
         """
@@ -298,11 +303,11 @@ class SamPredictor:
 
         return masks, iou_predictions, low_res_masks
 
-    def get_image_embedding(self, image) -> torch.Tensor:
+    def get_image_embedding(self, image) -> Tensor:
         return self.set_image(image)
 
     @property
-    def device(self) -> torch.device:
+    def device(self):
         return self.model.device
 
 

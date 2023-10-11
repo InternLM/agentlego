@@ -1,21 +1,30 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO
-from typing import Callable, Union
+from typing import TYPE_CHECKING, Callable, Union
 
 import numpy as np
-import torch
-from mmengine import get
+from mmengine.fileio import get
 from mmengine.utils import apply_to
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO
-from agentlego.utils import require
+from agentlego.utils import is_package_available, require
 from ..base import BaseTool
 
+if is_package_available('torch'):
+    import torch
+    from torch import Tensor
+else:
+    assert not TYPE_CHECKING, 'torch is not installed'
+    Tensor = None
 
-def resampling_audio(audio: dict, new_rate):
+if is_package_available('torchaudio'):
     import torchaudio
+
+
+@require('torchaudio')
+def resampling_audio(audio: dict, new_rate):
     array, ori_sampling_rate = audio['array'], audio['sampling_rate']
     array = torch.from_numpy(array).reshape(-1, 1)
     torchaudio.functional.resample(array, ori_sampling_rate, new_rate)
@@ -54,13 +63,13 @@ class TextToSpeech(BaseTool):
         outputs=['audio'],
     )
 
-    @require('transformers')
+    @require(('torch', 'transformers'))
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
                  model: str = 'microsoft/speecht5_tts',
                  post_processor: str = 'microsoft/speecht5_hifigan',
-                 speaker_embeddings: Union[str, torch.Tensor] = (
+                 speaker_embeddings: Union[str, Tensor] = (
                      'https://huggingface.co/spaces/Matthijs/'
                      'speecht5-tts-demo/resolve/main/spkemb/'
                      'cmu_us_awb_arctic-wav-arctic_a0002.npy'),
@@ -94,10 +103,10 @@ class TextToSpeech(BaseTool):
             input_ids=encoded_inputs['input_ids'],
             speaker_embeddings=self.speaker_embeddings)
         encoded_inputs = apply_to(encoded_inputs,
-                                  lambda x: isinstance(x, torch.Tensor),
+                                  lambda x: isinstance(x, Tensor),
                                   lambda x: x.to(self.device))
         outputs = self.model.generate_speech(**encoded_inputs)
-        outputs = apply_to(outputs, lambda x: isinstance(x, torch.Tensor),
+        outputs = apply_to(outputs, lambda x: isinstance(x, Tensor),
                            lambda x: x.to('cpu'))
         outputs = self.post_processor(outputs).cpu().detach().reshape(1, -1)
         return AudioIO(outputs, sampling_rate=self.sampling_rate)

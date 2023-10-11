@@ -3,15 +3,16 @@ from typing import Callable, Union
 
 import cv2
 import numpy as np
-import torch
 from PIL import Image
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import require
-from agentlego.utils.cache import load_or_build_object
+from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
+
+if is_package_available('torch'):
+    import torch
 
 GLOBAL_SEED = 1912
 

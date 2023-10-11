@@ -1,12 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from abc import ABCMeta, abstractmethod
+from contextlib import nullcontext
 from copy import deepcopy
 from typing import Any, Callable, Union
 
-import torch
-
 from agentlego.schema import ToolMeta
+from agentlego.utils import is_package_available
+
+if is_package_available('torch'):
+    import torch
 
 
 class BaseTool(metaclass=ABCMeta):
@@ -50,8 +53,12 @@ class BaseTool(metaclass=ABCMeta):
             self._is_setup = True
 
         inputs, kwinputs = self.parser.parse_inputs(*args, **kwargs)
-        with torch.no_grad():
+
+        cxt = torch.no_grad() if is_package_available(
+            'torch') else nullcontext()
+        with cxt:
             outputs = self.apply(*inputs, **kwinputs)
+
         results = self.parser.parse_outputs(outputs)
         return results
 

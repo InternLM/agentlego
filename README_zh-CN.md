@@ -68,10 +68,12 @@ caption = image_caption_tool(image)
 # 工具列表
 
 **语音相关**
+
 - [TextToSpeech](agentlego/tools/speech_text/README.md#TextToSpeech): 将输入文本转换为音频。
 - [SpeechToText](agentlego/tools/speech_text/README.md#SpeechToText): 将音频转录为文本。
 
 **图像处理相关**
+
 - [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): 描述输入图像。
 - [OCR](agentlego/tools/ocr/README.md#OCR): 从照片中识别文本。
 - [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): 根据图片回答问题。
@@ -88,6 +90,7 @@ caption = image_caption_tool(image)
   - [ObjectSegmenting](agentlego/tools/segmentation/README.md#ObjectSegmenting): 根据给定的物体名称，在图像中分割出特定的物体。
 
 **AIGC 相关**
+
 - [TextToImage](agentlego/tools/image_text/README.md#TextToImage): 根据输入文本生成一张图片。
 - [ImageExpansion](agentlego/tools/image_editing/README.md#ImageExpansion): 根据图像的内容扩展图像的周边区域。
 - [ObjectRemove](agentlego/tools/image_editing/README.md#ObjectRemove): 删除图像中的特定对象。

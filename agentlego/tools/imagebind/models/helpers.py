@@ -5,12 +5,16 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-# import math
-
-import einops
 import numpy as np
-import torch
-import torch.nn as nn
+
+from agentlego.utils import is_package_available
+
+if is_package_available('einops'):
+    import einops
+
+if is_package_available('torch'):
+    import torch
+    import torch.nn as nn
 
 
 class Normalize(nn.Module):

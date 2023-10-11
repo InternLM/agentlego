@@ -70,10 +70,12 @@ caption = image_caption_tool(image)
 # Supported Tools
 
 **Speech related**
+
 - [TextToSpeech](agentlego/tools/speech_text/README.md#TextToSpeech): Speak the input text into audio.
 - [SpeechToText](agentlego/tools/speech_text/README.md#SpeechToText): Transcribe an audio into text.
 
 **Image-processing related**
+
 - [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): Describe the input image.
 - [OCR](agentlego/tools/ocr/README.md#OCR): Recognize the text from a photo.
 - [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): Answer the question according to the image.
@@ -90,6 +92,7 @@ caption = image_caption_tool(image)
   - [ObjectSegmenting](agentlego/tools/segmentation/README.md#ObjectSegmenting): Segment the certain objects in the image according to the given object name.
 
 **AIGC related**
+
 - [TextToImage](agentlego/tools/image_text/README.md#TextToImage): Generate an image from the input text.
 - [ImageExpansion](agentlego/tools/image_editing/README.md#ImageExpansion): Expand the peripheral area of an image based on its content.
 - [ObjectRemove](agentlego/tools/image_editing/README.md#ObjectRemove): Remove the certain objects in the image.

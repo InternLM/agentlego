@@ -9,15 +9,25 @@ import logging
 import math
 import os
 
-import torch
-import torch.nn as nn
-import torchaudio
 from PIL import Image
-from pytorchvideo import transforms as pv_transforms
-from pytorchvideo.data.clip_sampling import ConstantClipsPerVideoSampler
-from pytorchvideo.data.encoded_video import EncodedVideo
-from torchvision import transforms
-from torchvision.transforms._transforms_video import NormalizeVideo
+
+from agentlego.utils import is_package_available
+
+if is_package_available('torch'):
+    import torch
+    import torch.nn as nn
+
+if is_package_available('torchaudio'):
+    import torchaudio
+
+if is_package_available('pytorchvideo'):
+    from pytorchvideo import transforms as pv_transforms
+    from pytorchvideo.data.clip_sampling import ConstantClipsPerVideoSampler
+    from pytorchvideo.data.encoded_video import EncodedVideo
+
+if is_package_available('torchvision'):
+    from torchvision import transforms
+    from torchvision.transforms._transforms_video import NormalizeVideo
 
 from .models.multimodal_preprocessors import SimpleTokenizer
 
