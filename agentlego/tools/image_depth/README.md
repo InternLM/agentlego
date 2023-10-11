@@ -1,10 +1,5 @@
 # ImageToDepth
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageToDepth
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Depth Image On Image
@@ -77,11 +72,6 @@ This tool uses a **DPT** model in default settings. See the following paper for 
 ```
 
 # DepthTextToImage
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.DepthTextToImage
-    :noindex:
-```
 
 ## Default Tool Meta
 

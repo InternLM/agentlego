@@ -1,14 +1,9 @@
 # VisualQuestionAnswering
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.VisualQuestionAnswering
-    :noindex:
-```
-
 ## Default Tool Meta
 
-- **name**: Visual Question Answering
-- **description**: This tool can answer the question according to the image.
+- **name**: VQA
+- **description**: This tool can answer the input question based on the input image.
 - **inputs**: image, text
 - **outputs**: text
 

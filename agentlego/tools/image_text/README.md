@@ -1,14 +1,9 @@
 # ImageCaption
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ImageCaption
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Image Description
-- **description**: A useful tool that returns the description of the input image.
+- **description**: A useful tool that returns a brief description of the input image.
 - **inputs**: image
 - **outputs**: text
 
@@ -87,15 +82,10 @@ This tool uses a **BLIP** model in default settings. See the following paper for
 
 # TextToImage
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.TextToImage
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Generate Image From Text
-- **description**: This is a useful tool to generate an image from the input text. The input text should be a series of keywords separated by comma, and all keywords must be in English.
+- **description**: This tool can generate an image according to the input text. The input text should be a series of keywords separated by comma, and all keywords must be in English.
 - **inputs**: text
 - **outputs**: image
 

@@ -9,10 +9,9 @@ from .image_text import ImageCaption, TextToImage
 from .imagebind import (AudioImageToImage, AudioTextToImage, AudioToImage,
                         ThermalToImage)
 from .object_detection import ObjectDetection, TextToBbox
-from .ocr import OCR, ImageMaskOCR
+from .ocr import OCR
 from .search import GoogleSearch
-from .segmentation import (ObjectSegmenting, SegmentAnything, SegmentClicked,
-                           SemanticSegmentation)
+from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
 from .speech_text import SpeechToText, TextToSpeech
 from .translation import Translation
 from .vqa import VisualQuestionAnswering
@@ -22,9 +21,8 @@ __all__ = [
     'ImageExpansion', 'ObjectRemove', 'ObjectReplace', 'HumanFaceLandmark',
     'HumanBodyPose', 'PoseToImage', 'ImageToScribble', 'ScribbleTextToImage',
     'ImageCaption', 'TextToImage', 'VisualQuestionAnswering',
-    'ObjectDetection', 'TextToBbox', 'ImageMaskOCR', 'OCR', 'ObjectSegmenting',
-    'SegmentAnything', 'SegmentClicked', 'SemanticSegmentation',
-    'ImageStylization', 'AudioToImage', 'ThermalToImage', 'AudioImageToImage',
-    'AudioTextToImage', 'SpeechToText', 'TextToSpeech', 'Translation',
-    'GoogleSearch'
+    'ObjectDetection', 'TextToBbox', 'OCR', 'SegmentObject', 'SegmentAnything',
+    'SemanticSegmentation', 'ImageStylization', 'AudioToImage',
+    'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage', 'SpeechToText',
+    'TextToSpeech', 'Translation', 'GoogleSearch'
 ]

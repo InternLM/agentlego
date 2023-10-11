@@ -1,10 +1,5 @@
 # ObjectDetection
 
-```{eval-rst}
-.. autoclass:: agentlego.tools.ObjectDetection
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: Detect All Objects
@@ -63,11 +58,6 @@ TODO
 TODO
 
 # TextToBbox
-
-```{eval-rst}
-.. autoclass:: agentlego.tools.TextToBbox
-    :noindex:
-```
 
 ## Default Tool Meta
 

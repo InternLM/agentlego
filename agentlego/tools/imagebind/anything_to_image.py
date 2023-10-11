@@ -44,10 +44,8 @@ class AudioToImage(BaseTool):
     """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Audio',
-        description=(
-            'This is a useful tool when you want to  generate a real '
-            'image from audio. like: generate a real image from audio, '
-            'or generate a new image based on the given audio. '),
+        description=('This tool can generate an image '
+                     'according to the input audio'),
         inputs=['audio'],
         outputs=['image'],
     )
@@ -91,11 +89,8 @@ class ThermalToImage(BaseTool):
     """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Thermal Image',
-        description=(
-            'This is a useful tool when you want to  generate a real '
-            'image from a thermal image. like: generate a real image '
-            'from thermal image, or generate a new image based on the '
-            'given thermal image. '),
+        description=('This tool can generate an image '
+                     'according to the input thermal image.'),
         inputs=['image'],
         outputs=['image'],
     )
@@ -140,10 +135,8 @@ class AudioImageToImage(BaseTool):
     """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Image and Audio',
-        description=('This is a useful tool when you want to generate a real '
-                     'image from image and audio. like: generate a real image '
-                     'from image and audio, or generate a new image based on '
-                     'the given image and audio. '),
+        description=('This tool can generate an image according to '
+                     'the input reference image and the input audio.'),
         inputs=['image', 'audio'],
         outputs=['image'],
     )
@@ -197,11 +190,8 @@ class AudioTextToImage(BaseTool):
     """
     DEFAULT_TOOLMETA = ToolMeta(
         name='Generate Image from Audio and Text',
-        description=('This is a useful tool when you want to  generate a real '
-                     'image from audio and text prompt. like: generate a real '
-                     'image from audio with user\'s prompt, or generate a new '
-                     'image based on the given image audio with user\'s '
-                     'description. '),
+        description=('This tool can generate an image according to '
+                     'the input audio and the input description.'),
         inputs=['audio', 'text'],
         outputs=['image'],
     )

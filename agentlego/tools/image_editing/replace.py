@@ -81,11 +81,10 @@ class ObjectReplace(BaseTool):
 
     DEFAULT_TOOLMETA = ToolMeta(
         name='Replace Object In Image',
-        description='This is a useful tool when you want to replace the '
-        'certain objects in the image with another object, like replacing '
-        'a cat in an image with a dog. You need to input the image to '
-        'edit, the object name to be replaced, and the object to '
-        'replace with.',
+        description='This tool can replace the specified object in the '
+        'input image with another object, like replacing a cat in an image '
+        'with a dog. You need to input the image to edit, the object name '
+        'to be replaced, and the object to replace with.',
         inputs=['image', 'text', 'text'],
         outputs=['image'],
     )

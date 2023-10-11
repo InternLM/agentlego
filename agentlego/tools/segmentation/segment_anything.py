@@ -320,10 +320,9 @@ class SegmentAnything(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment Anything On Image',
-        description=(
-            'This is a useful tool when you want to segment anything in the '
-            'image, like: segment anything from this image. '),
+        name='Segment Anything',
+        description='This tool can segment all items in the image and '
+        'return a segmentation result image',
         inputs=['image'],
         outputs=['image'],
     )
@@ -414,103 +413,17 @@ class SegmentAnything(BaseTool):
         res.astype(np.float32)
         full_img = Image.fromarray(np.uint8(full_img))
         return full_img, res
+def get_image_embedding(self, img):
+    if not self._is_setup:
+        self.setup()
+        self._is_setup = True
 
-    def get_image_embedding(self, img):
-        if not self._is_setup:
-            self.setup()
-            self._is_setup = True
+    embedding = self.sam_predictor.set_image(img)
 
-        embedding = self.sam_predictor.set_image(img)
-
-        return embedding
-
-
-class SegmentClicked(BaseTool):
-    """A tool to segment the clicked region in an image.
-
-    Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
-        sam_model (str): The model name used to inference. Which can be found
-            in the ``segment_anything`` repository.
-            Defaults to ``sam_vit_h_4b8939.pth``.
-        device (str): The device to load the model. Defaults to 'cpu'.
-    """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment The Clicked Region In The Image',
-        description=('This is a useful tool when you want to segment the '
-                     'masked region or block in the image, like: segment the '
-                     'masked region in this image. '),
-        inputs=['image', 'mask'],
-        outputs=['image'],
-    )
-
-    @require('segment_anything')
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 sam_model: str = 'sam_vit_h_4b8939.pth',
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
-        self.sam_model = sam_model
-        self.device = device
-
-    def setup(self):
-        self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.sam_model, device=self.device)
-
-    def apply(self, image: ImageIO, mask: ImageIO) -> ImageIO:
-        image = image.to_path().strip()
-        mask = mask.to_path().strip()
-        img = Image.open(image).convert('RGB')
-        img = np.array(img, dtype=np.uint8)
-        features = self.get_image_embedding(img)
-
-        clicked_mask = Image.open(mask).convert('L')
-        clicked_mask = np.array(clicked_mask, dtype=np.uint8)
-
-        res_mask = self.segment_by_mask(clicked_mask, features)
-
-        res_mask = res_mask.astype(np.uint8) * 255
-        return ImageIO(res_mask)
-
-    def segment_by_mask(self, mask, features):
-        if not self._is_setup:
-            self.setup()
-            self._is_setup = True
-
-        random.seed(GLOBAL_SEED)
-        idxs = np.nonzero(mask)
-        num_points = min(max(1, int(len(idxs[0]) * 0.01)), 16)
-        sampled_idx = random.sample(range(0, len(idxs[0])), num_points)
-        new_mask = []
-        for i in range(len(idxs)):
-            new_mask.append(idxs[i][sampled_idx])
-        points = np.array(new_mask).reshape(2, -1).transpose(1, 0)[:, ::-1]
-        labels = np.array([1] * num_points)
-
-        res_masks, scores, _ = self.sam_predictor.predict(
-            features=features,
-            point_coords=points,
-            point_labels=labels,
-            multimask_output=True,
-        )
-
-        return res_masks[np.argmax(scores), :, :]
-
-    def get_image_embedding(self, img):
-        if not self._is_setup:
-            self.setup()
-            self._is_setup = True
-
-        embedding = self.sam_predictor.set_image(img)
-
-        return embedding
+    return embedding
 
 
-class ObjectSegmenting(BaseTool):
+class SegmentObject(BaseTool):
     """A tool to segment all objects on an image.
 
     Args:
@@ -527,12 +440,10 @@ class ObjectSegmenting(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment The Given Object In The Image',
-        description=(
-            'This is a useful tool when you want to segment the '
-            'certain objects in the image according to the given object name, '
-            'like: segment the cat in this image, or can you segment an '
-            'object for me. '),
+        name='Segment specified object',
+        description=('This tool can segment the specified kind of '
+                     'objects in the input image, and return the '
+                     'segmentation result image.'),
         inputs=['image', 'text'],
         outputs=['image'],
     )

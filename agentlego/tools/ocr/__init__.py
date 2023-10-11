@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .ocr import OCR, ImageMaskOCR
+from .ocr import OCR
 
-__all__ = ['ImageMaskOCR', 'OCR']
+__all__ = ['OCR']

@@ -44,11 +44,10 @@ class ImageStylization(BaseTool):
 
     DEFAULT_TOOLMETA = ToolMeta(
         name='Image Modification',
-        description=(
-            'This is a useful tool when you want to modify an '
-            'image according to the instruction. Here are some example '
-            'instructions: `turn him into cyborg`, `add fireworks to '
-            'the sky`, `make his jacket out of leather`.'),
+        description='This tool can modify the input image according to the '
+        'input instruction. Here are some example instructions: '
+        '"turn him into cyborg", "add fireworks to the sky", '
+        '"make his jacket out of leather".',
         inputs=['image', 'text'],
         outputs=['image'],
     )
