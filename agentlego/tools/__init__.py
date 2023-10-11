@@ -10,6 +10,7 @@ from .imagebind import (AudioImageToImage, AudioTextToImage, AudioToImage,
                         ThermalToImage)
 from .object_detection import ObjectDetection, TextToBbox
 from .ocr import OCR
+from .search import GoogleSearch
 from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
 from .speech_text import SpeechToText, TextToSpeech
 from .translation import Translation
@@ -23,5 +24,5 @@ __all__ = [
     'ObjectDetection', 'TextToBbox', 'OCR', 'SegmentObject', 'SegmentAnything',
     'SemanticSegmentation', 'ImageStylization', 'AudioToImage',
     'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage', 'SpeechToText',
-    'TextToSpeech', 'Translation'
+    'TextToSpeech', 'Translation', 'GoogleSearch'
 ]
