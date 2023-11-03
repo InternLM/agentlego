@@ -5,6 +5,7 @@ import re
 import sys
 import tempfile
 import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from urllib.parse import urlparse  # noqa: F401
@@ -13,45 +14,17 @@ from urllib.request import Request, urlopen
 from tqdm import tqdm
 
 
-def get_new_file_path(org_file_path: str,
-                      func_name: str = 'update',
-                      file_ext: str = None):
-    """Create a new file path for the tool output based on the original file
-    path and tool function. The file path is unique and can be identified by
-    the agent. The file name consists of uuid, function name of all appled
-    tools and the original file name.
-
-    Args:
-        org_file_path (str): Original file path
-        func_name (str, optional): Descriptions. Defaults to `'update'`
-        file_ext (str, optional): The file extension. Defaults to `None`.
-
-    Returns:
-        str: The new file path
-    """
-    dirname, basename = os.path.split(org_file_path)
-    os.makedirs(dirname, exist_ok=True)
-    basename_splits = basename.split('.')
-
-    file_ext = file_ext if file_ext is not None else basename_splits[-1]
-    name_split = basename_splits[0].split('_')
-    this_new_uuid = str(uuid.uuid4())[:4]
-    most_org_file_name = name_split[-1]
-    recent_prev_file_name = name_split[0]
-    if len(name_split) in [1, 4]:
-        new_file_name = '_'.join([
-            this_new_uuid, func_name, recent_prev_file_name, most_org_file_name
-        ])
-    elif len(name_split) == 3:
-        new_file_name = '_'.join(
-            [recent_prev_file_name, this_new_uuid, most_org_file_name])
-    else:
-        new_file_name = '_'.join([
-            this_new_uuid, func_name, recent_prev_file_name, most_org_file_name
-        ])
-    new_file_name += f'.{file_ext}'
-    new_file_path = os.path.join(dirname, new_file_name)
-    return new_file_path
+def temp_path(category: str,
+              suffix: str,
+              prefix: str = '',
+              root: str = 'generated') -> str:
+    output_dir = Path(root) / category
+    output_dir.mkdir(exist_ok=True, parents=True)
+    timestamp = datetime.now().strftime('%Y%m%d')
+    uid = str(uuid.uuid4())[:4]
+    filename = f'{prefix}{timestamp}_{uid}'
+    path = (output_dir / filename).with_suffix(suffix)
+    return str(path.absolute())
 
 
 def _get_torchhub_dir():
