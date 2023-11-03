@@ -10,7 +10,7 @@ You can choose the installation method according to your condition:
 conda create -n agentlego python=3.10
 ```
 
-And install PyTorch pakcages accoding to the [official guide](https://pytorch.org/get-started/locally/#start-locally).
+And install PyTorch packages according to the [official guide](https://pytorch.org/get-started/locally/#start-locally).
 
 2. Install AgentLego and some common dependencies.
 
@@ -54,7 +54,7 @@ print(calculator_tool.description)
 # Call the tool directly
 print(calculator_tool('cos(pi / 6)'))
 
-# Image or Audio input supports multiple foramts
+# Image or Audio input supports multiple formats
 from PIL import Image
 
 image_caption_tool = load_tool('ImageCaption', device='cuda')

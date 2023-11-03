@@ -418,6 +418,8 @@ class SegmentAnything(BaseTool):
         res.astype(np.float32)
         full_img = Image.fromarray(np.uint8(full_img))
         return full_img, res
+
+
 def get_image_embedding(self, img):
     if not self._is_setup:
         self.setup()

@@ -1,28 +1,29 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import requests
 from typing import Callable, Union
 from urllib.parse import quote_plus
+
+import requests
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from ..base import BaseTool
 
 LANG_CODES = {
-    "auto": "Detect source language",
-    "zh-CN": "Chinese",
-    "en": "English",
-    "fr": "French",
-    "de": "German",
-    "el": "Greek",
-    "it": "Italian",
-    "ja": "Japanese",
-    "ko": "Korean",
-    "la": "Latin",
-    "pl": "Polish",
-    "ru": "Russian",
-    "es": "Spanish",
-    "th": "Thai",
-    "tr": "Turkish",
+    'auto': 'Detect source language',
+    'zh-CN': 'Chinese',
+    'en': 'English',
+    'fr': 'French',
+    'de': 'German',
+    'el': 'Greek',
+    'it': 'Italian',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    'la': 'Latin',
+    'pl': 'Polish',
+    'ru': 'Russian',
+    'es': 'Spanish',
+    'th': 'Thai',
+    'tr': 'Turkish',
 }
 
 
@@ -61,7 +62,7 @@ class Translation(BaseTool):
             url_tmpl.format(source, target, text), timeout=10).json()
         try:
             result = ''.join(x[0] for x in response[0] if x[0] is not None)
-        except:
+        except Exception:
             raise ConnectionError('Failed to translate.')
 
         return result

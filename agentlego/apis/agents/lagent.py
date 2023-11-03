@@ -45,7 +45,7 @@ class LagentTool(BaseAction):
             kwargs = json.loads(json_args.strip(' .\'"\n`'))
         except Exception:
             error = ValueError(
-                "All arguments should be combined into one json string.")
+                'All arguments should be combined into one json string.')
             return ActionReturn(
                 type=self.name,
                 errmsg=repr(error),

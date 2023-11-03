@@ -4,7 +4,7 @@ from typing import Callable, Union
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.utils import require
 from ..base import BaseTool
 from ..utils.diffusers import load_sd
 

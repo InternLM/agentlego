@@ -3,7 +3,7 @@
 ## Default Tool Meta
 
 - **name**: Image Expansion
-- **description**: This tool can expand the peripheral area of an image based on its content, thus obtaining a larger image. You need to provide the target image and the expand ratio. The exapnd ratio can be a float string (for both width and height exapnd ratio, like "1.25") or a string include two float separated by comma (for width ratio and height ratio, like "1.25, 1.0")
+- **description**: This tool can expand the peripheral area of an image based on its content, thus obtaining a larger image. You need to provide the target image and the expand ratio. The expand ratio can be a float string (for both width and height expand ratio, like "1.25") or a string include two float separated by comma (for width ratio and height ratio, like "1.25, 1.0")
 - **inputs**: image, text
 - **outputs**: image
 

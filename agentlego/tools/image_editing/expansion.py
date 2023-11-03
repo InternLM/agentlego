@@ -111,8 +111,8 @@ class ImageExpansion(BaseTool):
         description='This tool can expand the peripheral area of '
         'an image based on its content, thus obtaining a larger image. '
         'You need to provide the target image and the expand ratio. '
-        'The exapnd ratio can be a float string (for both width and '
-        'height exapnd ratio, like "1.25") or a string include two '
+        'The expand ratio can be a float string (for both width and '
+        'height expand ratio, like "1.25") or a string include two '
         'float separated by comma (for width ratio and height ratio, '
         'like "1.25, 1.0")',
         inputs=['image', 'text'],
@@ -208,6 +208,6 @@ class ImageExpansion(BaseTool):
         aspect_ratio = image.size[0] / image.size[1]
         new_width = int(math.sqrt(max_size * aspect_ratio))
         new_height = int(new_width / aspect_ratio)
-        new_width, new_height = new_width - (new_width % multiple),\
-            new_height - (new_height % multiple)
+        new_width = new_width - (new_width % multiple)
+        new_height = new_height - (new_height % multiple)
         return image.resize((new_width, new_height))

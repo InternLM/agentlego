@@ -44,7 +44,8 @@ def load_tools_for_visual_chatgpt():
     all_tools = inspect.getmembers(
         tools, lambda x: inspect.isclass(x) and issubclass(x, BaseTool))
     return {
-        name: type(tool_cls.__name__, (tool_cls, ), {
+        name:
+        type(tool_cls.__name__, (tool_cls, ), {
             'inference': _Inference(),
             '__init__': wrapped_init
         })

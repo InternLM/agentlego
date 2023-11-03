@@ -9,7 +9,6 @@
 
 ## Examples
 
-
 **Use the tool directly (without agent)**
 
 ```python
@@ -39,17 +38,3 @@ for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
 ```
-
-## Set up
-
-Before using the tool, please confirm you have installed the related dependencies by the below commands.
-
-```bash
-TODO
-```
-
-## Reference
-
-TODO
-
-

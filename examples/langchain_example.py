@@ -1,7 +1,7 @@
 from langchain.agents.initialize import initialize_agent
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
-from prompt_toolkit import prompt, ANSI
+from prompt_toolkit import ANSI, prompt
 
 from agentlego.apis.agents.langchain import load_tools_for_langchain
 
@@ -35,5 +35,6 @@ def main():
 
         print(agent.invoke({'input': user})['output'])
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()

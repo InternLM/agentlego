@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
+
 from agentlego.utils import load_or_build_object
 
 

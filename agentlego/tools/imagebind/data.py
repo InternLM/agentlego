@@ -193,10 +193,11 @@ def load_and_transform_audio_data(
             waveform.size(1) / sample_rate)
         all_clips = []
         for clip_timepoints in all_clips_timepoints:
-            waveform_clip = waveform[:,
-                                     int(clip_timepoints[0] *
-                                         sample_rate):int(clip_timepoints[1] *
-                                                          sample_rate), ]
+            waveform_clip = waveform[
+                :,
+                int(clip_timepoints[0] * sample_rate):int(clip_timepoints[1] *
+                                                          sample_rate),
+            ]
             waveform_melspec = waveform2melspec(waveform_clip, sample_rate,
                                                 num_mel_bins, target_length)
             all_clips.append(waveform_melspec)

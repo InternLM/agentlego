@@ -1,3 +1,4 @@
+func_timeout
 importlib_metadata
 mmengine
 numpy
@@ -5,7 +6,6 @@ opencv-python
 packaging
 Pillow
 prompt_toolkit
+requests
 thefuzz
 tqdm
-requests
-func_timeout

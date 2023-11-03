@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .calculator import Calculator
 from .image_canny import CannyTextToImage, ImageToCanny
 from .image_depth import DepthTextToImage, ImageToDepth
 from .image_editing import (ImageExpansion, ImageStylization, ObjectRemove,
@@ -15,7 +16,6 @@ from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
 from .speech_text import SpeechToText, TextToSpeech
 from .translation import Translation
 from .vqa import VisualQuestionAnswering
-from .calculator import Calculator
 
 __all__ = [
     'CannyTextToImage', 'ImageToCanny', 'DepthTextToImage', 'ImageToDepth',
