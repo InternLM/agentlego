@@ -10,6 +10,7 @@ from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, ImageIO
+from agentlego.utils import temp_path
 
 
 class RemoteTool(BaseTool):
@@ -75,9 +76,10 @@ class RemoteTool(BaseTool):
                 file = BytesIO(base64.decodebytes(res['data'].encode('ascii')))
                 data = ImageIO(Image.open(file))
             elif res['type'] == 'audio':
-                import torchaudio
-                file = BytesIO(base64.decodebytes(res['data'].encode('ascii')))
-                data = AudioIO(*torchaudio.load(file, format='wav'))
+                filename = temp_path('audio', '.wav')
+                with open(filename, 'wb') as f:
+                    f.write(base64.decodebytes(res['data'].encode('ascii')))
+                data = AudioIO(filename)
             parsed_res.append(data)
 
         return parsed_res[0] if len(parsed_res) == 1 else tuple(parsed_res)
