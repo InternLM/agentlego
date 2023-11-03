@@ -1,44 +1,34 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
 from PIL import Image
 
-from agentlego.utils import require
-
-try:
-    import torchaudio
-    from torch import Tensor
-except ImportError:
-    Tensor = None
-    torchaudio = None
+from .utils import temp_path
 
 if TYPE_CHECKING:
-    assert Tensor is not None
+    import torch
 
 
-def _temp_path(category: str, suffix: str, root: str = 'generated'):
-    output_dir = Path(root) / category
-    output_dir.mkdir(exist_ok=True, parents=True)
-    filename = datetime.now().strftime('%Y%m%d') + '-' + str(uuid.uuid4())[:4]
-    path = (output_dir / filename).with_suffix(suffix)
-    return str(path.absolute())
+def _typename(obj):
+    return f'{type(obj).__module__}.{type(obj).__name__}'
 
 
 class IOType:
     support_types = {}
 
     def __init__(self, value):
-        if value.__class__.__qualname__ == 'AgentType':
+        if type(value).__qualname__ == 'AgentType':
             # Handle hugginface agent
             value = value._value
 
         self.type = None
         for name, cls in self.support_types.items():
-            if isinstance(value, cls):
+            if isinstance(cls, type) and isinstance(value, cls):
+                self.value = value
+                self.type = name
+            elif isinstance(cls, str) and _typename(value) == cls:
                 self.value = value
                 self.type = name
         if self.type is None:
@@ -87,7 +77,7 @@ class ImageIO(IOType):
 
     @staticmethod
     def _pil_to_path(image: Image.Image) -> str:
-        filename = _temp_path('image', '.png')
+        filename = temp_path('image', '.png')
         image.save(filename)
         return filename
 
@@ -101,23 +91,21 @@ class ImageIO(IOType):
 
     @staticmethod
     def _array_to_path(image: np.ndarray) -> str:
-        filename = _temp_path('image', '.png')
+        filename = temp_path('image', '.png')
         Image.fromarray(image).save(filename)
         return filename
 
 
 class AudioIO(IOType):
     DEFAULT_SAMPLING_RATE = 16000
-    support_types = {'tensor': Tensor, 'path': str}
+    support_types = {'tensor': 'torch.Tensor', 'path': str}
 
-    @require(('torch', 'torchaudio'))
     def __init__(self,
-                 value: Union[Tensor, str],
+                 value: Union[np.ndarray, 'torch.Tensor', str],
                  sampling_rate: Optional[int] = None):
-
-        if value.__class__.__qualname__ == 'AgentAudio':
+        if type(value).__qualname__ == 'AgentAudio':
             # Handle hugginface agent
-            sampling_rate = value.sampling_rate
+            sampling_rate = value.samplerate
             value = value.to_raw()
 
         super().__init__(value=value)
@@ -136,19 +124,21 @@ class AudioIO(IOType):
         else:
             return self.DEFAULT_SAMPLING_RATE
 
-    def to_tensor(self) -> Tensor:
+    def to_tensor(self) -> 'torch.Tensor':
         return self.to('tensor')
 
     def to_path(self) -> str:
         return self.to('path')
 
-    def _path_to_tensor(self, path: str) -> Tensor:
+    def _path_to_tensor(self, path: str) -> 'torch.Tensor':
+        import torchaudio
         audio, sampling_rate = torchaudio.load(path)
         self._sampling_rate = sampling_rate
         return audio
 
-    def _tensor_to_path(self, tensor: Tensor) -> str:
-        filename = _temp_path('audio', '.wav')
+    def _tensor_to_path(self, tensor: 'torch.Tensor') -> str:
+        import torchaudio
+        filename = temp_path('audio', '.wav')
         torchaudio.save(filename, tensor, self.sampling_rate)
         return filename
 
