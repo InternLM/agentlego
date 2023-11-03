@@ -1,15 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from abc import ABCMeta, abstractmethod
-from contextlib import nullcontext
 from copy import deepcopy
-from typing import Any, Callable, Union
+from typing import Any, Callable, List, Union
 
 from agentlego.schema import ToolMeta
-from agentlego.utils import is_package_available
-
-if is_package_available('torch'):
-    import torch
 
 
 class BaseTool(metaclass=ABCMeta):
@@ -19,7 +14,7 @@ class BaseTool(metaclass=ABCMeta):
         if isinstance(toolmeta, dict):
             toolmeta = ToolMeta(**toolmeta)
         self.toolmeta = toolmeta
-        self.parser = parser(self)
+        self.set_parser(parser)
         self._is_setup = False
 
     @property
@@ -40,6 +35,7 @@ class BaseTool(metaclass=ABCMeta):
 
     def set_parser(self, parser: Callable):
         self.parser = parser(self)
+        self._parser_constructor = parser
 
     def setup(self):
         """Implement lazy initialization here that will be performed before the
@@ -54,10 +50,7 @@ class BaseTool(metaclass=ABCMeta):
 
         inputs, kwinputs = self.parser.parse_inputs(*args, **kwargs)
 
-        cxt = torch.no_grad() if is_package_available(
-            'torch') else nullcontext()
-        with cxt:
-            outputs = self.apply(*inputs, **kwinputs)
+        outputs = self.apply(*inputs, **kwinputs)
 
         results = self.parser.parse_outputs(outputs)
         return results
@@ -74,8 +67,15 @@ class BaseTool(metaclass=ABCMeta):
         return repr_str
 
     @property
-    def input_fields(self):
+    def input_fields(self) -> List[str]:
         return [
             name for name in inspect.getfullargspec(self.apply).args
             if name != 'self'
         ]
+
+    def __copy__(self):
+        obj = object.__new__(type(self))
+        obj.__dict__.update(self.__dict__)
+        obj.toolmeta = deepcopy(self.toolmeta)
+        obj.set_parser(self._parser_constructor)
+        return obj
