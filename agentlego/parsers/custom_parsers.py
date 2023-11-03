@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import json
 from typing import Any, Dict, Tuple
 
 from .default_parser import DefaultParser
@@ -76,35 +75,3 @@ class HuggingFaceAgentParser(DefaultParser):
         description = f'{self.toolmeta.description} {inputs_desc}'
 
         return description
-
-
-class LagentParser(DefaultParser):
-    agent_cat2type = {
-        'image': 'path',
-        'text': 'string',
-        'audio': 'path',
-    }
-
-    def parse_inputs(self, input_: str) -> Tuple[Tuple, Dict]:
-
-        # split single string into multiple inputs
-        try:
-            args = tuple(json.loads(input_.strip(' .\'"\n')).values())
-        except json.JSONDecodeError:
-            raise ValueError(
-                'All arguments should be combined into one json string.')
-
-        return super().parse_inputs(*args)
-
-    def parse_outputs(self, outputs: Any) -> str:
-        outputs = super().parse_outputs(outputs)
-        if not isinstance(outputs, tuple):
-            outputs = (outputs, )
-        # gather outputs into a single string
-        return ', '.join(str(output) for output in outputs)
-
-    def refine_description(self) -> str:
-        refined = super().refine_description()
-        refined += ' Format all args to a json format string.'
-
-        return refined
