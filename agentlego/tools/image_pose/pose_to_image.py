@@ -6,8 +6,9 @@ from PIL import Image
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.utils import require
 from ..base import BaseTool
+from ..utils.diffusers import load_sd, load_sdxl
 
 
 class PoseToImage(BaseTool):
@@ -18,10 +19,8 @@ class PoseToImage(BaseTool):
             the :attr:`DEFAULT_TOOLMETA`.
         parser (Callable): The parser constructor, Defaults to
             :class:`DefaultParser`.
-        model (str): The model name used to inference. Which can be found
-            in the ``MMagic`` repository.
-            Defaults to `controlnet`.
-        model_setting (int): The index of the model settings. Defaults to 2.
+        model (str): The pose controlnet model to use. You can choose
+            from "sd" and "sdxl". Defaults to "sd".
         device (str): The device to load the model. Defaults to 'cuda'.
     """
 
@@ -34,44 +33,47 @@ class PoseToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('mmagic')
+    @require('diffusers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model: str = 'controlnet',
-                 model_setting: int = 2,
+                 model: str = 'sd',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
-        self.aux_prompt = (
-            'best quality, extremely detailed, master piece, perfect, 4k')
-        self.negative_prompt = (
-            'longbody, lowres, bad anatomy, bad hands, '
-            'missing fingers, extra digit, fewer digits, cropped, '
-            'worst quality, low quality')
-        self.model_name = model
-        self.model_setting = model_setting
+        assert model in ['sd', 'sdxl']
+        self.model = model
         self.device = device
 
     def setup(self):
-        from mmagic.apis import MMagicInferencer
-
-        self._inferencer = load_or_build_object(
-            MMagicInferencer,
-            model_name=self.model_name,
-            model_setting=self.model_setting,
-            device=self.device,
-        )
+        if self.model == 'sdxl':
+            self.pipe = load_sdxl(
+                controlnet='thibaud/controlnet-openpose-sdxl-1.0',
+                device=self.device,
+            )
+            self.canvas_size = 1024
+        elif self.model == 'sd':
+            self.pipe = load_sd(
+                controlnet='lllyasviel/sd-controlnet-openpose',
+                device=self.device,
+            )
+            self.canvas_size = 512
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'
 
     def apply(self, image: ImageIO, text: str) -> ImageIO:
-        text = f'{text}, {self.aux_prompt}'
-        width, height = self.get_image_size(image.to_pil())
-        res = self._inferencer.infer(
-            text=text,
-            negative_prompt=self.negative_prompt,
-            control=image.to_path(),
-            extra_parameters=dict(height=height, width=width))
-        generated = res[0]['infer_results']
-        return ImageIO(generated)
+        text = f'{text}, {self.a_prompt}'
+        width, height = self.get_image_size(
+            image.to_pil(), canvas_size=self.canvas_size)
+        image = self.pipe(
+            text,
+            image=image.to_pil(),
+            negative_prompt=self.n_prompt,
+            width=width,
+            height=height,
+        ).images[0]
+        return ImageIO(image)
 
     @staticmethod
     def get_image_size(image: Image.Image, canvas_size=512) -> Tuple[int, int]:

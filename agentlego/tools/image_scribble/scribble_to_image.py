@@ -6,7 +6,7 @@ from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
-from ..utils.diffusers import load_diffusion_inferencer
+from ..utils.diffusers import load_sd
 
 
 class ScribbleTextToImage(BaseTool):
@@ -20,6 +20,8 @@ class ScribbleTextToImage(BaseTool):
         model (str): The model name used to inference. Which can be found
             in the ``diffusers`` repository.
             Defaults to 'lllyasviel/sd-controlnet_scribble'.
+        model (str): The scribble controlnet model to use. You can only choose
+            "sd" by now. Defaults to "sd".
         device (str): The device to load the model. Defaults to 'cuda'.
     """
 
@@ -36,18 +38,19 @@ class ScribbleTextToImage(BaseTool):
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model: str = 'lllyasviel/sd-controlnet-scribble',
+                 model: str = 'sd',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
+        assert model in ['sd']
         self.model_name = model
         self.device = device
 
     def setup(self):
-        self.pipe = load_or_build_object(
-            load_diffusion_inferencer,
-            self.model_name,
-            self.device,
-        )
+        if self.model == 'sd':
+            self.pipe = load_sd(
+                controlnet='lllyasviel/sd-controlnet-scribble',
+                device=self.device,
+            )
         self.a_prompt = 'best quality, extremely detailed, 4k, master piece'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
@@ -61,5 +64,6 @@ class ScribbleTextToImage(BaseTool):
             num_inference_steps=20,
             eta=0.0,
             negative_prompt=self.n_prompt,
-            guidance_scale=9.0).images[0]
+            guidance_scale=9.0,
+        ).images[0]
         return ImageIO(image)

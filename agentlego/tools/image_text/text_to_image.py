@@ -4,8 +4,9 @@ from typing import Callable, Union
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.utils import require
 from ..base import BaseTool
+from ..utils.diffusers import load_sd, load_sdxl
 
 
 class TextToImage(BaseTool):
@@ -16,9 +17,8 @@ class TextToImage(BaseTool):
             the :attr:`DEFAULT_TOOLMETA`.
         parser (Callable): The parser constructor, Defaults to
             :class:`DefaultParser`.
-        model (str): The model name used to inference. Which can be found
-            in the ``MMagic`` repository.
-            Defaults to `stable_diffusion`.
+        model (str): The stable diffusion model to use. You can choose
+            from "sd" and "sdxl". Defaults to "sd".
         device (str): The device to load the model. Defaults to 'cuda'.
     """
 
@@ -31,34 +31,32 @@ class TextToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require('albumentations')
-    @require('mmagic')
+    @require('diffusers')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model: str = 'stable_diffusion',
+                 model: str = 'sd',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
-        self.aux_prompt = (
-            'best quality, extremely detailed, master piece, perfect, 4k')
-        self.negative_prompt = (
-            'longbody, lowres, bad anatomy, bad hands, '
-            'missing fingers, extra digit, fewer digits, cropped, '
-            'worst quality, low quality')
-        self.model_name = model
+        assert model in ['sd', 'sdxl']
+        self.model = model
         self.device = device
 
     def setup(self):
-        from mmagic.apis import MMagicInferencer
-        self._inferencer = load_or_build_object(
-            MMagicInferencer,
-            model_name=self.model_name,
-            model_setting=None,
-            device=self.device)
+        if self.model == 'sdxl':
+            self.pipe = load_sdxl(device=self.device)
+        elif self.model == 'sd':
+            self.pipe = load_sd(device=self.device)
+        self.a_prompt = 'best quality, extremely detailed'
+        self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
+                        ' missing fingers, extra digit, fewer digits, '\
+                        'cropped, worst quality, low quality'
 
     def apply(self, text: str) -> ImageIO:
-        text += ', ' + self.aux_prompt
-        image = self._inferencer.infer(
-            text=text,
-            negative_prompt=self.negative_prompt)[0]['infer_results']
+        prompt = f'{text}, {self.a_prompt}'
+        image = self.pipe(
+            prompt,
+            num_inference_steps=30,
+            negative_prompt=self.n_prompt,
+        ).images[0]
         return ImageIO(image)

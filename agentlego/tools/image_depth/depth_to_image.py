@@ -4,9 +4,9 @@ from typing import Callable, Union
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.utils import require
 from ..base import BaseTool
-from ..utils.diffusers import load_diffusion_inferencer
+from ..utils.diffusers import load_sd, load_sdxl
 
 
 class DepthTextToImage(BaseTool):
@@ -17,9 +17,8 @@ class DepthTextToImage(BaseTool):
             the :attr:`DEFAULT_TOOLMETA`.
         parser (Callable): The parser constructor, Defaults to
             :class:`DefaultParser`.
-        model (str): The model name used to inference. Which can be found
-            in the ``diffusers`` repository.
-            Defaults to 'lllyasviel/sd-controlnet-depth'.
+        model (str): The depth controlnet model to use. You can choose
+            from "sd" and "sdxl". Defaults to "sd".
         device (str): The device to load the model. Defaults to 'cuda'.
     """
 
@@ -36,18 +35,25 @@ class DepthTextToImage(BaseTool):
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model: str = 'lllyasviel/sd-controlnet-depth',
+                 model: str = 'sd',
                  device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
-        self.model_name = model
+        assert model in ['sd', 'sdxl']
+        self.model = model
         self.device = device
 
     def setup(self):
-        self.pipe = load_or_build_object(
-            load_diffusion_inferencer,
-            self.model_name,
-            self.device,
-        )
+        if self.model == 'sdxl':
+            self.pipe = load_sdxl(
+                controlnet='diffusers/controlnet-depth-sdxl-1.0',
+                controlnet_variant='fp16',
+                device=self.device,
+            )
+        elif self.model == 'sd':
+            self.pipe = load_sd(
+                controlnet='lllyasviel/sd-controlnet-depth',
+                device=self.device,
+            )
         self.a_prompt = 'best quality, extremely detailed'
         self.n_prompt = 'longbody, lowres, bad anatomy, bad hands, '\
                         ' missing fingers, extra digit, fewer digits, '\
@@ -57,9 +63,9 @@ class DepthTextToImage(BaseTool):
         prompt = f'{text}, {self.a_prompt}'
         image = self.pipe(
             prompt,
-            image.to_pil(),
+            image=image.to_pil(),
             num_inference_steps=20,
-            eta=0.0,
             negative_prompt=self.n_prompt,
-            guidance_scale=9.0).images[0]
+            controlnet_conditioning_scale=0.5,
+        ).images[0]
         return ImageIO(image)
