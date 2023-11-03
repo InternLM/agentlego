@@ -15,6 +15,7 @@ from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
 from .speech_text import SpeechToText, TextToSpeech
 from .translation import Translation
 from .vqa import VisualQuestionAnswering
+from .calculator import Calculator
 
 __all__ = [
     'CannyTextToImage', 'ImageToCanny', 'DepthTextToImage', 'ImageToDepth',
@@ -24,5 +25,5 @@ __all__ = [
     'ObjectDetection', 'TextToBbox', 'OCR', 'SegmentObject', 'SegmentAnything',
     'SemanticSegmentation', 'ImageStylization', 'AudioToImage',
     'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage', 'SpeechToText',
-    'TextToSpeech', 'Translation', 'GoogleSearch'
+    'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator'
 ]
