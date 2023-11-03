@@ -41,7 +41,7 @@ class DefaultParser(BaseParser):
                 tool_output = tool_output.to(agent_type)
             parsed_outs.append(tool_output)
 
-        return parsed_outs[0] if len(parsed_outs) == 1 else parsed_outs
+        return parsed_outs[0] if len(parsed_outs) == 1 else tuple(parsed_outs)
 
     def refine_description(self) -> str:
         """Refine the tool description by replacing the input and output
