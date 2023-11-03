@@ -461,7 +461,7 @@ class SegmentObject(BaseTool):
                  sam_model: str = 'sam_vit_h_4b8939.pth',
                  grounding_model: str = (
                      'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'),
-                 device: str = 'cpu'):
+                 device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
         self.sam_model = sam_model
         self.grounding_model = grounding_model
@@ -481,7 +481,10 @@ class SegmentObject(BaseTool):
         image_pil = Image.open(image).convert('RGB')
 
         results = self.grounding(
-            inputs=image, texts=text, no_save_vis=True, return_datasample=True)
+            inputs=image,
+            texts=text,
+            no_save_vis=True,
+            return_datasamples=True)
         results = results['predictions'][0].pred_instances
 
         boxes_filt = results.bboxes

@@ -17,7 +17,7 @@ class AnythingToImage:
     def __init__(self, device):
         from diffusers import StableUnCLIPImg2ImgPipeline
 
-        from .models.imagebind_model import imagebind_huge as ib
+        from .models.imagebind_model import imagebind_huge
 
         pipe = load_or_build_object(
             StableUnCLIPImg2ImgPipeline.from_pretrained,
@@ -28,9 +28,8 @@ class AnythingToImage:
 
         self.device = device
         self.pipe = pipe
-        self.pipe.enable_model_cpu_offload()
         self.pipe.enable_vae_slicing()
-        self.model = ib.imagebind_huge(pretrained=True)
+        self.model = imagebind_huge(pretrained=True)
         self.model.eval()
 
 
@@ -65,13 +64,14 @@ class AudioToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO) -> ImageIO:
-        from .models.imagebind_model import imagebind_huge as ib
+        from .data import load_and_transform_audio_data
+        from .models.imagebind_model import ModalityType
 
         audio_paths = [audio]
-        audio_data = ib.load_and_transform_audio_data(audio_paths, self.device)
+        audio_data = load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self._inferencer.model.forward(
-            {ib.ModalityType.AUDIO: audio_data})
-        embeddings = embeddings[ib.ModalityType.AUDIO]
+            {ModalityType.AUDIO: audio_data})
+        embeddings = embeddings[ModalityType.AUDIO]
         images = self._inferencer.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
         output_image = images[0]
@@ -110,14 +110,15 @@ class ThermalToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, thermal: ImageIO) -> ImageIO:
-        from .models.imagebind_model import imagebind_huge as ib
+        from .data import load_and_transform_thermal_data
+        from .models.imagebind_model import ModalityType
 
         thermal_paths = [thermal]
-        thermal_data = ib.load_and_transform_thermal_data(
-            thermal_paths, self.device)
+        thermal_data = load_and_transform_thermal_data(thermal_paths,
+                                                       self.device)
         embeddings = self._inferencer.model.forward(
-            {ib.ModalityType.THERMAL: thermal_data})
-        embeddings = embeddings[ib.ModalityType.THERMAL]
+            {ModalityType.THERMAL: thermal_data})
+        embeddings = embeddings[ModalityType.THERMAL]
         images = self._inferencer.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
         output_image = images[0]
@@ -156,21 +157,23 @@ class AudioImageToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, image: ImageIO, audio: AudioIO) -> ImageIO:
-        from .models.imagebind_model import imagebind_huge as ib
+        from .data import (load_and_transform_audio_data,
+                           load_and_transform_vision_data)
+        from .models.imagebind_model import ModalityType
 
         # process image data
-        vision_data = ib.load_and_transform_vision_data([image], self.device)
+        vision_data = load_and_transform_vision_data([image], self.device)
         embeddings = self._inferencer.model.forward(
-            {ib.ModalityType.VISION: vision_data}, normalize=False)
-        img_embeddings = embeddings[ib.ModalityType.VISION]
+            {ModalityType.VISION: vision_data}, normalize=False)
+        img_embeddings = embeddings[ModalityType.VISION]
 
         # process audio data
-        audio_data = ib.load_and_transform_audio_data([audio], self.device)
+        audio_data = load_and_transform_audio_data([audio], self.device)
         embeddings = self._inferencer.model.forward({
-            ib.ModalityType.AUDIO:
+            ModalityType.AUDIO:
             audio_data,
         })
-        audio_embeddings = embeddings[ib.ModalityType.AUDIO]
+        audio_embeddings = embeddings[ModalityType.AUDIO]
 
         embeddings = (img_embeddings + audio_embeddings) / 2
         images = self._inferencer.pipe(
@@ -211,20 +214,22 @@ class AudioTextToImage(BaseTool):
             AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO, prompt: str) -> ImageIO:
-        from .models.imagebind_model import imagebind_huge as ib
+        from .data import (load_and_transform_audio_data,
+                           load_and_transform_text)
+        from .models.imagebind_model import ModalityType
 
         audio_paths = [audio]
-        text = ib.load_and_transform_text([prompt], self.device)
-        embeddings = self._inferencer.model.forward(
-            {ib.ModalityType.TEXT: text}, normalize=False)
-        text_embeddings = embeddings[ib.ModalityType.TEXT]
+        text = load_and_transform_text([prompt], self.device)
+        embeddings = self._inferencer.model.forward({ModalityType.TEXT: text},
+                                                    normalize=False)
+        text_embeddings = embeddings[ModalityType.TEXT]
 
-        audio_data = ib.load_and_transform_audio_data(audio_paths, self.device)
+        audio_data = load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self._inferencer.model.forward({
-            ib.ModalityType.AUDIO:
+            ModalityType.AUDIO:
             audio_data,
         })
-        audio_embeddings = embeddings[ib.ModalityType.AUDIO]
+        audio_embeddings = embeddings[ModalityType.AUDIO]
         embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5
         images = self._inferencer.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images

@@ -113,7 +113,7 @@ class ObjectReplace(BaseTool):
         self.grounding = load_or_build_object(
             DetInferencer, model=self.grounding_model, device=self.device)
         self.sam, self.sam_predictor = load_sam_and_predictor(
-            self.sam_model, False, self.device)
+            self.sam_model, device=self.device)
 
         self.inpainting = load_or_build_object(Inpainting, device=self.device)
 
@@ -125,7 +125,7 @@ class ObjectReplace(BaseTool):
             inputs=image_path,
             texts=[text1],
             no_save_vis=True,
-            return_datasample=True)
+            return_datasamples=True)
         results = results['predictions'][0].pred_instances
 
         boxes_filt = results.bboxes
