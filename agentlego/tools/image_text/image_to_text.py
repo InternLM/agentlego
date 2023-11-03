@@ -35,15 +35,20 @@ class ImageCaption(BaseTool):
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
                  model: str = 'blip-base_3rdparty_caption',
-                 device: str = 'cpu'):
+                 device: str = 'cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
         self.model = model
         self.device = device
 
     def setup(self):
+        from mmengine.registry import DefaultScope
         from mmpretrain.apis import ImageCaptionInferencer
-        self._inferencer = load_or_build_object(
-            ImageCaptionInferencer, model=self.model, device=self.device)
+        with DefaultScope.overwrite_default_scope('mmpretrain'):
+            self._inferencer = load_or_build_object(
+                ImageCaptionInferencer,
+                model=self.model,
+                device=self.device,
+            )
 
     def apply(self, image: ImageIO) -> str:
         image = image.to_array()[:, :, ::-1]

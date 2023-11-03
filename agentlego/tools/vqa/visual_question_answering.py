@@ -22,8 +22,8 @@ class VisualQuestionAnswering(BaseTool):
 
     DEFAULT_TOOLMETA = ToolMeta(
         name='VQA',
-        description=('This tool can answer the input '
-                     'question based on the input image.'),
+        description='This tool can answer the input question based on the '
+        'input image. The question should be in English.',
         inputs=['image', 'text'],
         outputs=['text'])
 
@@ -38,11 +38,15 @@ class VisualQuestionAnswering(BaseTool):
 
     @require('mmpretrain')
     def setup(self):
+        from mmengine.registry import DefaultScope
         from mmpretrain.apis import VisualQuestionAnsweringInferencer
-        self._inferencer = load_or_build_object(
-            VisualQuestionAnsweringInferencer,
-            model=self.model,
-            device=self.device)
+
+        with DefaultScope.overwrite_default_scope('mmpretrain'):
+            self._inferencer = load_or_build_object(
+                VisualQuestionAnsweringInferencer,
+                model=self.model,
+                device=self.device)
 
     def apply(self, image: ImageIO, text: str) -> str:
-        return self._inferencer(image.to_path(), text)[0]['pred_answer']
+        image = image.to_array()[:, :, ::-1]
+        return self._inferencer(image, text)[0]['pred_answer']
