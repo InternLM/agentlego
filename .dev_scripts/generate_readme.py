@@ -10,11 +10,6 @@ A tool to generate a README template for a tool.
 README_TMPL = '''\
 # {cls_name}
 
-```{{eval-rst}}
-.. autoclass:: agentlego.tools.{cls_name}
-    :noindex:
-```
-
 ## Default Tool Meta
 
 - **name**: {name}
