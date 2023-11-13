@@ -32,6 +32,10 @@ class GoogleSearch(BaseTool):
         search_type (str): Serper API support ['search', 'images', 'news',
             'places'] types of search, currently we only support 'search'.
             Defaults to `search`.
+        max_out_len (int): The maximum length of the total search result.
+            Defaults to 1500.
+        with_url (bool): Whether to include the url of search results.
+            Defaults to False.
         k (int): select first k results in the search results as response.
             Defaults to 10.
     """
@@ -57,6 +61,8 @@ class GoogleSearch(BaseTool):
                  api_key: str = 'env',
                  timeout: int = 5,
                  search_type: str = 'search',
+                 max_out_len: int = 1500,
+                 with_url: bool = False,
                  k: int = 10) -> None:
         super().__init__(toolmeta=toolmeta, parser=parser)
 
@@ -71,6 +77,8 @@ class GoogleSearch(BaseTool):
         self.timeout = timeout
         self.search_type = search_type
         self.k = k
+        self.max_out_len = max_out_len
+        self.with_url = with_url
 
     def apply(self, query: str) -> str:
         status_code, results = self._search(
@@ -95,37 +103,58 @@ class GoogleSearch(BaseTool):
 
         snippets = []
 
-        if results.get('answerBox'):
-            answer_box = results.get('answerBox', {})
+        answer_box = results.get('answerBox', {})
+        if answer_box:
+            content = 'Answer box: '
             if answer_box.get('answer'):
-                return [answer_box.get('answer')]
+                content += answer_box['answer']
             elif answer_box.get('snippet'):
-                return [answer_box.get('snippet').replace('\n', ' ')]
+                content += answer_box['snippet']
             elif answer_box.get('snippetHighlighted'):
-                return answer_box.get('snippetHighlighted')
+                content += answer_box['snippetHighlighted']
+            snippets.append(content)
 
-        if results.get('knowledgeGraph'):
-            kg = results.get('knowledgeGraph', {})
-            title = kg.get('title')
-            entity_type = kg.get('type')
-            if entity_type:
-                snippets.append(f'{title}: {entity_type}.')
-            description = kg.get('description')
-            if description:
-                snippets.append(description)
-            for attribute, value in kg.get('attributes', {}).items():
-                snippets.append(f'{title} {attribute}: {value}.')
+        kg = results.get('knowledgeGraph', {})
+        if kg:
+            content = 'Knowledge graph: '
+            if kg.get('title'):
+                content = kg['title'] + ' knowledge graph: '
+            if kg.get('type'):
+                content += kg['type'] + '. '
+            if kg.get('description'):
+                content += kg['description']
+            if kg.get('attributes'):
+                attributes = ', '.join(f'{k}: {v}'
+                                       for k, v in kg['attributes'].items())
+                content += f'({attributes})'
+            snippets.append(content)
 
-        for result in results[self.result_key_for_type[
+        for item in results[self.result_key_for_type[
                 self.search_type]][:self.k]:
-            if 'snippet' in result:
-                snippets.append(result['snippet'])
-            for attribute, value in result.get('attributes', {}).items():
-                snippets.append(f'{attribute}: {value}.')
+            content = ''
+            if item.get('title'):
+                content += item['title'] + ': '
+            if item.get('link') and self.with_url:
+                content += f"({item['link']})"
+            if item.get('snippet'):
+                content += item['snippet']
+            if item.get('attributes'):
+                attributes = ', '.join(f'{k}: {v}'
+                                       for k, v in item['attributes'].items())
+                content += f'({attributes})'
+            snippets.append(content)
 
         if len(snippets) == 0:
-            return ['No good Google Search Result was found']
-        return snippets
+            return 'No good Google Search Result was found'
+
+        result = ''
+        for idx, item in enumerate(snippets):
+            item = item.strip().replace('\n', ' ')
+            result += f'{idx+1} - {item}\n\n'
+
+        if len(result) > self.max_out_len:
+            result = result[:self.max_out_len] + '...'
+        return result
 
     def _search(self,
                 query: str,
