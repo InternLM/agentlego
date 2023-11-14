@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import TYPE_CHECKING, Callable, Union
 
 import numpy as np
-from mmengine.fileio import get
+import requests
 from mmengine.utils import apply_to
 
 from agentlego.parsers import DefaultParser
@@ -80,7 +80,7 @@ class TextToSpeech(BaseTool):
         self.model_name = model
 
         if isinstance(speaker_embeddings, str):
-            with BytesIO(get(speaker_embeddings)) as f:
+            with BytesIO(requests.get(speaker_embeddings).content) as f:
                 speaker_embeddings = torch.from_numpy(np.load(f)).unsqueeze(0)
         self.speaker_embeddings = speaker_embeddings
         self.sampling_rate = sampling_rate

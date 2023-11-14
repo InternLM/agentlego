@@ -1,12 +1,5 @@
 # TextToSpeech
 
-## Default Tool Meta
-
-- **name**: Text Reader
-- **description**: This is a tool that can speak the input English text into audio.
-- **inputs**: text
-- **outputs**: audio
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(audio)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['TextToSpeech'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('TextToSpeech', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'Please introduce the highest mountain and speak out.')
@@ -65,13 +58,6 @@ This tool uses a **Speech T5** model in default settings. See the following pape
 
 # SpeechToText
 
-## Default Tool Meta
-
-- **name**: Transcriber
-- **description**: This is a tool that transcribes an audio into text.
-- **inputs**: audio
-- **outputs**: text
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -91,12 +77,12 @@ print(text)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['SpeechToText'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('SpeechToText', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 audio_path = 'examples/demo.m4a'

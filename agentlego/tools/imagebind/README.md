@@ -1,12 +1,5 @@
 # AudioToImage
 
-## Default Tool Meta
-
-- **name**: Generate Image from Audio
-- **description**: This tool can generate an image according to the input audio
-- **inputs**: audio
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -31,12 +24,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['AudioToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('AudioToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')
@@ -58,13 +51,6 @@ pip install timm ftfy iopath diffusers
 TODO
 
 # ThermalToImage
-
-## Default Tool Meta
-
-- **name**: Generate Image from Thermal Image
-- **description**: This tool can generate an image according to the input thermal image.
-- **inputs**: image
-- **outputs**: image
 
 ## Examples
 
@@ -90,12 +76,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ThermalToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ThermalToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')
@@ -117,13 +103,6 @@ pip install timm ftfy iopath diffusers
 TODO
 
 # AudioImageToImage
-
-## Default Tool Meta
-
-- **name**: Generate Image from Image and Audio
-- **description**: This tool can generate an image according to the input reference image and the input audio.
-- **inputs**: image, audio
-- **outputs**: image
 
 ## Examples
 
@@ -149,12 +128,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['AudioImageToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('AudioImageToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')
@@ -176,13 +155,6 @@ pip install timm ftfy iopath diffusers
 TODO
 
 # AudioTextToImage
-
-## Default Tool Meta
-
-- **name**: Generate Image from Audio and Text
-- **description**: This tool can generate an image according to the input audio and the input description.
-- **inputs**: audio, text
-- **outputs**: image
 
 ## Examples
 
@@ -208,12 +180,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['AudioTextToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('AudioTextToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')

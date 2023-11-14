@@ -16,7 +16,7 @@ def load_sd(model: str = 'runwayml/stable-diffusion-v1-5',
                            StableDiffusionControlNetPipeline,
                            StableDiffusionPipeline)
 
-    dtype = torch.float16 if 'cuda' in device else torch.float32
+    dtype = torch.float16 if 'cuda' in str(device) else torch.float32
 
     if vae is not None:
         vae = load_or_build_object(
@@ -60,7 +60,7 @@ def load_sdxl(model: str = 'stabilityai/stable-diffusion-xl-base-1.0',
                            StableDiffusionXLControlNetPipeline,
                            StableDiffusionXLPipeline)
 
-    dtype = torch.float16 if 'cuda' in device else torch.float32
+    dtype = torch.float16 if 'cuda' in str(device) else torch.float32
 
     if vae is not None:
         vae = load_or_build_object(

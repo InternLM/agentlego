@@ -1,12 +1,5 @@
 # ImageToDepth
 
-## Default Tool Meta
-
-- **name**: Generate Depth Image On Image
-- **description**: This tool can generate the depth image of an image.
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(depth)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageToDepth'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageToDepth', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -73,13 +66,6 @@ This tool uses a **DPT** model in default settings. See the following paper for 
 
 # DepthTextToImage
 
-## Default Tool Meta
-
-- **name**: Generate Image Condition On Depth Image
-- **description**: This tool can generate an image from a depth image and a text. The text should be a series of English keywords separated by comma.
-- **inputs**: image, text
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -105,12 +91,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['DepthTextToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('DepthTextToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'depth.png'

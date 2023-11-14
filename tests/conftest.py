@@ -17,9 +17,7 @@ def hf_agent():
 
 @pytest.fixture(scope='module')
 def lagent_agent():
-    from lagent.actions.action_executor import ActionExecutor
-    from lagent.agents import ReAct
-    from lagent.llms import GPTAPI
+    from lagent import GPTAPI, ActionExecutor, ReAct
 
     agent = ReAct(
         llm=GPTAPI(model_type='gpt-4', temperature=0.),

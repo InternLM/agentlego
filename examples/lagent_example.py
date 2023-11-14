@@ -3,30 +3,23 @@ from lagent.agents.react import ReAct
 from lagent.llms.openai import GPTAPI
 from prompt_toolkit import ANSI, prompt
 
-from agentlego.apis.agents.lagent import load_tools_for_lagent
-
-try:
-    import transformers
-    transformers.utils.logging.set_verbosity_error()
-except ImportError:
-    pass
+from agentlego.apis import load_tool
 
 
 def main():
     # set OPEN_API_KEY in your environment or directly pass it with key=''
     model = GPTAPI(model_type='gpt-3.5-turbo')
 
+    tools = [
+        load_tool(tool_type).to_lagent() for tool_type in [
+            'GoogleSearch',
+            'Calculator',
+        ]
+    ]
     chatbot = ReAct(
         llm=model,
         max_turn=3,
-        action_executor=ActionExecutor(
-            actions=load_tools_for_lagent([
-                'ImageCaption',
-                'ObjectRemove',
-                'ObjectReplace',
-                'TextToSpeech',
-                'SpeechToText',
-            ])),
+        action_executor=ActionExecutor(actions=tools),
     )
     system = chatbot._protocol.format([], [],
                                       chatbot._action_executor)[0]['content']

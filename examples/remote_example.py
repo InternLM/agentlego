@@ -5,7 +5,6 @@ from lagent.agents.react import ReAct
 from lagent.llms.openai import GPTAPI
 from prompt_toolkit import ANSI, prompt
 
-from agentlego.apis.agents.lagent import load_tools_for_lagent
 from agentlego.tools.remote import RemoteTool
 
 try:
@@ -34,12 +33,12 @@ def main():
 
     # set OPEN_API_KEY in your environment or directly pass it with key=''
     model = GPTAPI()
+    tools = [tool.to_lagent() for tool in RemoteTool.from_server(addr)]
 
     chatbot = ReAct(
         llm=model,
         max_turn=3,
-        action_executor=ActionExecutor(
-            actions=load_tools_for_lagent(RemoteTool.from_server(addr))),
+        action_executor=ActionExecutor(actions=tools),
     )
     system = chatbot._protocol.format([], [],
                                       chatbot._action_executor)[0]['content']

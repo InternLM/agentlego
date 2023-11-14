@@ -10,13 +10,6 @@ A tool to generate a README template for a tool.
 README_TMPL = '''\
 # {cls_name}
 
-## Default Tool Meta
-
-- **name**: {name}
-- **description**: {description}
-- **inputs**: {inputs}
-- **outputs**: {outputs}
-
 ## Examples
 {download}
 
@@ -36,12 +29,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['{cls_name}']{init_args})
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('{cls_name}'{init_args}).to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')

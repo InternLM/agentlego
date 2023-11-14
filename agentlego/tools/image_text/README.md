@@ -1,12 +1,5 @@
 # ImageCaption
 
-## Default Tool Meta
-
-- **name**: Image Description
-- **description**: A useful tool that returns a brief description of the input image.
-- **inputs**: image
-- **outputs**: text
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(caption)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageCaption'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageCaption', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -41,20 +34,19 @@ for step in ret.inner_steps[1:]:
     print(step['content'])
 ```
 
-**With HuggingFace Agent**
+**With Transformers Agent**
 
 ```python
 from transformers import HfAgent
-from agentlego.apis.agents import load_tools_for_hfagent
+from agentlego.apis import load_tool
 from PIL import Image
 
 # load tools and build huggingface agent
-tools = load_tools_for_hfagent(tools=['ImageCaption'], device='cuda')
-agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=tools)
+tool = load_tool('ImageCaption', device='cuda').to_transformers_agent()
+agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=[tool])
 
 # agent running with the tool (For demo, we directly specify the tool name here.)
-tool_name = tools[0].name
-caption = agent.run(f'Use the tool `{tool_name}` to describe the image.', image=Image.open('examples/demo.png'))
+caption = agent.run(f'Use the tool `{tool.name}` to describe the image.', image=Image.open('examples/demo.png'))
 print(caption)
 ```
 
@@ -82,13 +74,6 @@ This tool uses a **BLIP** model in default settings. See the following paper for
 
 # TextToImage
 
-## Default Tool Meta
-
-- **name**: Generate Image From Text
-- **description**: This tool can generate an image according to the input text. The input text should be a series of keywords separated by comma, and all keywords must be in English.
-- **inputs**: text
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -108,12 +93,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['TextToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('TextToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'Please generate an image of cute cat.')
@@ -122,20 +107,18 @@ for step in ret.inner_steps[1:]:
     print(step['content'])
 ```
 
-**With HuggingFace Agent**
+**With Transformers Agent**
 
 ```python
 from transformers import HfAgent
-from agentlego.apis.agents import load_tools_for_hfagent
+from agentlego.apis import load_tool
 
 # load tools and build huggingface agent
-tools = load_tools_for_hfagent(tools=['TextToImage'], device='cuda')
-agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_
-tools=tools)
+tool = load_tool('TextToImage', device='cuda').to_transformers_agent()
+agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=[tool])
 
 # agent running with the tool (For demo, we directly specify the tool name here.)
-tool_name = tools[0].name
-image = agent.run(f'Use the tool `{tool_name}` to generate an image of cat.')
+image = agent.run(f'Use the tool `{tool.name}` to generate an image of cat.')
 print(image)
 ```
 

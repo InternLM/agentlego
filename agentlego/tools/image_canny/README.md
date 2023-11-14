@@ -1,12 +1,5 @@
 # ImageToCanny
 
-## Default Tool Meta
-
-- **name**: Edge Detection On Image
-- **description**: This tool can extract the edge image from an image.
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(canny)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageToCanny'])
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageToCanny').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -42,13 +35,6 @@ for step in ret.inner_steps[1:]:
 ```
 
 # CannyTextToImage
-
-## Default Tool Meta
-
-- **name**: Generate Image Condition On Canny Image
-- **description**: This tool can generate an image from a canny edge image and a description.
-- **inputs**: image, text
-- **outputs**: image
 
 ## Examples
 
@@ -75,12 +61,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['CannyTextToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('CannyTextToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 canny = 'canny.png'

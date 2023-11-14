@@ -2,8 +2,6 @@
 # Licensed under the MIT License.
 
 import argparse
-import inspect
-# coding: utf-8
 import os
 import random
 import re
@@ -13,13 +11,11 @@ import gradio as gr
 import numpy as np
 import torch
 from langchain.agents.initialize import initialize_agent
-from langchain.agents.tools import Tool
-from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms.openai import OpenAI
+from langchain.memory.buffer import ConversationStringBufferMemory
 from PIL import Image
-from transformers import BlipForConditionalGeneration, BlipProcessor
 
-from agentlego.apis.agents.visual_chatgpt import load_tools_for_visual_chatgpt
+from agentlego.apis import load_tool
 
 VISUAL_CHATGPT_PREFIX = """Visual ChatGPT is designed to be able to assist with a wide range of text and visual related tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. Visual ChatGPT is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
 
@@ -148,81 +144,31 @@ def cut_dialogue_history(history_memory, keep_last_n_words=500):
     return '\n' + '\n'.join(paragraphs)
 
 
-class ImageCaptioning:
-
-    def __init__(self, device):
-        print(f'Initializing ImageCaptioning to {device}')
-        self.device = device
-        self.torch_dtype = torch.float16 if 'cuda' in device else torch.float32
-        self.processor = BlipProcessor.from_pretrained(
-            'Salesforce/blip-image-captioning-base')
-        self.model = BlipForConditionalGeneration.from_pretrained(
-            'Salesforce/blip-image-captioning-base',
-            torch_dtype=self.torch_dtype).to(self.device)
-
-    @prompts(
-        name='Get Photo Description',
-        description='useful when you want to know what is inside the '
-        'photo. receives image_path as input. '
-        'The input to this tool should be a string, '
-        'representing the image_path. ')
-    def inference(self, image_path):
-        inputs = self.processor(
-            Image.open(image_path),
-            return_tensors='pt').to(self.device, self.torch_dtype)
-        out = self.model.generate(**inputs)
-        captions = self.processor.decode(out[0], skip_special_tokens=True)
-        return captions
-
-
 class ConversationBot:
 
     def __init__(self, load_dict):
         # load_dict = {
         #     'OCRTool':'cuda:0',
-        #     'ImageCaptioning':'cuda:1',...}
+        #     'ImageCaption':'cuda:1',...}
         print(f'Initializing VisualChatGPT, load_dict={load_dict}')
 
-        if 'ImageCaptioning' not in load_dict:
-            raise ValueError('You have to load ImageCaptioning as a '
+        if 'ImageCaption' not in load_dict:
+            raise ValueError('You have to load ImageCaption as a '
                              'basic function for VisualChatGPT')
 
         self.models = {}
-        # Load Basic Foundation Models
+        # Load tools
         for class_name, device in load_dict.items():
-            self.models[class_name] = globals()[class_name](device=device)
-
-        # Load Template Foundation Models
-        for class_name, module in globals().items():
-            if getattr(module, 'template_model', False):
-                template_required_names = {
-                    k
-                    for k in inspect.signature(
-                        module.__init__).parameters.keys() if k != 'self'
-                }
-                loaded_names = set(
-                    [type(e).__name__ for e in self.models.values()])
-                if template_required_names.issubset(loaded_names):
-                    self.models[class_name] = globals()[class_name](
-                        **{
-                            name: self.models[name]
-                            for name in template_required_names
-                        })
+            self.models[class_name] = load_tool(
+                class_name, device=device).to_langchain()
 
         print(f'All the Available Functions: {self.models}')
 
         self.tools = []
-        for instance in self.models.values():
-            for e in dir(instance):
-                if e.startswith('inference'):
-                    func = getattr(instance, e)
-                    self.tools.append(
-                        Tool(
-                            name=func.name,
-                            description=func.description,
-                            func=func))
-        self.llm = OpenAI(temperature=0)
-        self.memory = ConversationBufferMemory(
+        for tool in self.models.values():
+            self.tools.append(tool)
+        self.llm = OpenAI(temperature=0, openai_api_key='alles')
+        self.memory = ConversationStringBufferMemory(
             memory_key='chat_history', output_key='output')
 
     def init_agent(self, lang):
@@ -281,7 +227,7 @@ class ConversationBot:
         img.save(image_filename, 'PNG')
         print(
             f'Resize image form {width}x{height} to {width_new}x{height_new}')
-        description = self.models['ImageCaptioning'].inference(image_filename)
+        description = self.models['ImageCaption'](image_filename)
         if lang == 'Chinese':
             Human_prompt = (f'\nHuman: 提供一张名为 {image_filename}的图片。'
                             f'它的描述是: {description}。 '
@@ -309,11 +255,10 @@ class ConversationBot:
 
 
 if __name__ == '__main__':
-    globals().update(load_tools_for_visual_chatgpt())
     if not os.path.exists('checkpoints'):
         os.mkdir('checkpoints')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default='ImageCaptionTool_cuda:0')
+    parser.add_argument('--load', type=str, default='ImageCaption_cuda:0')
     args = parser.parse_args()
     load_dict = {
         e.split('_')[0].strip(): e.split('_')[1].strip()

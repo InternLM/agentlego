@@ -1,12 +1,5 @@
 # OCR
 
-## Default Tool Meta
-
-- **name**: OCR
-- **description**: This tool can recognize all text on the input image.
-- **inputs**: image
-- **outputs**: text
-
 ## Examples
 
 **Download the demo resource**
@@ -31,12 +24,12 @@ res = tool('demo_kie.jpeg')
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['OCR'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('OCR', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'Here is a receipt image `demo_kie.jpeg`, please tell me the total cost.')

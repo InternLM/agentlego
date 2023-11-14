@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import inspect
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
 from typing import Any, Callable, List, Union
 
 from agentlego.schema import ToolMeta
@@ -10,7 +10,7 @@ from agentlego.schema import ToolMeta
 class BaseTool(metaclass=ABCMeta):
 
     def __init__(self, toolmeta: Union[dict, ToolMeta], parser: Callable):
-        toolmeta = deepcopy(toolmeta)
+        toolmeta = copy.deepcopy(toolmeta)
         if isinstance(toolmeta, dict):
             toolmeta = ToolMeta(**toolmeta)
         self.toolmeta = toolmeta
@@ -76,6 +76,18 @@ class BaseTool(metaclass=ABCMeta):
     def __copy__(self):
         obj = object.__new__(type(self))
         obj.__dict__.update(self.__dict__)
-        obj.toolmeta = deepcopy(self.toolmeta)
+        obj.toolmeta = copy.deepcopy(self.toolmeta)
         obj.set_parser(self._parser_constructor)
         return obj
+
+    def to_transformers_agent(self):
+        from .wrappers.transformers_agent import TransformersAgentTool
+        return TransformersAgentTool(self)
+
+    def to_langchain(self):
+        from .wrappers.langchain import construct_langchain_tool
+        return construct_langchain_tool(self)
+
+    def to_lagent(self):
+        from .wrappers.lagent import LagentTool
+        return LagentTool(self)

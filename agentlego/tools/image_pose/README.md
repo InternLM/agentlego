@@ -1,12 +1,5 @@
 # HumanBodyPose
 
-## Default Tool Meta
-
-- **name**: Human Body Pose Detection On Image
-- **description**: This tool can estimate the pose or keypoints of human in an image and draw the human pose image
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -32,12 +25,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['HumanBodyPose'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('HumanBodyPose', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'human.jpg'
@@ -74,13 +67,6 @@ This tool uses a **RTM Pose** model in default settings. See the following paper
 
 # PoseToImage
 
-## Default Tool Meta
-
-- **name**: Generate Image Condition On Pose Image
-- **description**: This tool can generate an image from a human pose image and a text. The text should be a series of English keywords separated by comma.
-- **inputs**: image, text
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -107,12 +93,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['PoseToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('PoseToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'pose_demo.jpg'
@@ -148,13 +134,6 @@ This tool uses a **Control Net** model in default settings. See the following pa
 
 # HumanFaceLandmark
 
-## Default Tool Meta
-
-- **name**: Human Face Landmark On Image
-- **description**: This tool can estimate the landmark or keypoints of human faces in an image and draw the image with landmarks.
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -181,12 +160,12 @@ print(face_landmark)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['HumanFaceLandmark'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('HumanFaceLandmark', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'face.png'

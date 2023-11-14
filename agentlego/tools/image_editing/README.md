@@ -1,12 +1,5 @@
 # ImageExpansion
 
-## Default Tool Meta
-
-- **name**: Image Expansion
-- **description**: This tool can expand the peripheral area of an image based on its content, thus obtaining a larger image. You need to provide the target image and the expand ratio. The expand ratio can be a float string (for both width and height expand ratio, like "1.25") or a string include two float separated by comma (for width ratio and height ratio, like "1.25, 1.0")
-- **inputs**: image, text
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageExpansion'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageExpansion', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -77,13 +70,6 @@ This tool uses **BLIP** and **Stable Diffusion** in default settings. See the fo
 
 # ObjectRemove
 
-## Default Tool Meta
-
-- **name**: Remove Object From Image
-- **description**: This tool can remove the specified object in the image. You need to input the image and the object name to remove.
-- **inputs**: image, text
-- **outputs**: image
-
 ## Example
 
 **Use the tool directly (without agent)**
@@ -103,12 +89,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ObjectRemove'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ObjectRemove', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -164,13 +150,6 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 
 # ObjectReplace
 
-## Default Tool Meta
-
-- **name**: Replace Object In Image
-- **description**: This tool can replace the specified object in the input image with another object, like replacing a cat in an image with a dog. You need to input the image to edit, the object name to be replaced, and the object to replace with.
-- **inputs**: image, text, text
-- **outputs**: image
-
 ## Example
 
 **Use the tool directly (without agent)**
@@ -190,12 +169,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ObjectReplace'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ObjectReplace', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -251,13 +230,6 @@ This tool uses **SAM**, **Stable Diffusion** and **GLIP** in default settings. S
 
 # ImageStylization
 
-## Default Tool Meta
-
-- **name**: Image Modification
-- **description**: This tool can modify the input image according to the input instruction. Here are some example instructions: "turn him into cyborg", "add fireworks to the sky", "make his jacket out of leather".
-- **inputs**: image, text
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -277,12 +249,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageStylization'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageStylization', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'

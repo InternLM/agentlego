@@ -74,17 +74,15 @@ efficiently build large language model(LLM) -based agents. It also provides some
 Here is an example script to integrate agentlego tools to Lagent:
 
 ```python
-from lagent.actions.action_executor import ActionExecutor
-from lagent.agents.react import ReAct
-from lagent.llms.openai import GPTAPI
+from agentlego.apis import load_tool
+from lagent import ReAct, GPTAPI, ActionExecutor
 
 # Load the tools you want to use.
-from agentlego.apis.agents.lagent import load_tools_for_lagent
-tools = load_tools_for_lagent(['Calculator'])
+tool = load_tool('Calculator').to_lagent()
 
 # Build Lagent Agent
 model = GPTAPI(temperature=0.)
-agent = ReAct(llm=model, action_executor=ActionExecutor(tools))
+agent = ReAct(llm=model, action_executor=ActionExecutor([tool]))
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
 ret = agent.chat(user_input)
@@ -105,24 +103,30 @@ users to start and customize applications.
 Here is an example script to integrate agentlego tools to LangChain:
 
 ```python
-from langchain.agents.initialize import initialize_agent
+from agentlego.apis import load_tool
+from langchain.agents import AgentType, initialize_agent
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.llms.openai import OpenAI
+from langchain.chat_models import ChatOpenAI
 
 # Load the tools you want to use.
-from agentlego.apis.agents.langchain import load_tools_for_langchain
-tools = load_tools_for_langchain(['Calculator'])
+tool = load_tool('Calculator').to_langchain()
 
 # Build LangChain Agent
-model = OpenAI(temperature=0.)
+model = ChatOpenAI(temperature=0.)
 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-agent = initialize_agent(llm=model, tools=tools, memory=memory, verbose=True)
+agent = initialize_agent(
+    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+    llm=model,
+    tools=[tool],
+    memory=memory,
+    verbose=True,
+)
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
-agent.invoke(user_input)
+agent.run(input=user_input)
 ```
 
-### HuggingFace Agent
+### Transformers Agent
 
 [HuggingFace Transformers agent](https://huggingface.co/docs/transformers/transformers_agents) is an
 extensible natural language API which interprets language and uses curated tools for its operation. It allows
@@ -131,18 +135,18 @@ easy incorporation of additional community-developed tools.
 Here is an example script to integrate agentlego tools to Transformers agent:
 
 ```python
+from agentlego.apis import load_tool
 from transformers import HfAgent
 
 # Load the tools you want to use.
-from agentlego.apis.agents.huggingface_agent import load_tools_for_hfagent
-tools = load_tools_for_hfagent(['Calculator'])
+tool = load_tool('Calculator').to_transformers_agent()
 
 # Build HuggingFace Transformers Agent
 prompt = open('examples/hf_agent/hf_demo_prompts.txt', 'r').read()
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
     chat_prompt_template=prompt,
-    additional_tools=tools,
+    additional_tools=[tool],
 )
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'

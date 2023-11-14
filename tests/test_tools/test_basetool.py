@@ -1,65 +1,60 @@
-import os.path as osp
-import tempfile
-
-import numpy as np
-from PIL import Image
-
-from agentlego.testing import ToolTestCase
-from agentlego.tools.base_tool import BaseTool
-from agentlego.tools.parsers import HuggingFaceAgentParser, LangChainParser
+from agentlego.parsers import DefaultParser
+from agentlego.tools.base import BaseTool
+from agentlego.types import ImageIO
 
 
 class DummyTool(BaseTool):
     DEFAULT_TOOLMETA = dict(
         name='Dummy Tool',
-        model=None,
-        description='This is a dummy tool. '
-        'It takes an {{{input:image}}} and a {{{input:text}}} as the inputs, '
-        'and outputs an {{{output:image}}}.')
+        description='This is a dummy tool. It takes an image and a text '
+        'as the inputs, and returns an image.',
+        inputs=('image', 'text'),
+        outputs=('image', ),
+    )
 
-    def apply(self, image: Image.Image, query: str) -> Image.Image:
+    def __init__(self):
+        super().__init__(toolmeta=self.DEFAULT_TOOLMETA, parser=DefaultParser)
+
+    def apply(self, image: ImageIO, query: str) -> ImageIO:
         return image
 
 
-class TestBaseTool(ToolTestCase):
+def test_lagent():
+    from lagent.actions import BaseAction
+    tool = DummyTool().to_lagent()
+    assert isinstance(tool, BaseAction)
 
-    def test_call_with_visual_chatgpt(self):
-        tool = DummyTool(parser=LangChainParser())
+    expected_description = (
+        'This is a dummy tool. It takes an image and a text as the inputs, '
+        'and returns an image. Args: image (image path), query (text string) '
+        'Combine all args to one json string like {"image": xxx, "query": xxx}'
+    )
 
-        expected_description = 'This is a dummy tool. It takes an image ' \
-            'represented by path and a text represented by string as the ' \
-            'inputs, and outputs an image represented by path. ' \
-            'Inputs should be separated by comma.'
+    assert tool.name == 'DummyTool'
+    assert tool.description == expected_description
 
-        self.assertEqual(tool.name, 'Dummy Tool')
-        self.assertEqual(tool.inputs, ('image', 'text'))
-        self.assertEqual(tool.outputs, ('image', ))
-        self.assertEqual(tool.description, expected_description)
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            path = osp.join(tempdir, 'image.jpg')
-            img = np.random.randint(0, 255, [224, 224, 3]).astype(np.uint8)
-            Image.fromarray(img).save(path)
-            query = 'What is the color of the car?'
+def test_hf_agent():
+    from transformers.tools import Tool
+    tool = DummyTool().to_transformers_agent()
+    assert isinstance(tool, Tool)
 
-            inputs = f'{path}, {query}'
-            outputs = tool(inputs)
-            self.assertIsInstance(outputs, str)
+    expected_description = (
+        'This is a dummy tool. It takes an image and a text as '
+        'the inputs, and returns an image. Args: image (image), query (text)')
 
-    def test_call_with_huggingface_agent(self):
-        tool = DummyTool(parser=HuggingFaceAgentParser())
+    assert tool.name == 'agentlego_dummy_tool'
+    assert tool.description == expected_description
 
-        expected_description = 'This is a dummy tool. It takes an image ' \
-            'and a text as the inputs, and outputs an image.' \
 
-        self.assertEqual(tool.name, 'Dummy Tool')
-        self.assertEqual(tool.inputs, ('image', 'text'))
-        self.assertEqual(tool.outputs, ('image', ))
-        self.assertEqual(tool.description, expected_description)
+def test_langchain():
+    from langchain.tools import StructuredTool
+    tool = DummyTool().to_langchain()
+    assert isinstance(tool, StructuredTool)
 
-        img = Image.fromarray(
-            np.random.randint(0, 255, [224, 224, 3]).astype(np.uint8))
-        query = 'What is the color of the car?'
+    expected_description = (
+        'Dummy Tool(image: str, query: str) - This is a dummy tool. '
+        'It takes an image and a text as the inputs, and returns an image.')
 
-        outputs = tool(img, query)
-        self.assertIsInstance(outputs, Image.Image)
+    assert tool.name == 'Dummy Tool'
+    assert tool.description == expected_description

@@ -1,12 +1,5 @@
 # ImageToScribble
 
-## Default Tool Meta
-
-- **name**: Generate Scribble Conditioned On Image
-- **description**: This tool can generate a sketch scribble of an image.
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -26,12 +19,12 @@ print(scribble)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ImageToScribble'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ImageToScribble', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'examples/demo.png'
@@ -55,13 +48,6 @@ The tool use [`controlnet_aux`](https://github.com/patrickvonplaten/controlnet_a
 scribble sketch that can be used in the ControlNet.
 
 # ScribbleTextToImage
-
-## Default Tool Meta
-
-- **name**: Generate Image Condition On Scribble Image
-- **description**: This tool can generate an image from a sketch scribble image and a description.
-- **inputs**: image, text
-- **outputs**: image
 
 ## Examples
 
@@ -88,12 +74,12 @@ print(image)
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ScribbleTextToImage'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ScribbleTextToImage', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 img_path = 'scribble.png'

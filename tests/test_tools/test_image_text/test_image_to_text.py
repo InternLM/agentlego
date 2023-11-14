@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-from agentlego.apis.agents import load_tools_for_hfagent, load_tools_for_lagent
 from agentlego.parsers import NaiveParser
 from agentlego.testing import setup_tool
 
@@ -24,17 +23,16 @@ def test_call(tool):
 
 
 def test_hf_agent(tool, hf_agent):
-    tools = load_tools_for_hfagent([tool])
+    tool = tool.to_transformers_agent()
     hf_agent.prepare_for_new_chat()
-    hf_agent._toolbox = {t.name: t for t in tools}
+    hf_agent._toolbox = {tool.name: tool}
 
     out = hf_agent.chat(f'Please describe the image `{test_img}`.')
     assert out is not None
 
 
 def test_lagent(tool, lagent_agent):
-    tools = load_tools_for_lagent([tool])
-    lagent_agent.new_session(tools)
+    lagent_agent.new_session([tool.to_lagent()])
 
     out = lagent_agent.chat(f'Please describe the image `{test_img}`.')
     assert out.actions[-1].valid == 1

@@ -1,12 +1,5 @@
 # ObjectDetection
 
-## Default Tool Meta
-
-- **name**: Detect All Objects
-- **description**: A useful tool when you only want to detect the picture or detect all objects in the picture. like: detect all objects.
-- **inputs**: image
-- **outputs**: image
-
 ## Examples
 
 **Download the demo resource**
@@ -31,12 +24,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['ObjectDetection'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('ObjectDetection', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')
@@ -58,13 +51,6 @@ TODO
 TODO
 
 # TextToBbox
-
-## Default Tool Meta
-
-- **name**: Detect the Given Object
-- **description**: A useful tool when you only want to show the location of given objects, or detect or find out given objects in the picture. like: locate persons in the picture
-- **inputs**: image, text
-- **outputs**: image
 
 ## Examples
 
@@ -90,12 +76,12 @@ TODO
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['TextToBbox'], device='cuda')
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('TextToBbox', device='cuda').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'TODO')

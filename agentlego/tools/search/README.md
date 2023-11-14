@@ -1,12 +1,5 @@
 # GoogleSearch
 
-## Default Tool Meta
-
-- **name**: Google Search
-- **description**: The tool can search the input query text from Google and return the related results
-- **inputs**: text
-- **outputs**: text
-
 ## Examples
 
 **Use the tool directly (without agent)**
@@ -25,12 +18,12 @@ res = tool('Highest mountain in the earth')
 
 ```python
 from lagent import ReAct, GPTAPI, ActionExecutor
-from agentlego.apis.agents import load_tools_for_lagent
+from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tools = load_tools_for_lagent(tools=['GoogleSearch'])
-agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor(tools))
+tool = load_tool('GoogleSearch').to_lagent()
+agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
 ret = agent.chat(f'What is the highest mountain in the earth?')

@@ -2,18 +2,17 @@ from pathlib import Path
 
 from transformers import HfAgent
 
-from agentlego.apis.agents.huggingface_agent import load_tools_for_hfagent
+from agentlego.apis import load_tool
 
 #  from huggingface_hub import login
 #  login()
 
-tools = load_tools_for_hfagent(
-    [
+tools = [
+    load_tool(tool_type).to_transformers_agent() for tool_type in [
         'ImageCaption',
         'TextToSpeech',
-    ],
-    device='cpu',
-)
+    ]
+]
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
     chat_prompt_template=(Path(__file__).parent /
@@ -29,7 +28,7 @@ for k in list(agent.toolbox.keys()):
     if agent.toolbox[k] not in tools:
         agent.toolbox.pop(k)
 
-demo_img = (Path(__file__).parent / 'demo.png').absolute()
+demo_img = Path(__file__).absolute().parents[1] / 'demo.png'
 
 user = f'Describe the image `{demo_img}` and save to variable `description`.'
 print(f'\033[92mUser\033[0m: {user}')
