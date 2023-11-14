@@ -24,12 +24,12 @@ class AnythingToImage:
             pretrained_model_name_or_path='stabilityai/'
             'stable-diffusion-2-1-unclip',
             torch_dtype=torch.float16,
-            variation='fp16')
+            variant='fp16')
 
         self.device = device
-        self.pipe = pipe
+        self.pipe = pipe.to(device)
         self.pipe.enable_vae_slicing()
-        self.model = imagebind_huge(pretrained=True)
+        self.model = imagebind_huge(pretrained=True).to(self.device)
         self.model.eval()
 
 
@@ -51,7 +51,7 @@ class AudioToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
+    @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -67,7 +67,7 @@ class AudioToImage(BaseTool):
         from .data import load_and_transform_audio_data
         from .models.imagebind_model import ModalityType
 
-        audio_paths = [audio]
+        audio_paths = [audio.to_path()]
         audio_data = load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self._inferencer.model.forward(
             {ModalityType.AUDIO: audio_data})
@@ -113,7 +113,7 @@ class ThermalToImage(BaseTool):
         from .data import load_and_transform_thermal_data
         from .models.imagebind_model import ModalityType
 
-        thermal_paths = [thermal]
+        thermal_paths = [thermal.to_path()]
         thermal_data = load_and_transform_thermal_data(thermal_paths,
                                                        self.device)
         embeddings = self._inferencer.model.forward(
@@ -144,7 +144,7 @@ class AudioImageToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
+    @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -162,13 +162,13 @@ class AudioImageToImage(BaseTool):
         from .models.imagebind_model import ModalityType
 
         # process image data
-        vision_data = load_and_transform_vision_data([image], self.device)
+        vision_data = load_and_transform_vision_data([image.to_path()], self.device)
         embeddings = self._inferencer.model.forward(
             {ModalityType.VISION: vision_data}, normalize=False)
         img_embeddings = embeddings[ModalityType.VISION]
 
         # process audio data
-        audio_data = load_and_transform_audio_data([audio], self.device)
+        audio_data = load_and_transform_audio_data([audio.to_path()], self.device)
         embeddings = self._inferencer.model.forward({
             ModalityType.AUDIO:
             audio_data,
@@ -201,7 +201,7 @@ class AudioTextToImage(BaseTool):
         outputs=['image'],
     )
 
-    @require(['diffusers', 'ftfy', 'iopath', 'timm'])
+    @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
@@ -218,7 +218,7 @@ class AudioTextToImage(BaseTool):
                            load_and_transform_text)
         from .models.imagebind_model import ModalityType
 
-        audio_paths = [audio]
+        audio_paths = [audio.to_path()]
         text = load_and_transform_text([prompt], self.device)
         embeddings = self._inferencer.model.forward({ModalityType.TEXT: text},
                                                     normalize=False)

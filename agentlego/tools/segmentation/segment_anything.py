@@ -480,10 +480,8 @@ class SegmentObject(BaseTool):
 
     def apply(self, image: ImageIO, text: str) -> ImageIO:
 
-        image_pil = Image.open(image).convert('RGB')
-
         results = self.grounding(
-            inputs=image,
+            inputs=image.to_array()[:, :, ::-1],  # Input BGR
             texts=text,
             no_save_vis=True,
             return_datasamples=True)
@@ -492,11 +490,11 @@ class SegmentObject(BaseTool):
         boxes_filt = results.bboxes
         pred_phrases = results.label_names
 
-        output_image = self.segment_image_with_boxes(image_pil, image,
+        output_image = self.segment_image_with_boxes(image.to_array(),
                                                      boxes_filt, pred_phrases)
         return ImageIO(output_image)
 
-    def get_mask_with_boxes(self, image_pil, image, boxes_filt):
+    def get_mask_with_boxes(self, image, boxes_filt):
         if not self._is_setup:
             self.setup()
             self._is_setup = True
@@ -516,16 +514,12 @@ class SegmentObject(BaseTool):
         )
         return masks
 
-    def segment_image_with_boxes(self, image_pil, image_path, boxes_filt,
-                                 pred_phrases):
+    def segment_image_with_boxes(self, image, boxes_filt, pred_phrases):
         if not self._is_setup:
             self.setup()
             self._is_setup = True
 
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
+        masks = self.get_mask_with_boxes(image, boxes_filt)
 
         # draw output image
         for mask in masks:
@@ -535,7 +529,7 @@ class SegmentObject(BaseTool):
                 random_color=True,
                 transparency=0.3)
 
-        return ImageIO(image)
+        return image
 
     def show_mask(self,
                   mask: np.ndarray,
