@@ -3,7 +3,7 @@ import importlib
 import inspect
 
 import agentlego.tools
-from agentlego.tools.base import BaseTool
+from agentlego.tools import BaseTool
 from agentlego.utils.cache import load_or_build_object
 
 NAMES2TOOLS = {}
@@ -27,11 +27,17 @@ def list_tools(with_description=False):
 
     Args:
         with_description (bool): Whether to return the description of tools.
-            Defaults to `False`
+            Defaults to False.
 
     Returns:
         list: list of tool names by default, or list of tuples
-        `(tool_name, description)` if `with_description` is `True`.
+        `(tool_name, description)` if ``with_description=True``.
+
+    Examples:
+        >>> from agentlego import list_tools
+        >>> # list all tools with description
+        >>> for name, description in list_tools(with_description=True):
+        ...     print(name, description)
     """
     if with_description:
         return list((name, cls.DEFAULT_TOOLMETA.description)
@@ -40,8 +46,8 @@ def list_tools(with_description=False):
         return list(NAMES2TOOLS.keys())
 
 
-def load_tool(tool_name: str,
-              override_name: str = None,
+def load_tool(tool_type: str,
+              name: str = None,
               description: str = None,
               device=None,
               **kwargs) -> BaseTool:
@@ -49,7 +55,8 @@ def load_tool(tool_name: str,
 
     Args:
         tool_name (str): tool name for specific task. You can find more
-            description about supported tools in `Capability Matrix`_
+            description about supported tools by
+            :func:`~agentlego.apis.list_tools`.
         override_name (str | None): The name to override the default name.
             Defaults to None.
         description (str): The description to override the default description.
@@ -58,10 +65,10 @@ def load_tool(tool_name: str,
         **kwargs: key-word arguments to build the specific tools.
             These arguments are related ``tool``. You can find the arguments
             of the specific tool type according to the given tool in the
-            `Capability Matrix`_
+            documentations of the tools.
 
     Returns:
-        callable: A callable tool.
+        BaseTool: The constructed tool.
 
     Examples:
         >>> from agentlego import load_tool
@@ -70,25 +77,20 @@ def load_tool(tool_name: str,
         >>> # load a specific model
         >>> tool, meta = load_tool(
         >>>     'object detection', model='rtmdet_l_8xb32-300e_coco')
-
-    Returns:
-        Tuple[callable, ToolMeta]: _description_
-
-    .. _Capability Matrix: TODO
     """
-    if tool_name not in NAMES2TOOLS:
+    if tool_type not in NAMES2TOOLS:
         # Using ValueError to show error msg cross lines.
-        raise ValueError(f'{tool_name} is not supported now, the available '
+        raise ValueError(f'{tool_type} is not supported now, the available '
                          'tools are:\n' + '\n'.join(NAMES2TOOLS.keys()))
 
-    tool_type = NAMES2TOOLS[tool_name]
+    tool_type = NAMES2TOOLS[tool_type]
     if 'device' in inspect.getfullargspec(tool_type).args:
         kwargs['device'] = device
 
-    if override_name or description:
+    if name or description:
         tool_obj = tool_type(**kwargs)
-        if override_name:
-            tool_obj.name = override_name
+        if name:
+            tool_obj.name = name
         if description:
             tool_obj.description = description
     else:

@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/cat.wav
 ```
 
 **Use the tool directly (without agent)**
@@ -17,7 +17,7 @@ from agentlego.apis import load_tool
 tool = load_tool('AudioToImage', device='cuda')
 
 # apply tool
-TODO
+image = tool('./cat.wav')
 ```
 
 **With Lagent**
@@ -32,7 +32,7 @@ tool = load_tool('AudioToImage', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please generate an image according to the audio at `cat.wav`')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -43,12 +43,23 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install timm ftfy iopath diffusers
+pip install timm ftfy iopath diffusers pytorchvideo
 ```
 
 ## Reference
 
-TODO
+This tool uses a **ImageBind** model. See the following paper for details.
+
+```bibtex
+@misc{girdhar2023imagebind,
+      title={ImageBind: One Embedding Space To Bind Them All},
+      author={Rohit Girdhar and Alaaeldin El-Nouby and Zhuang Liu and Mannat Singh and Kalyan Vasudev Alwala and Armand Joulin and Ishan Misra},
+      year={2023},
+      eprint={2305.05665},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 
 # ThermalToImage
 
@@ -57,7 +68,7 @@ TODO
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/thermal.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -69,7 +80,7 @@ from agentlego.apis import load_tool
 tool = load_tool('ThermalToImage', device='cuda')
 
 # apply tool
-TODO
+image = tool('thermal.jpg')
 ```
 
 **With Lagent**
@@ -84,7 +95,7 @@ tool = load_tool('ThermalToImage', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please generate an image according to the thermal image at `thermal.jpg`')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -100,7 +111,18 @@ pip install timm ftfy iopath diffusers
 
 ## Reference
 
-TODO
+This tool uses a **ImageBind** model. See the following paper for details.
+
+```bibtex
+@misc{girdhar2023imagebind,
+      title={ImageBind: One Embedding Space To Bind Them All},
+      author={Rohit Girdhar and Alaaeldin El-Nouby and Zhuang Liu and Mannat Singh and Kalyan Vasudev Alwala and Armand Joulin and Ishan Misra},
+      year={2023},
+      eprint={2305.05665},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 
 # AudioImageToImage
 
@@ -109,7 +131,8 @@ TODO
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/dog.jpg
+wget http://download.openmmlab.com/mmtools/cat.wav
 ```
 
 **Use the tool directly (without agent)**
@@ -121,7 +144,7 @@ from agentlego.apis import load_tool
 tool = load_tool('AudioImageToImage', device='cuda')
 
 # apply tool
-TODO
+image = tool('dog.jpg', 'cat.wav')
 ```
 
 **With Lagent**
@@ -136,7 +159,7 @@ tool = load_tool('AudioImageToImage', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please generate an image according to the audio `cat.wav` and image `dog.jpg`.')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -147,12 +170,23 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install timm ftfy iopath diffusers
+pip install timm ftfy iopath diffusers pytorchvideo
 ```
 
 ## Reference
 
-TODO
+This tool uses a **ImageBind** model. See the following paper for details.
+
+```bibtex
+@misc{girdhar2023imagebind,
+      title={ImageBind: One Embedding Space To Bind Them All},
+      author={Rohit Girdhar and Alaaeldin El-Nouby and Zhuang Liu and Mannat Singh and Kalyan Vasudev Alwala and Armand Joulin and Ishan Misra},
+      year={2023},
+      eprint={2305.05665},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 
 # AudioTextToImage
 
@@ -161,7 +195,7 @@ TODO
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/cat.wav
 ```
 
 **Use the tool directly (without agent)**
@@ -173,7 +207,7 @@ from agentlego.apis import load_tool
 tool = load_tool('AudioTextToImage', device='cuda')
 
 # apply tool
-TODO
+image = tool('cat.wav', 'flying in the sky')
 ```
 
 **With Lagent**
@@ -188,7 +222,7 @@ tool = load_tool('AudioTextToImage', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please generate an image according to the audio `cat.wav`, and it should fly in the sky.')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -199,9 +233,20 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install timm ftfy iopath diffusers
+pip install timm ftfy iopath diffusers pytorchvideo
 ```
 
 ## Reference
 
-TODO
+This tool uses a **ImageBind** model. See the following paper for details.
+
+```bibtex
+@misc{girdhar2023imagebind,
+      title={ImageBind: One Embedding Space To Bind Them All},
+      author={Rohit Girdhar and Alaaeldin El-Nouby and Zhuang Liu and Mannat Singh and Kalyan Vasudev Alwala and Armand Joulin and Ishan Misra},
+      year={2023},
+      eprint={2305.05665},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```

@@ -67,7 +67,7 @@ source_suffix = {
     '.md': 'markdown',
 }
 
-language = 'en'
+language = 'zh-CN'
 
 # The master toctree document.
 root_doc = 'index'

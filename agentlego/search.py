@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 
 from .apis.tool import list_tools
+from .utils import load_or_build_object
 
 
 def _cosine_similarity(a: np.array, b: np.array) -> list:
@@ -15,7 +16,10 @@ def _cosine_similarity(a: np.array, b: np.array) -> list:
     return res
 
 
-def _search_with_openai(query, choices, model='text-embedding-ada-002'):
+def _search_with_openai(query,
+                        choices,
+                        model='text-embedding-ada-002',
+                        topk=5):
     """Search tools with openai API.
 
     Note:
@@ -43,18 +47,15 @@ def _search_with_openai(query, choices, model='text-embedding-ada-002'):
     similarity = _cosine_similarity(
         np.array(embeddings[0]), np.array(embeddings[1:]))
 
-    # only return the similarity greater than 0.8
-    indices = np.where(similarity > 0.8)[0]
-    if len(indices) > 0:
-        indices = indices[np.argsort(-similarity[indices])]
-    else:
-        indices = [np.argmax(similarity)]
-
+    indices = np.argsort(-similarity)[:topk]
     return [choices[i] for i in indices]
 
 
 def _serach_with_sentence_transformers(
-        query, choices, model='sentence-transformers/all-mpnet-base-v2'):
+        query,
+        choices,
+        model='sentence-transformers/all-mpnet-base-v2',
+        topk=5):
     """Search tools with sentence-transformers.
 
     Args:
@@ -68,17 +69,11 @@ def _serach_with_sentence_transformers(
     """
     from sentence_transformers import SentenceTransformer
 
-    model = SentenceTransformer(model)
+    model = load_or_build_object(SentenceTransformer, model)
     embeddings = model.encode([query] + choices)
     similarity = _cosine_similarity(embeddings[0], embeddings[1:])
 
-    # only return the similarity greater than 0.8
-    indices = np.where(similarity > 0.8)[0]
-    if len(indices) > 0:
-        indices = indices[np.argsort(-similarity[indices])]
-    else:
-        indices = [np.argmax(similarity)]
-
+    indices = np.argsort(-similarity)[:topk]
     return [choices[i] for i in indices]
 
 
@@ -88,7 +83,7 @@ def _search_with_thefuzz(query, choices, topk=5):
     return [res for res, _ in result]
 
 
-def search_tool(query: str, kind: str = 'thefuzz') -> List[str]:
+def search_tool(query: str, kind: str = 'thefuzz', topk=5) -> List[str]:
     """Search several proper tools according to the query.
 
     Args:
@@ -96,14 +91,16 @@ def search_tool(query: str, kind: str = 'thefuzz') -> List[str]:
         kind (str): Different third-party libraries are used to assist in
             searching the appropriate tools. Optional values are "thefuzz",
             "openai", and "st". Defaults to "thefuzz".
+        topk (int): Return the top-k results. Defaults to 5.
 
     Examples:
+        >>> from agentlego import search_tool
         >>> # use the thefuzz to search tools
-        >>> search_tool('show the skeleton of person')
+        >>> search_tool('human pose')
         >>> # use the openai API to search tools
-        >>> search_tool('show the skeleton of person', kind='openai')
+        >>> search_tool('human pose', kind='openai')
         >>> # use the sentence-transformers to search tools
-        >>> search_tool('show the skeleton of person', kind='st')
+        >>> search_tool('human pose', kind='st')
     """
     choice2names = dict()
     for name, description in list_tools(with_description=True):
@@ -112,11 +109,11 @@ def search_tool(query: str, kind: str = 'thefuzz') -> List[str]:
     choices = list(choice2names.keys())
 
     if kind == 'thefuzz':
-        result = _search_with_thefuzz(query, choices)
+        result = _search_with_thefuzz(query, choices, topk=topk)
     elif kind == 'openai':
-        result = _search_with_openai(query, choices)
+        result = _search_with_openai(query, choices, topk=topk)
     elif kind == 'st':
-        result = _serach_with_sentence_transformers(query, choices)
+        result = _serach_with_sentence_transformers(query, choices, topk=topk)
     else:
         raise ValueError('The supported kinds are "thefuzz", "openai" or "st",'
                          f' but got {kind}.')

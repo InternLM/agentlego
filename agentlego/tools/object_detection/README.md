@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/road.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -17,7 +17,7 @@ from agentlego.apis import load_tool
 tool = load_tool('ObjectDetection', device='cuda')
 
 # apply tool
-TODO
+visualization = tool('road.jpg')
 ```
 
 **With Lagent**
@@ -32,7 +32,7 @@ tool = load_tool('ObjectDetection', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please detect all objects in the image `road.jpg`.')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -43,12 +43,24 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-TODO
+pip install openmim
+mim install mmdet
 ```
 
 ## Reference
 
-TODO
+This tool uses a **RTMDet** model by default. See the following paper for details.
+
+```bibtex
+@misc{lyu2022rtmdet,
+      title={RTMDet: An Empirical Study of Designing Real-Time Object Detectors},
+      author={Chengqi Lyu and Wenwei Zhang and Haian Huang and Yue Zhou and Yudong Wang and Yanyi Liu and Shilong Zhang and Kai Chen},
+      year={2022},
+      eprint={2212.07784},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
 
 # TextToBbox
 
@@ -57,7 +69,7 @@ TODO
 **Download the demo resource**
 
 ```bash
-TODO
+wget http://download.openmmlab.com/mmtools/road.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -69,7 +81,7 @@ from agentlego.apis import load_tool
 tool = load_tool('TextToBbox', device='cuda')
 
 # apply tool
-TODO
+visualization, result = tool('road.jpg', 'The largest white truck')
 ```
 
 **With Lagent**
@@ -84,7 +96,7 @@ tool = load_tool('TextToBbox', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
-ret = agent.chat(f'TODO')
+ret = agent.chat(f'Please detect the largest white truck in the image `road.jpg`.')
 for step in ret.inner_steps[1:]:
     print('------')
     print(step['content'])
@@ -95,9 +107,19 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-TODO
+pip install openmim
+mim install mmdet
 ```
 
 ## Reference
 
-TODO
+This tool uses a **GLIP** model. See the following paper for details.
+
+```bibtex
+@inproceedings{li2021grounded,
+      title={Grounded Language-Image Pre-training},
+      author={Liunian Harold Li* and Pengchuan Zhang* and Haotian Zhang* and Jianwei Yang and Chunyuan Li and Yiwu Zhong and Lijuan Wang and Lu Yuan and Lei Zhang and Jenq-Neng Hwang and Kai-Wei Chang and Jianfeng Gao},
+      year={2022},
+      booktitle={CVPR},
+}
+```

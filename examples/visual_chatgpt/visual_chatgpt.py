@@ -167,7 +167,7 @@ class ConversationBot:
         self.tools = []
         for tool in self.models.values():
             self.tools.append(tool)
-        self.llm = OpenAI(temperature=0, openai_api_key='alles')
+        self.llm = OpenAI(temperature=0)
         self.memory = ConversationStringBufferMemory(
             memory_key='chat_history', output_key='output')
 

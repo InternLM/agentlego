@@ -69,7 +69,7 @@ print(image_caption_tool(img_pil))
 ### Lagent
 
 [Lagent](https://github.com/InternLM/lagent) is a lightweight open-source framework that allows users to
-efficiently build large language model(LLM) -based agents. It also provides some typical tools to augment LLM.
+efficiently build large language model(LLM) -based agents.
 
 Here is an example script to integrate agentlego tools to Lagent:
 

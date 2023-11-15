@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .base import BaseTool
 from .calculator import Calculator
 from .image_canny import CannyTextToImage, ImageToCanny
 from .image_depth import DepthTextToImage, ImageToDepth
@@ -25,5 +26,5 @@ __all__ = [
     'ObjectDetection', 'TextToBbox', 'OCR', 'SegmentObject', 'SegmentAnything',
     'SemanticSegmentation', 'ImageStylization', 'AudioToImage',
     'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage', 'SpeechToText',
-    'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator'
+    'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator', 'BaseTool'
 ]

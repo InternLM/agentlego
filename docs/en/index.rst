@@ -14,9 +14,7 @@ Welcome to the documentation of AgentLego!
    :maxdepth: 2
    :caption: Getting Started
 
-   get_started/introduction.md
-   get_started/installation.md
-   get_started/quick_start.md
+   get_started.md
 
 
 .. _Modules:
@@ -24,9 +22,8 @@ Welcome to the documentation of AgentLego!
    :maxdepth: 2
    :caption: Modules
 
-   modules/agent.md
+   modules/apis.md
    modules/tool.md
-   modules/parser.md
 
 
 .. _Tool APIs:
