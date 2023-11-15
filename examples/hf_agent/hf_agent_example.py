@@ -20,7 +20,7 @@ agent = HfAgent(
     additional_tools=tools,
 )
 
-# Remove default tools in the huggingface agent and only keep the tools from
+# Remove default tools in the transformers agent and only keep the tools from
 # AgentLego. Please note that this is only for demo purpose. In practice,
 # AgentLego tools can be used together with other tools.
 

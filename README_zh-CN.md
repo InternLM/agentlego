@@ -62,10 +62,15 @@ caption = image_caption_tool(image)
 ## 集成至智能体框架
 
 - [**Lagent**](examples/lagent_example.py)
-- [**HuggingFace Agent**](examples/hf_agent/hf_agent_example.py)
+- [**Transformers Agent**](examples/hf_agent/hf_agent_example.py)
 - [**VisualChatGPT**](examples/visual_chatgpt/visual_chatgpt.py)
 
 # 工具列表
+
+**通用能力**
+
+- [Calculator](agentlego/tools/calculator/README.md): 使用 Python 解释器进行计算
+- [GoogleSearch](agentlego/tools/search/README.md): 使用 Google 搜索
 
 **语音相关**
 

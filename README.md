@@ -64,10 +64,15 @@ caption = image_caption_tool(image)
 ## Integrated into agent frameworks
 
 - [**Lagent**](examples/lagent_example.py)
-- [**HuggingFace Agent**](examples/hf_agent/hf_agent_example.py)
+- [**Transformers Agent**](examples/hf_agent/hf_agent_example.py)
 - [**VisualChatGPT**](examples/visual_chatgpt/visual_chatgpt.py)
 
 # Supported Tools
+
+**General ability**
+
+- [Calculator](agentlego/tools/calculator/README.md): Calculate by Python interpreter.
+- [GoogleSearch](agentlego/tools/search/README.md): Search on Google.
 
 **Speech related**
 

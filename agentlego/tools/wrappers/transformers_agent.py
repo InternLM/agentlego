@@ -30,7 +30,7 @@ class TransformersAgentTool(Tool):
         self.tool = tool
 
         # remove spaces in the tool name which is not allowed in the
-        # huggingface agent system
+        # transformers agent system
         self.name: str = 'agentlego_' + tool.name.lower().replace(' ', '_')
 
         inputs_desc = []

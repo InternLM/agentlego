@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-
 import shutil
+import sys
 from pathlib import Path
 
-import agentlego.tools as tools
-
-root_dir = Path(__file__).parents[2]
+root_dir = Path(__file__).absolute().parents[2]
 doc_dir = Path(__file__).parent
+sys.path.insert(0, str(root_dir))
 tmp_dir = doc_dir / '_tmp'
 
 AUTODOC_TMPL = '''
@@ -43,6 +42,7 @@ def format_tool_readme(path):
     for start, end in zip(h1, h1[1:] + [len(contents)]):
         content = contents[start:end]
         cls_name = content[0].strip('\n# ')
+        from agentlego import tools
         toolmeta = getattr(tools, cls_name).DEFAULT_TOOLMETA
         content.insert(
             1,

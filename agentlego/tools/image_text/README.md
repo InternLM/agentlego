@@ -41,7 +41,7 @@ from transformers import HfAgent
 from agentlego.apis import load_tool
 from PIL import Image
 
-# load tools and build huggingface agent
+# load tools and build transformers agent
 tool = load_tool('ImageCaption', device='cuda').to_transformers_agent()
 agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=[tool])
 
@@ -113,7 +113,7 @@ for step in ret.inner_steps[1:]:
 from transformers import HfAgent
 from agentlego.apis import load_tool
 
-# load tools and build huggingface agent
+# load tools and build transformers agent
 tool = load_tool('TextToImage', device='cuda').to_transformers_agent()
 agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=[tool])
 

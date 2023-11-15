@@ -202,9 +202,7 @@ intersphinx_mapping = {
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = [
-    'diffusers', 'mmagic', 'mmpretrain', 'mmdet', 'mmocr', 'mmpose'
-]
+autodoc_mock_imports = []
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 # Disable evaluate the default value.
