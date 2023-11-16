@@ -11,7 +11,7 @@
 .. _Getting Started:
 .. toctree::
    :maxdepth: 2
-   :caption: Getting Started
+   :caption: 快速上手
 
    get_started.md
 
@@ -19,7 +19,7 @@
 .. _Modules:
 .. toctree::
    :maxdepth: 2
-   :caption: Modules
+   :caption: 模块指南
 
    modules/apis.md
    modules/tool.md
@@ -27,8 +27,8 @@
 
 .. _Tool APIs:
 .. toctree::
-   :maxdepth: 2
-   :caption: Tool APIs
+   :maxdepth: 1
+   :caption: 工具列表
    :glob:
 
    _tmp/tools/*

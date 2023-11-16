@@ -71,7 +71,7 @@ This tool uses a **DPT** model in default settings. See the following paper for 
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/depth.png
+wget http://download.openmmlab.com/agentlego/depth.png
 ```
 
 **Use the tool directly (without agent)**

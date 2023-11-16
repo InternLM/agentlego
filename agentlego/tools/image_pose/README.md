@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/human.jpg
+wget http://download.openmmlab.com/agentlego/human.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -72,7 +72,7 @@ This tool uses a **RTM Pose** model in default settings. See the following paper
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/pose_demo.jpg
+wget http://download.openmmlab.com/agentlego/pose_demo.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -139,7 +139,7 @@ This tool uses a **Control Net** model in default settings. See the following pa
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/face.png
+wget http://download.openmmlab.com/agentlego/face.png
 ```
 
 **Use the tool directly (without agent)**

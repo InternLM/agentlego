@@ -1,8 +1,10 @@
 # 安装
 
-根据您的条件选择安装方法：
+根据您的情况选择安装方法：
 
-## 支持深度学习模型
+## 安装完整工具包
+
+安装完整工具包，你可以直接使用几乎所有工具（除了 ImageBind 和 SAM 等工具需要额外的依赖）。
 
 1. 设置您的 torch 环境（如果已经完成则跳过此步骤）
 
@@ -10,7 +12,8 @@
 conda create -n agentlego python=3.10
 ```
 
-并按照[官方指南](https://pytorch.org/get-started/locally/#start-locally)安装 PyTorch 包。
+并按照[官方指南](https://pytorch.org/get-started/locally/#start-locally)安装 PyTorch 包（包括 torch,
+torchvision 和 torchaudio）。
 
 2. 安装 AgentLego 和一些常见的依赖项。
 
@@ -26,9 +29,9 @@ pip install transformers diffusers mmagic
 
 3. 某些工具需要额外的依赖项，在使用之前请查看 `Tool APIs` 中的 **Set up** 部分。
 
-## 仅安装简单依赖
+## 仅安装最简依赖
 
-在这种情况下，您可以使用类似于 GoogleSearch、Translation 和您自己的自定义工具的部分工具。此外，如果您从远程工具服务器调用工具，则客户端只需要简单的依赖项。
+仅安装最简依赖，您可以使用类似于 GoogleSearch、Translation 和您自己的自定义工具的部分工具。此外，如果您从远程工具服务器调用工具，则客户端只需要简单的依赖项。
 
 ```bash
 pip install agentlego

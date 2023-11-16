@@ -28,7 +28,7 @@ Welcome to the documentation of AgentLego!
 
 .. _Tool APIs:
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Tool APIs
    :glob:
 

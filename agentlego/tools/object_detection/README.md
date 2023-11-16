@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/road.jpg
+wget http://download.openmmlab.com/agentlego/road.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -69,7 +69,7 @@ This tool uses a **RTMDet** model by default. See the following paper for detail
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/road.jpg
+wget http://download.openmmlab.com/agentlego/road.jpg
 ```
 
 **Use the tool directly (without agent)**

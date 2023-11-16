@@ -2,7 +2,10 @@
 
 You can choose the installation method according to your condition:
 
-## With deep-learning model support
+## With full toolkits
+
+With full toolkits, you can use almost all tools except few tools (ImageBind and SAM related tools requires
+extra requirements) directly.
 
 1. Set up your torch environment (skip the step if you have already finished)
 
@@ -10,7 +13,7 @@ You can choose the installation method according to your condition:
 conda create -n agentlego python=3.10
 ```
 
-And install PyTorch packages according to the [official guide](https://pytorch.org/get-started/locally/#start-locally).
+And install PyTorch packages (torch, torchvision and torchaudio) according to the [official guide](https://pytorch.org/get-started/locally/#start-locally).
 
 2. Install AgentLego and some common dependencies.
 
@@ -18,17 +21,17 @@ And install PyTorch packages according to the [official guide](https://pytorch.o
 pip install agentlego[optional] openmim
 
 # For image understanding tools.
-pip install mmpretrain mmdet mmpose easyocr
+mim install mmpretrain mmdet mmpose easyocr
 
 # For image generation tools.
-pip install transformers diffusers mmagic
+mim install transformers diffusers mmagic
 ```
 
 3. Some tools requires extra dependencies, check the **Set up** section in `Tool APIs` before you want to use.
 
-## With simple dependencies
+## With minimum dependencies
 
-In this condition, you can use partial tools like GoogleSearch, Translation, and your custom tools. Moreover,
+With minimum dependencies, you can use partial tools like GoogleSearch, Translation, and your custom tools. Moreover,
 if you call tools from a tool server remotely, the client only need simple dependencies.
 
 ```bash

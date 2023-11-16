@@ -41,7 +41,7 @@ for step in ret.inner_steps[1:]:
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/canny.png
+wget http://download.openmmlab.com/agentlego/canny.png
 ```
 
 **Use the tool directly (without agent)**

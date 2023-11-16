@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/cups.png
+wget http://download.openmmlab.com/agentlego/cups.png
 ```
 
 **Use the tool directly (without agent)**
@@ -68,7 +68,7 @@ This tool uses a **Segment Anything** model. See the following paper for details
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/cups.png
+wget http://download.openmmlab.com/agentlego/cups.png
 ```
 
 **Use the tool directly (without agent)**
@@ -141,7 +141,7 @@ This tool uses a **Segment Anything** model and **GLIP** model. See the followin
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/road.jpg
+wget http://download.openmmlab.com/agentlego/road.jpg
 ```
 
 **Use the tool directly (without agent)**

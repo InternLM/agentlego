@@ -5,7 +5,7 @@
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/cat.wav
+wget http://download.openmmlab.com/agentlego/cat.wav
 ```
 
 **Use the tool directly (without agent)**
@@ -68,7 +68,7 @@ This tool uses a **ImageBind** model. See the following paper for details.
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/thermal.jpg
+wget http://download.openmmlab.com/agentlego/thermal.jpg
 ```
 
 **Use the tool directly (without agent)**
@@ -131,8 +131,8 @@ This tool uses a **ImageBind** model. See the following paper for details.
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/dog.jpg
-wget http://download.openmmlab.com/mmtools/cat.wav
+wget http://download.openmmlab.com/agentlego/dog.jpg
+wget http://download.openmmlab.com/agentlego/cat.wav
 ```
 
 **Use the tool directly (without agent)**
@@ -195,7 +195,7 @@ This tool uses a **ImageBind** model. See the following paper for details.
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/cat.wav
+wget http://download.openmmlab.com/agentlego/cat.wav
 ```
 
 **Use the tool directly (without agent)**

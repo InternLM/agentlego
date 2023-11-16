@@ -54,7 +54,7 @@ scribble sketch that can be used in the ControlNet.
 **Download the demo resource**
 
 ```bash
-wget http://download.openmmlab.com/mmtools/scribble.png
+wget http://download.openmmlab.com/agentlego/scribble.png
 ```
 
 **Use the tool directly (without agent)**
