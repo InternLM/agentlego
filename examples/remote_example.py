@@ -1,31 +1,21 @@
 import argparse
 
-from lagent.actions.action_executor import ActionExecutor
-from lagent.agents.react import ReAct
-from lagent.llms.openai import GPTAPI
+from lagent import GPTAPI, ActionExecutor, ReAct
 from prompt_toolkit import ANSI, prompt
 
 from agentlego.tools.remote import RemoteTool
 
-try:
-    import transformers
-    transformers.utils.logging.set_verbosity_error()
-except ImportError:
-    pass
-
-prog_description = """\
-Start a chat session with remote tools
-"""
-
 
 def parse_args():
-    parser = argparse.ArgumentParser(description=prog_description)
+    parser = argparse.ArgumentParser()
     parser.add_argument('server', type=str, help='The tool server address.')
+    parser.add_argument('--model', type=str, default='gpt-3.5-turbo')
     args = parser.parse_args()
     return args
 
 
 def main():
+    # set OPEN_API_KEY in your environment or directly pass it with key=''
     args = parse_args()
     addr = args.server
     if not addr.startswith('http'):
