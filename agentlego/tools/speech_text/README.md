@@ -38,23 +38,12 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install -U transformers
+pip install TTS, langid
 ```
 
 ## Reference
 
-This tool uses a **Speech T5** model in default settings. See the following paper for details.
-
-```bibtex
-@article{Ao2021SpeechT5,
-  title   = {SpeechT5: Unified-Modal Encoder-Decoder Pre-training for Spoken Language Processing},
-  author  = {Junyi Ao and Rui Wang and Long Zhou and Chengyi Wang and Shuo Ren and Yu Wu and Shujie Liu and Tom Ko and Qing Li and Yu Zhang and Zhihua Wei and Yao Qian and Jinyu Li and Furu Wei},
-  eprint={2110.07205},
-  archivePrefix={arXiv},
-  primaryClass={cs.CL},
-  year={2021}
-}
-```
+This tool uses a **XTTS-v2** model in default settings. See the [repo](https://github.com/coqui-ai/TTS) details.
 
 # SpeechToText
 

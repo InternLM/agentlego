@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO
-from typing import TYPE_CHECKING, Callable, Union
+from typing import Callable, Union
 
-import numpy as np
 import requests
-from mmengine.utils import apply_to
 
 from agentlego.parsers import DefaultParser
 from agentlego.schema import ToolMeta
@@ -14,25 +12,6 @@ from ..base import BaseTool
 
 if is_package_available('torch'):
     import torch
-    from torch import Tensor
-else:
-    assert not TYPE_CHECKING, 'torch is not installed'
-    Tensor = None
-
-if is_package_available('torchaudio'):
-    import torchaudio
-
-
-@require('torchaudio')
-def resampling_audio(audio: dict, new_rate):
-    array, ori_sampling_rate = audio['array'], audio['sampling_rate']
-    array = torch.from_numpy(array).reshape(-1, 1)
-    torchaudio.functional.resample(array, ori_sampling_rate, new_rate)
-    return {
-        'array': array.reshape(-1).numpy(),
-        'sampling_rate': new_rate,
-        'path': audio['path']
-    }
 
 
 class TextToSpeech(BaseTool):
@@ -48,65 +27,62 @@ class TextToSpeech(BaseTool):
             Defaults to ``microsoft/speecht5_tts``.
         post_processor (str): The post-processor of the output audio.
             Defaults to ``microsoft/speecht5_hifigan``.
-        speaker_embeddings (str | torch.Tensor): The speaker embedding
+        speaker_embeddings (str | dict): The speaker embedding
             of the Speech-T5 model. Defaults to an embedding from
             ``Matthijs/speecht5-tts-demo``.
         device (str): The device to load the model. Defaults to 'cuda'.
     """
-
     SAMPLING_RATE = 16000
     DEFAULT_TOOLMETA = ToolMeta(
         name='Text Reader',
-        description='This is a tool that can '
-        'speak the input English text into audio.',
+        description='This is a tool that can speak the input text into audio.',
         inputs=['text'],
         outputs=['audio'],
     )
 
-    @require(('torch', 'transformers'))
+    @require('TTS', 'langid')
     def __init__(self,
                  toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
                  parser: Callable = DefaultParser,
-                 model: str = 'microsoft/speecht5_tts',
-                 post_processor: str = 'microsoft/speecht5_hifigan',
-                 speaker_embeddings: Union[str, Tensor] = (
-                     'https://huggingface.co/spaces/Matthijs/'
-                     'speecht5-tts-demo/resolve/main/spkemb/'
-                     'cmu_us_awb_arctic-wav-arctic_a0002.npy'),
+                 model: str = 'tts_models/multilingual/multi-dataset/xtts_v2',
+                 speaker_embeddings: Union[str, dict] = (
+                     'http://download.openmmlab.com/agentlego/'
+                     'default_voice.pth'),
                  sampling_rate=16000,
                  device='cuda'):
         super().__init__(toolmeta=toolmeta, parser=parser)
-        self.post_processor_name = post_processor
         self.model_name = model
 
         if isinstance(speaker_embeddings, str):
             with BytesIO(requests.get(speaker_embeddings).content) as f:
-                speaker_embeddings = torch.from_numpy(np.load(f)).unsqueeze(0)
+                speaker_embeddings = torch.load(f, map_location=device)
         self.speaker_embeddings = speaker_embeddings
         self.sampling_rate = sampling_rate
         self.device = device
 
     def setup(self) -> None:
-        from transformers.models.speecht5 import (SpeechT5ForTextToSpeech,
-                                                  SpeechT5HifiGan,
-                                                  SpeechT5Processor)
-        self.pre_processor = SpeechT5Processor.from_pretrained(self.model_name)
-        self.model = SpeechT5ForTextToSpeech.from_pretrained(
-            self.model_name).to(self.device)
-        self.post_processor = SpeechT5HifiGan.from_pretrained(
-            self.post_processor_name)
+        from TTS.api import TTS
+        from TTS.tts.models.xtts import Xtts
+        self.model = TTS(self.model_name).to(self.device).synthesizer.tts_model
+        self.model: Xtts
 
     def apply(self, text: str) -> AudioIO:
-        encoded_inputs = self.pre_processor(
-            text=text, return_tensors='pt', truncation=True)
-        encoded_inputs = dict(
-            input_ids=encoded_inputs['input_ids'],
-            speaker_embeddings=self.speaker_embeddings)
-        encoded_inputs = apply_to(encoded_inputs,
-                                  lambda x: isinstance(x, Tensor),
-                                  lambda x: x.to(self.device))
-        outputs = self.model.generate_speech(**encoded_inputs)
-        outputs = apply_to(outputs, lambda x: isinstance(x, Tensor),
-                           lambda x: x.to('cpu'))
-        outputs = self.post_processor(outputs).cpu().detach().reshape(1, -1)
-        return AudioIO(outputs, sampling_rate=self.sampling_rate)
+        import langid
+        langid.set_languages([
+            lang if lang != 'zh-cn' else 'zh'
+            for lang in self.model.config.languages
+        ])
+        lang = langid.classify(text)[0]
+        lang = 'zh-cn' if lang == 'zh' else lang
+        text = text.replace('，', ', ').replace('。', '. ').replace(
+            '？', '? ').replace('！', '! ').replace('、', ', ').strip()
+        out = self.model.inference(
+            text,
+            language=lang,
+            do_sample=False,
+            enable_text_splitting=len(text) > 72,  # Split text if too long.
+            **self.speaker_embeddings,
+        )
+
+        return AudioIO(
+            torch.tensor(out['wav']).unsqueeze(0), sampling_rate=24000)
