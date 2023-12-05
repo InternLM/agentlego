@@ -12,7 +12,7 @@ from typing_extensions import Annotated
 from agentlego.apis import load_tool
 from agentlego.parsers import NaiveParser
 from agentlego.tools.base import BaseTool
-from agentlego.types import AudioIO, ImageIO
+from agentlego.types import AudioIO, CatgoryToIO, ImageIO
 
 prog_description = """\
 Start a server for several tools.
@@ -54,6 +54,7 @@ for name in args.tools:
     tool = load_tool(name, device=args.device, parser=NaiveParser)
     if not args.no_setup:
         tool.setup()
+        tool._is_setup = True
     tools[quote_plus(tool.name.replace(' ', ''))] = tool
 
 app = FastAPI()
@@ -68,30 +69,29 @@ def index():
             dict(
                 domain=tool_name,
                 toolmeta=tool.toolmeta.__dict__,
-                input_fields=tool.input_fields,
+                parameters=[p.__dict__ for p in tool.parameters.values()],
             ))
     return response
 
 
 def add_tool(tool_name: str):
     tool: BaseTool = tools[tool_name]
-    inputs = tool.toolmeta.inputs
 
     def _call(**kwargs):
         args = {}
-        for name, in_category in zip(tool.input_fields, inputs):
-            data = kwargs[name]
-            if in_category == 'text':
-                data = data
-            elif in_category == 'image':
+        for p in tool.parameters.values():
+            data = kwargs[p.name]
+            if p.category == 'image':
                 from PIL import Image
                 data = ImageIO(Image.open(data.file))
-            elif in_category == 'audio':
+            elif p.category == 'audio':
                 import torchaudio
                 file_format = data.filename.rpartition('.')[-1] or None
                 raw, sr = torchaudio.load(data.file, format=file_format)
                 data = AudioIO(raw, sampling_rate=sr)
-            args[name] = data
+            else:
+                data = CatgoryToIO[p.category](data)
+            args[p.name] = data
 
         outs = tool(**args)
         if not isinstance(outs, tuple):
@@ -99,9 +99,7 @@ def add_tool(tool_name: str):
 
         res = []
         for out, out_category in zip(outs, tool.toolmeta.outputs):
-            if out_category == 'text':
-                res.append(out)
-            elif out_category == 'image':
+            if out_category == 'image':
                 file = BytesIO()
                 out.to_pil().save(file, format='png')
                 res.append(
@@ -122,7 +120,7 @@ def add_tool(tool_name: str):
                             file.getvalue()).decode('ascii'),
                     ))
             else:
-                raise NotImplementedError
+                res.append(out)
         return res
 
     def call(**kwargs):
@@ -133,17 +131,26 @@ def add_tool(tool_name: str):
 
     call_args = {}
     call_params = []
-    for arg_name, in_category in zip(tool.input_fields, inputs):
-        if in_category == 'text':
-            type_ = Annotated[str, Form()]
-        elif in_category in ['image', 'audio']:
-            type_ = Annotated[UploadFile, File(media_type=in_category)]
-        call_args[arg_name] = type_
+    for p in tool.parameters.values():
+        if p.category in ['image', 'audio']:
+            annotation = Annotated[UploadFile, File(media_type=p.category)]
+        else:
+            type_ = {
+                'text': str,
+                'int': int,
+                'bool': bool,
+                'float': float
+            }[p.category]
+            annotation = Annotated[type_, Form()]
+
+        call_args[p.name] = annotation
         call_params.append(
             inspect.Parameter(
-                arg_name,
+                p.name,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=type_))
+                default=p.default if p.optional else inspect._empty,
+                annotation=annotation,
+            ))
     call.__signature__ = inspect.Signature(call_params)
     call.__annotations__ = call_args
     tool_router.add_api_route(
@@ -154,7 +161,8 @@ def add_tool(tool_name: str):
     tool_router.add_api_route(
         f'/{tool_name}/meta',
         endpoint=lambda: dict(
-            toolmeta=tool.toolmeta.__dict__, input_fields=tool.input_fields),
+            toolmeta=tool.toolmeta.__dict__,
+            parameters=[p.__dict__ for p in tool.parameters.values()]),
         methods=['GET'],
     )
 

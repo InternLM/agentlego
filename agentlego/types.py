@@ -143,6 +143,13 @@ class AudioIO(IOType):
         return filename
 
 
-CatgoryToIO = {'image': ImageIO, 'text': str, 'audio': AudioIO}
+CatgoryToIO = {
+    'image': ImageIO,
+    'text': str,
+    'audio': AudioIO,
+    'bool': bool,
+    'int': int,
+    'float': float,
+}
 
 __all__ = ['ImageIO', 'AudioIO', 'CatgoryToIO']

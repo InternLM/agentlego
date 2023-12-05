@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import base64
 from io import BytesIO
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from urllib.parse import urljoin
 
 import requests
 
 from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Parameter, ToolMeta
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, ImageIO
 from agentlego.utils import temp_path
@@ -19,34 +19,40 @@ class RemoteTool(BaseTool):
         self,
         url,
         toolmeta: Union[dict, ToolMeta, None] = None,
-        input_fields: Optional[List[str]] = None,
+        parameters: Optional[Dict[str, Parameter]] = None,
         parser=DefaultParser,
     ):
         if not url.endswith('/'):
             url += '/'
         self.url = url
 
-        if toolmeta is None or input_fields is None:
-            toolmeta, input_fields = self.request_meta()
+        if toolmeta is None or parameters is None:
+            toolmeta, parameters = self.request_meta()
 
-        self._input_fields = input_fields
+        self._parameters = parameters
         super().__init__(toolmeta, parser)
 
     def request_meta(self):
         url = urljoin(self.url, 'meta')
         response = requests.get(url).json()
-        return response['toolmeta'], response['input_fields']
+        toolmeta = response['toolmeta']
+        parameters = {
+            p['name']: Parameter(**p)
+            for p in response['parameters']
+        }
+        return toolmeta, parameters
 
-    def apply(self, *args):
+    def apply(self, *args, **kwargs):
+        for arg, arg_name in zip(args, self.parameters):
+            kwargs[arg_name] = arg
+
         form = {}
-        for input_field, arg in zip(self.input_fields, args):
-            if isinstance(arg, str):
-                form[input_field] = (None, arg)
-            elif isinstance(arg, (ImageIO, AudioIO)):
-                file = arg.to_path()
-                form[input_field] = (file, open(file, 'rb'))
+        for k, v in kwargs.items():
+            if isinstance(v, (ImageIO, AudioIO)):
+                file = v.to_path()
+                form[k] = (file, open(file, 'rb'))
             else:
-                raise NotImplementedError()
+                form[k] = (None, v)
 
         url = urljoin(self.url, 'call')
         try:
@@ -92,11 +98,14 @@ class RemoteTool(BaseTool):
             tool = cls(
                 url=urljoin(url, tool_info['domain'] + '/'),
                 toolmeta=tool_info['toolmeta'],
-                input_fields=tool_info['input_fields'],
+                parameters={
+                    p['name']: Parameter(**p)
+                    for p in tool_info['parameters']
+                },
             )
             tools.append(tool)
         return tools
 
     @property
-    def input_fields(self):
-        return self._input_fields
+    def parameters(self) -> Dict[str, Parameter]:
+        return self._parameters

@@ -19,8 +19,7 @@ class LagentTool(BaseAction):
         tool.set_parser(DefaultParser)  # Use string input & output
         self.tool = tool
 
-        example_args = ', '.join(f'"{item}": xxx'
-                                 for item in tool.input_fields)
+        example_args = ', '.join(f'"{name}": xxx' for name in tool.parameters)
         description = (f'{tool.description} Combine all args to one json '
                        f'string like {{{example_args}}}')
 

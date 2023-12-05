@@ -2,9 +2,10 @@
 import copy
 import inspect
 from abc import ABCMeta, abstractmethod
-from typing import Any, Callable, List, Union
+from types import MethodType
+from typing import Any, Callable, Dict, Union
 
-from agentlego.schema import ToolMeta
+from agentlego.schema import Parameter, ToolMeta
 
 
 class BaseTool(metaclass=ABCMeta):
@@ -67,11 +68,21 @@ class BaseTool(metaclass=ABCMeta):
         return repr_str
 
     @property
-    def input_fields(self) -> List[str]:
-        return [
-            name for name in inspect.getfullargspec(self.apply).args
-            if name != 'self'
-        ]
+    def parameters(self) -> Dict[str, Parameter]:
+        parameters = {}
+        for category, p in zip(
+                self.toolmeta.inputs,
+                inspect.signature(self.apply).parameters.values()):
+            if isinstance(self.apply, MethodType) and p.name == 'self':
+                continue
+            parameters[p.name] = Parameter(
+                name=p.name,
+                category=category,
+                description=None,
+                optional=p.default != inspect._empty,
+                default=p.default if p.default != inspect._empty else None,
+            )
+        return parameters
 
     def __copy__(self):
         obj = object.__new__(type(self))

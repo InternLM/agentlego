@@ -10,22 +10,28 @@ class DefaultParser(BaseParser):
         'image': 'path',
         'text': 'string',
         'audio': 'path',
+        'int': 'int',
+        'bool': 'bool',
+        'float': 'float',
     }
 
     def parse_inputs(self, *args, **kwargs) -> Tuple[tuple, dict]:
-        args = args + tuple(kwargs.values())
-        assert len(args) == len(self.toolmeta.inputs)
+        for arg, arg_name in zip(args, self.tool.parameters):
+            kwargs[arg_name] = arg
 
-        parsed_args = []
-        for agent_input, in_category in zip(args, self.toolmeta.inputs):
-            tool_type = CatgoryToIO[in_category]
-            if not isinstance(agent_input, tool_type):
-                tool_input = tool_type(agent_input)
+        parsed_kwargs = {}
+        for k, v in kwargs.items():
+            if k not in self.tool.parameters:
+                raise TypeError(f'Got unexcepted keyword argument "{k}".')
+            p = self.tool.parameters[k]
+            tool_type = CatgoryToIO[p.category]
+            if not isinstance(v, tool_type):
+                tool_input = tool_type(v)
             else:
-                tool_input = agent_input
-            parsed_args.append(tool_input)
+                tool_input = v
+            parsed_kwargs[k] = tool_input
 
-        return parsed_args, {}
+        return (), parsed_kwargs
 
     def parse_outputs(self, outputs):
         if isinstance(outputs, tuple):
@@ -56,10 +62,10 @@ class DefaultParser(BaseParser):
         """
 
         inputs_desc = []
-        for in_field, in_category in zip(self.tool.input_fields,
-                                         self.toolmeta.inputs):
-            agent_type = self.agent_cat2type[in_category]
-            inputs_desc.append(f'{in_field} ({in_category} {agent_type})')
+        for p in self.tool.parameters.values():
+            type_ = self.agent_cat2type[p.category]
+            default = f', Defaults to {p.default}' if p.optional else ''
+            inputs_desc.append(f'{p.name} ({p.category} {type_}{default})')
         inputs_desc = 'Args: ' + ', '.join(inputs_desc)
 
         description = f'{self.toolmeta.description} {inputs_desc}'
