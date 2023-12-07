@@ -112,7 +112,7 @@ if __name__ == '__main__':
         long_description_content_type='text/markdown',
         packages=find_packages(),
         include_package_data=True,
-        url='https://github.com/open-mmlab/agentlego',
+        url='https://github.com/InternLM/agentlego',
         license='Apache License 2.0',
         install_requires=parse_requirements('requirements/runtime.txt'),
         extras_require={

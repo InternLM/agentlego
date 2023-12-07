@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Dict, Tuple
 
 from .default_parser import DefaultParser

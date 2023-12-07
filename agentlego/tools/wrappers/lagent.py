@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import json
 import re

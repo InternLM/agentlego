@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'AgentLego'
-copyright = '2020, OpenMMLab'
+copyright = '2023, AgentLego Authors'
 author = 'AgentLego Authors'
 
 # The full version, including alpha/beta/rc tags
@@ -93,7 +93,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/agentlego'
+            'url': 'https://github.com/InternLM/agentlego'
         },
     ],
     # Specify the language of shared menu

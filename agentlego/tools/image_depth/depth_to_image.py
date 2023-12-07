@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab.All rights reserved.
 from typing import Callable, Union
 
 from agentlego.parsers import DefaultParser

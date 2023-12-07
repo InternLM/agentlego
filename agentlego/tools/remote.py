@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import base64
 from io import BytesIO
 from typing import Dict, List, Optional, Union

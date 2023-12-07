@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import os
 from typing import Callable, List, Tuple, Union
 

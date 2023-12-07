@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 
 from transformers.tools import Tool

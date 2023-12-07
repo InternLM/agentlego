@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 

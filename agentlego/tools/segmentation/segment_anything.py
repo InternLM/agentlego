@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union

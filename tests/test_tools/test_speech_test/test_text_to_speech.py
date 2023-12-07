@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 
 from agentlego.parsers import NaiveParser

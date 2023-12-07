@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from .base import BaseTool
 from .calculator import Calculator
 from .image_canny import CannyTextToImage, ImageToCanny

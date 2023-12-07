@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 import inspect
 

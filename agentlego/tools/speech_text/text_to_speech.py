@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from io import BytesIO
 from typing import Callable, Union
 

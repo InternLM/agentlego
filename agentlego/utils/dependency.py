@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import re
 import warnings
 from functools import wraps

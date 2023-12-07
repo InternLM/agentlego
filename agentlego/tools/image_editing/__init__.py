@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from .expansion import ImageExpansion
 from .remove import ObjectRemove
 from .replace import ObjectReplace

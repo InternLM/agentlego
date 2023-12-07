@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import os
 from urllib.parse import quote_plus, urljoin
 

@@ -1,4 +1,3 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 import hashlib
 import os
 import re
