@@ -325,7 +325,7 @@ class SegmentAnything(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment Anything',
+        name='SegmentAnything',
         description='This tool can segment all items in the image and '
         'return a segmentation result image',
         inputs=['image'],
@@ -447,7 +447,7 @@ class SegmentObject(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Segment specified object',
+        name='SegmentSpecifiedObject',
         description=('This tool can segment the specified kind of '
                      'objects in the input image, and return the '
                      'segmentation result image.'),

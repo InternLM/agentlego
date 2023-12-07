@@ -22,7 +22,7 @@ class SemanticSegmentation(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Semantic Segment on urban scene',
+        name='SemanticSegmentOnUrbanScene',
         description='This tool can segment all items in the input image and '
         'return a segmentation result image. It focus on urban scene images.',
         inputs=['image'],

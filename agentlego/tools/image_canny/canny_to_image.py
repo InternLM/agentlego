@@ -23,7 +23,7 @@ class CannyTextToImage(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image Condition On Canny Image',
+        name='CannyTextToImage',
         description='This tool can generate an image from a canny edge '
         'image and a text. The text should be a series of English keywords '
         'separated by comma.',

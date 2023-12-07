@@ -25,7 +25,7 @@ class PoseToImage(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image Condition On Pose Image',
+        name='PoseToImage',
         description='This tool can generate an image from a human pose '
         'image and a text. The text should be a series of English keywords '
         'separated by comma.',

@@ -20,7 +20,7 @@ class ImageToScribble(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Scribble Conditioned On Image',
+        name='ImageToScribble',
         description='This tool can generate a sketch scribble of an image.',
         inputs=['image'],
         outputs=['image'],

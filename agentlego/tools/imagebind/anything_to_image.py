@@ -44,7 +44,7 @@ class AudioToImage(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image from Audio',
+        name='AudioToImage',
         description=('This tool can generate an image '
                      'according to the input audio'),
         inputs=['audio'],
@@ -90,7 +90,7 @@ class ThermalToImage(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image from Thermal Image',
+        name='ThermalToImage',
         description=('This tool can generate an image '
                      'according to the input thermal image.'),
         inputs=['image'],
@@ -137,7 +137,7 @@ class AudioImageToImage(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image from Image and Audio',
+        name='AudioImageToImage',
         description=('This tool can generate an image according to '
                      'the input reference image and the input audio.'),
         inputs=['image', 'audio'],
@@ -162,13 +162,15 @@ class AudioImageToImage(BaseTool):
         from .models.imagebind_model import ModalityType
 
         # process image data
-        vision_data = load_and_transform_vision_data([image.to_path()], self.device)
+        vision_data = load_and_transform_vision_data([image.to_path()],
+                                                     self.device)
         embeddings = self._inferencer.model.forward(
             {ModalityType.VISION: vision_data}, normalize=False)
         img_embeddings = embeddings[ModalityType.VISION]
 
         # process audio data
-        audio_data = load_and_transform_audio_data([audio.to_path()], self.device)
+        audio_data = load_and_transform_audio_data([audio.to_path()],
+                                                   self.device)
         embeddings = self._inferencer.model.forward({
             ModalityType.AUDIO:
             audio_data,
@@ -194,7 +196,7 @@ class AudioTextToImage(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image from Audio and Text',
+        name='AudioTextToImage',
         description=('This tool can generate an image according to '
                      'the input audio and the input description.'),
         inputs=['audio', 'text'],

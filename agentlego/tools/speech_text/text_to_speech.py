@@ -34,7 +34,7 @@ class TextToSpeech(BaseTool):
     """
     SAMPLING_RATE = 16000
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Text Reader',
+        name='TextReader',
         description='This is a tool that can speak the input text into audio.',
         inputs=['text'],
         outputs=['audio'],

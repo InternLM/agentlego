@@ -29,7 +29,7 @@ LANG_CODES = {
 
 class Translation(BaseTool):
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Text translation',
+        name='Translation',
         description='This tool can translate a text from source language to '
         'the target language. The source_lang and target_lang can be one of ' +
         ', '.join(f"'{k}' ({v})" for k, v in LANG_CODES.items()) + '.',

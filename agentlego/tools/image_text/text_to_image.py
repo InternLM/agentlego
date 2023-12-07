@@ -23,7 +23,7 @@ class TextToImage(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image From Text',
+        name='TextToImage',
         description='This tool can generate an image according to the '
         'input text. The input text should be a series of keywords '
         'separated by comma, and all keywords must be in English.',

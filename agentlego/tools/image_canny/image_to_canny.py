@@ -21,7 +21,7 @@ class ImageToCanny(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Edge Detection On Image',
+        name='EdgeDetectionOnImage',
         description='This tool can extract the edge image from an image.',
         inputs=['image'],
         outputs=['image'],

@@ -43,7 +43,7 @@ class ImageStylization(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Image Modification',
+        name='ImageModification',
         description='This tool can modify the input image according to the '
         'input instruction. Here are some example instructions: '
         '"turn him into cyborg", "add fireworks to the sky", '

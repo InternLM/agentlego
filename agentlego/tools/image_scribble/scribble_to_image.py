@@ -26,7 +26,7 @@ class ScribbleTextToImage(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Image Condition On Scribble Image',
+        name='ScribbleTextToImage',
         description='This tool can generate an image from a sketch scribble '
         'image and a text. The text should be a series of English keywords '
         'separated by comma.',

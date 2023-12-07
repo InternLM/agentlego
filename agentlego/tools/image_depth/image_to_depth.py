@@ -22,7 +22,7 @@ class ImageToDepth(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Generate Depth Image On Image',
+        name='ImageToDepth',
         description='This tool can generate the depth image of an image.',
         inputs=['image'],
         outputs=['image'],

@@ -107,7 +107,7 @@ class ImageExpansion(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Image Expansion',
+        name='ImageExpansion',
         description='This tool can expand the peripheral area of '
         'an image based on its content, thus obtaining a larger image. '
         'You need to provide the target image and the expand ratio. '

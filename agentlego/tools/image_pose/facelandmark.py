@@ -23,7 +23,7 @@ class HumanFaceLandmark(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Human Face Landmark On Image',
+        name='HumanFaceLandmark',
         description='This tool can estimate the landmark or keypoints of '
         'human faces in an image and draw the landmarks image.',
         inputs=['image'],

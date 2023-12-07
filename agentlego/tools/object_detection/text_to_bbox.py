@@ -22,7 +22,7 @@ class TextToBbox(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Detect the Given Object',
+        name='DetectGivenObject',
         description='The tool can detect the object location according to '
         'description in English. It will return an image with a bbox of the '
         'detected object, and the coordinates of bbox. If specify '

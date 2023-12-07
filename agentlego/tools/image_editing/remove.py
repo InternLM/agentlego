@@ -35,7 +35,7 @@ class ObjectRemove(BaseTool):
     """
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Remove Object From Image',
+        name='RemoveObjectFromImage',
         description='This tool can remove the specified object in the image. '
         'You need to input the image and the object name to remove.',
         inputs=['image', 'text'],

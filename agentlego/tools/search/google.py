@@ -48,7 +48,7 @@ class GoogleSearch(BaseTool):
     }
 
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Google Search',
+        name='GoogleSearch',
         description=('The tool can search the input query text from Google '
                      'and return the related results'),
         inputs=['text'],

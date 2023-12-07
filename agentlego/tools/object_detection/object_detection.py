@@ -23,7 +23,7 @@ class ObjectDetection(BaseTool):
         device (str): The device to load the model. Defaults to 'cpu'.
     """
     DEFAULT_TOOLMETA = ToolMeta(
-        name='Detect All Objects',
+        name='DetectAllObjects',
         description=('A useful tool when you only want to detect the picture '
                      'or detect all objects in the picture. like: detect all '
                      'objects. '),
