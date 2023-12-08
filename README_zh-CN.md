@@ -1,5 +1,5 @@
 <div align="center">
-<img src="docs/src/agentlego-logo.png" width="450"/>
+<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/26739999/289025203-f05733ff-6bbb-46f0-92aa-8827c59df79c.png" width="450"/>
 </div>
 
 <div align="center">
