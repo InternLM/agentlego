@@ -1,6 +1,5 @@
 func_timeout
-importlib_metadata
-mmengine
+mmengine>=0.8
 numpy
 opencv-python
 packaging
