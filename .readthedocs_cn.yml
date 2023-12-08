@@ -15,4 +15,4 @@ python:
 
 sphinx:
   builder: html
-  configuration: docs/en/conf.py
+  configuration: docs/zh_cn/conf.py

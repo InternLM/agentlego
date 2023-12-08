@@ -36,7 +36,7 @@ def get_version():
     return locals()['__version__']
 
 
-release = get_version()
+release = version = get_version()
 
 # -- General configuration ---------------------------------------------------
 
