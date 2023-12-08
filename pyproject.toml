@@ -24,8 +24,9 @@ dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 Documentation = "https://agentlego.readthedocs.io"
 Repository = "https://github.com/InternLM/agentlego"
 
-[tool.setuptools]
-packages = ["agentlego"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agentlego*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "agentlego.version.__version__"}
