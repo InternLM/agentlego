@@ -4,7 +4,11 @@
 
 <div align="center">
 
-English | [简体中文](/README_zh-CN.md)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://agentlego.readthedocs.io/en/latest/)
+[![PyPI](https://img.shields.io/pypi/v/agentlego)](https://pypi.org/project/agentlego)
+[![license](https://img.shields.io/github/license/InternLM/agentlego.svg)](https://github.com/InternLM/agentlego/tree/main/LICENSE)
+
+English | [简体中文](./README_zh-CN.md)
 
 </div>
 
@@ -24,6 +28,8 @@ English | [简体中文](/README_zh-CN.md)
 - **Flexible tool interface** that allows users to easily extend custom tools with arbitrary types of arguments and outputs.
 - **Easy integration with LLM-based agent frameworks** like [LangChain](https://github.com/langchain-ai/langchain), [Transformers Agents](https://huggingface.co/docs/transformers/transformers_agents), [Lagent](https://github.com/InternLM/lagent).
 - **Support tool serving and remote accessing**, which is especially useful for tools with heavy ML models (e.g. ViT) or special environment requirements (e.g. GPU and CUDA).
+
+https://github-production-user-asset-6210df.s3.amazonaws.com/26739999/289006700-2140015c-b5e0-4102-bc54-9a1b4e3db9ec.mp4
 
 # Quick Starts
 

@@ -4,6 +4,10 @@
 
 <div align="center">
 
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://agentlego.readthedocs.io/zh-cn/latest/)
+[![PyPI](https://img.shields.io/pypi/v/agentlego)](https://pypi.org/project/agentlego)
+[![license](https://img.shields.io/github/license/InternLM/agentlego.svg)](https://github.com/InternLM/agentlego/tree/main/LICENSE)
+
 [English](./README.md) | 简体中文
 
 </div>
@@ -24,6 +28,8 @@
 - **灵活的工具接口**，允许用户轻松扩展具有任意类型参数和输出的自定义工具。
 - **与基于LLM的代理程序框架轻松集成**，如 [LangChain](https://github.com/langchain-ai/langchain)、[Transformers Agent](https://huggingface.co/docs/transformers/transformers_agents)、[Lagent](https://github.com/InternLM/lagent)。
 - **支持部署工具服务和远程访问**，这对于需要大型机器学习模型（例如 ViT）或特殊环境（例如 GPU 和 CUDA）的工具特别有用。
+
+https://github-production-user-asset-6210df.s3.amazonaws.com/26739999/289006700-2140015c-b5e0-4102-bc54-9a1b4e3db9ec.mp4
 
 # 快速开始
 
