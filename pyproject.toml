@@ -30,7 +30,7 @@ namespaces = false
 
 [tool.setuptools.dynamic]
 version = {attr = "agentlego.version.__version__"}
-readme = {file = "README.md"}
+readme = {file = "README.md", content-type = "text/markdown"}
 dependencies = {file = "requirements/runtime.txt"}
 
 [tool.setuptools.dynamic.optional-dependencies]
