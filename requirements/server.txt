@@ -1,9 +1,4 @@
 fastapi
-openai
 python-multipart
-sentence-transformers
-torch
-torchaudio
-torchvision
 typing-extensions
 uvicorn[standard]

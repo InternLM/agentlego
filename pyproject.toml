@@ -35,6 +35,7 @@ dependencies = {file = "requirements/runtime.txt"}
 
 [tool.setuptools.dynamic.optional-dependencies]
 all = {file = "requirements/optional.txt"}
+server = {file = "requirements/server.txt"}
 
 [tool.yapf]
 based_on_style = "pep8"
