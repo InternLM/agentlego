@@ -9,6 +9,12 @@ from agentlego.apis import load_tool
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='gpt-3.5-turbo')
+    parser.add_argument(
+        '--tools',
+        type=str,
+        nargs='+',
+        default=['GoogleSearch', 'Calculator'],
+    )
     args = parser.parse_args()
     return args
 
@@ -18,12 +24,7 @@ def main():
 
     # set OPEN_API_KEY in your environment or directly pass it with key=''
     model = GPTAPI(model_type=args.model)
-    tools = [
-        load_tool(tool_type).to_lagent() for tool_type in [
-            'GoogleSearch',
-            'Calculator',
-        ]
-    ]
+    tools = [load_tool(tool_type).to_lagent() for tool_type in args.tools]
     chatbot = ReAct(
         llm=model,
         max_turn=3,

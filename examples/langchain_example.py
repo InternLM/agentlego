@@ -11,6 +11,12 @@ from agentlego.apis import load_tool
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='gpt-3.5-turbo')
+    parser.add_argument(
+        '--tools',
+        type=str,
+        nargs='+',
+        default=['GoogleSearch', 'Calculator'],
+    )
     args = parser.parse_args()
     return args
 
@@ -18,13 +24,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    tools = [
-        load_tool(tool_type).to_langchain() for tool_type in [
-            'Calculator',
-            'GoogleSearch',
-            'ImageCaption',
-        ]
-    ]
+    tools = [load_tool(tool_type).to_langchain() for tool_type in args.tools]
     # set OPEN_API_KEY in your environment or directly pass it with key=''
     llm = ChatOpenAI(temperature=0, model=args.model)
     memory = ConversationBufferMemory(
