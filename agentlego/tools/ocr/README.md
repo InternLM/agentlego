@@ -19,6 +19,7 @@ tool = load_tool('OCR', device='cuda', lang='en', x_ths=3.)
 # apply tool
 res = tool('demo_kie.jpeg')
 ```
+For bilingual Chinese and English OCR, `lang` may be `['en', 'ch_sim']`, [here](https://www.jaided.ai/easyocr/) is all supported language code name.
 
 **With Lagent**
 
