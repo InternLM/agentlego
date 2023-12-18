@@ -4,6 +4,7 @@
 
 <div align="center">
 
+[![Open in OpenXLab](https://cdn-static.openxlab.org.cn/app-center/openxlab_app.svg)](https://openxlab.org.cn/apps/detail/mzr1996/AgentLego)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://agentlego.readthedocs.io/en/latest/)
 [![PyPI](https://img.shields.io/pypi/v/agentlego)](https://pypi.org/project/agentlego)
 [![license](https://img.shields.io/github/license/InternLM/agentlego.svg)](https://github.com/InternLM/agentlego/tree/main/LICENSE)
