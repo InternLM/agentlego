@@ -35,15 +35,21 @@ class OCR(BaseTool):
                  parser: Callable = DefaultParser,
                  lang: Union[str, Sequence[str]] = 'en',
                  device: Union[bool, str] = True,
+                 line_group_tolerance = -1,
                  **read_args):
         super().__init__(toolmeta=toolmeta, parser=parser)
         if isinstance(lang, str):
             lang = [lang]
         self.lang = list(lang)
-        read_args.setdefault('decoder', 'beamsearch')
-        read_args.setdefault('paragraph', True)
         self.read_args = read_args
         self.device = device
+        self.line_group_tolerance = line_group_tolerance
+        read_args.setdefault('decoder', 'beamsearch')
+
+        if line_group_tolerance >= 0:
+            read_args.setdefault('paragraph', False)
+        else:
+            read_args.setdefault('paragraph', True)
 
     def setup(self):
         import easyocr
@@ -53,6 +59,29 @@ class OCR(BaseTool):
     def apply(self, image: ImageIO) -> str:
 
         image = image.to_array()
-        ocr_results = self._reader.readtext(image, detail=0, **self.read_args)
+        if self.line_group_tolerance >= 0:
+            results = self._reader.readtext(image, **self.read_args)
+            results.sort(key=lambda x: x[0][0][1])
+
+            lines = []
+            line = [results[0]]
+
+            for result in results[1:]:
+                if abs(result[0][0][1] - line[0][0][0][1]) <= self.line_group_tolerance:
+                    line.append(result)
+                else:
+                    lines.append(line)
+                    line = [result]
+
+            lines.append(line)
+
+            ocr_results = []
+            for line in lines:
+                # For each line, sort the elements by their left x-coordinate and join their texts
+                sorted_line = sorted(line, key=lambda x: x[0][0][0])
+                text_line = ' '.join(item[1] for item in sorted_line)
+                ocr_results.append(text_line)
+        else:
+            ocr_results = self._reader.readtext(image, detail=0, **self.read_args)
         outputs = '\n'.join(ocr_results)
         return outputs
