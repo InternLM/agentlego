@@ -14,7 +14,7 @@ wget https://raw.githubusercontent.com/open-mmlab/mmocr/main/demo/demo_kie.jpeg
 from agentlego.apis import load_tool
 
 # load tool
-tool = load_tool('OCR', device='cuda', lang='en', x_ths=3.)
+tool = load_tool('OCR', device='cuda', lang='en', x_ths=3., line_group_tolerance=30)
 
 # apply tool
 res = tool('demo_kie.jpeg')
