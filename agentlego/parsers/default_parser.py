@@ -64,7 +64,9 @@ class DefaultParser(BaseParser):
         for p in self.tool.parameters.values():
             type_ = self.agent_cat2type[p.category]
             default = f', Defaults to {p.default}' if p.optional else ''
-            inputs_desc.append(f'{p.name} ({p.category} {type_}{default})')
+            if p.category in ['image', 'audio']:
+                type_ = f'{p.category} {type_}'
+            inputs_desc.append(f'{p.name} ({type_}{default})')
         inputs_desc = 'Args: ' + ', '.join(inputs_desc)
 
         description = f'{self.toolmeta.description} {inputs_desc}'

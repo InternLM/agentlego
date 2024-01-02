@@ -2,11 +2,14 @@ import argparse
 import base64
 import inspect
 from io import BytesIO
-from typing import Dict
+from typing import Dict, List, Tuple
 from urllib.parse import quote_plus
 
 import uvicorn
 from fastapi import APIRouter, FastAPI, File, Form, UploadFile
+from makefun import create_function
+from pydantic import BaseModel, Field, create_model
+from pydantic_core import PydanticUndefined
 from typing_extensions import Annotated
 
 from agentlego.apis import load_tool
@@ -15,7 +18,7 @@ from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, CatgoryToIO, ImageIO
 
 prog_description = """\
-Start a server for several tools.
+Start a server for the specified tools.
 """
 
 
@@ -48,34 +51,60 @@ def parse_args():
     return args
 
 
-args = parse_args()
-tools: Dict[str, BaseTool] = {}
-for name in args.tools:
-    tool = load_tool(name, device=args.device, parser=NaiveParser)
-    if not args.no_setup:
-        tool.setup()
-        tool._is_setup = True
-    tools[quote_plus(tool.name.replace(' ', ''))] = tool
+def create_input_params(tool: BaseTool) -> List[inspect.Parameter]:
+    params = []
+    for p in tool.parameters.values():
+        field_kwargs = {}
+        if p.description:
+            field_kwargs['description'] = p.description
+        if p.category in ['image', 'audio']:
+            field_kwargs['format'] = p.category + ';binary'
+            annotation = Annotated[UploadFile, File(**field_kwargs)]
+        else:
+            annotation = Annotated[CatgoryToIO[p.category],
+                                   Form(**field_kwargs)]
 
-app = FastAPI()
-tool_router = APIRouter()
+        param = inspect.Parameter(
+            p.name,
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            default=p.default if p.optional else inspect._empty,
+            annotation=annotation,
+        )
+        params.append(param)
 
-
-@app.get('/')
-def index():
-    response = []
-    for tool_name, tool in tools.items():
-        response.append(
-            dict(
-                domain=tool_name,
-                toolmeta=tool.toolmeta.__dict__,
-                parameters=[p.__dict__ for p in tool.parameters.values()],
-            ))
-    return response
+    return params
 
 
-def add_tool(tool_name: str):
-    tool: BaseTool = tools[tool_name]
+def create_output_model(tool: BaseTool) -> BaseModel:
+    output_schema = []
+
+    for category in tool.toolmeta.outputs:
+        field_kwargs = {}
+        if category == 'image':
+            annotation = str
+            field_kwargs['format'] = 'image/png;base64'
+        elif category == 'audio':
+            annotation = str
+            field_kwargs['format'] = 'audio/wav;base64'
+        else:
+            annotation = CatgoryToIO[category]
+
+        output_schema.append(Annotated[annotation, Field(**field_kwargs)])
+
+    if len(output_schema) == 0:
+        return None
+    elif len(output_schema) == 1:
+        return output_schema[0]
+    else:
+        return Tuple[*output_schema]
+
+
+def add_tool(tool: BaseTool, router: APIRouter):
+    tool_name = tool.name.replace(' ', '_')
+
+    input_params = create_input_params(tool)
+    output_model = create_output_model(tool)
+    signature = inspect.Signature(input_params, return_annotation=output_model)
 
     def _call(**kwargs):
         args = {}
@@ -98,30 +127,25 @@ def add_tool(tool_name: str):
             outs = [outs]
 
         res = []
-        for out, out_category in zip(outs, tool.toolmeta.outputs):
-            if out_category == 'image':
+        for out, category in zip(outs, tool.toolmeta.outputs):
+            if category == 'image':
                 file = BytesIO()
                 out.to_pil().save(file, format='png')
-                res.append(
-                    dict(
-                        type='image',
-                        data=base64.encodebytes(
-                            file.getvalue()).decode('ascii'),
-                    ))
-            elif out_category == 'audio':
+                out = base64.b64encode(file.getvalue()).decode()
+            elif category == 'audio':
                 import torchaudio
                 file = BytesIO()
                 torchaudio.save(
                     file, out.to_tensor(), out.sampling_rate, format='wav')
-                res.append(
-                    dict(
-                        type='audio',
-                        data=base64.encodebytes(
-                            file.getvalue()).decode('ascii'),
-                    ))
-            else:
-                res.append(out)
-        return res
+                out = base64.b64encode(file.getvalue()).decode()
+            res.append(out)
+
+        if len(res) == 0:
+            return None
+        elif len(res) == 1:
+            return res[0]
+        else:
+            return tuple(res)
 
     def call(**kwargs):
         try:
@@ -129,47 +153,25 @@ def add_tool(tool_name: str):
         except Exception as e:
             return dict(error=repr(e))
 
-    call_args = {}
-    call_params = []
-    for p in tool.parameters.values():
-        if p.category in ['image', 'audio']:
-            annotation = Annotated[UploadFile, File(media_type=p.category)]
-        else:
-            type_ = {
-                'text': str,
-                'int': int,
-                'bool': bool,
-                'float': float
-            }[p.category]
-            annotation = Annotated[type_, Form()]
-
-        call_args[p.name] = annotation
-        call_params.append(
-            inspect.Parameter(
-                p.name,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                default=p.default if p.optional else inspect._empty,
-                annotation=annotation,
-            ))
-    call.__signature__ = inspect.Signature(call_params)
-    call.__annotations__ = call_args
-    tool_router.add_api_route(
-        f'/{tool_name}/call',
-        endpoint=call,
+    router.add_api_route(
+        f'/{tool_name}',
+        endpoint=create_function(signature, call),
         methods=['POST'],
-    )
-    tool_router.add_api_route(
-        f'/{tool_name}/meta',
-        endpoint=lambda: dict(
-            toolmeta=tool.toolmeta.__dict__,
-            parameters=[p.__dict__ for p in tool.parameters.values()]),
-        methods=['GET'],
+        operation_id=tool_name,
+        description=tool.toolmeta.description,
     )
 
-
-for tool_name in tools:
-    add_tool(tool_name)
-app.include_router(tool_router)
 
 if __name__ == '__main__':
+    args = parse_args()
+    app = FastAPI()
+
+    for name in args.tools:
+        tool = load_tool(name, device=args.device, parser=NaiveParser)
+        if not args.no_setup:
+            tool.setup()
+            tool._is_setup = True
+
+        add_tool(tool, app)
+
     uvicorn.run(app, host='0.0.0.0', port=args.port)
