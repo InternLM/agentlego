@@ -1,7 +1,3 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO, ImageIO
 from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
@@ -36,26 +32,17 @@ class AudioToImage(BaseTool):
     """A tool to generate image from an audio.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioToImage',
-        description=('This tool can generate an image '
-                     'according to the input audio'),
-        inputs=['audio'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image '
+                    'according to the input audio.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
@@ -82,26 +69,17 @@ class ThermalToImage(BaseTool):
     """A tool to generate image from an thermal image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ThermalToImage',
-        description=('This tool can generate an image '
-                     'according to the input thermal image.'),
-        inputs=['image'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image '
+                    'according to the input thermal image.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
@@ -129,26 +107,17 @@ class AudioImageToImage(BaseTool):
     """A tool to generate image from an audio and an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioImageToImage',
-        description=('This tool can generate an image according to '
-                     'the input reference image and the input audio.'),
-        inputs=['image', 'audio'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image according to '
+                    'the input reference image and the input audio.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
@@ -188,26 +157,17 @@ class AudioTextToImage(BaseTool):
     """A tool to generate image from an audio and texts.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioTextToImage',
-        description=('This tool can generate an image according to '
-                     'the input audio and the input description.'),
-        inputs=['audio', 'text'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image according to '
+                    'the input audio and the input description.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):

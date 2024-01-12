@@ -1,3 +1,3 @@
-from .visual_question_answering import VisualQuestionAnswering
+from .visual_question_answering import VQA
 
-__all__ = ['VisualQuestionAnswering']
+__all__ = ['VQA']

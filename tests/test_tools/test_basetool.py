@@ -1,21 +1,16 @@
-from agentlego.parsers import DefaultParser
-from agentlego.tools.base import BaseTool
+from agentlego.schema import Annotated, Info
+from agentlego.tools import BaseTool
 from agentlego.types import ImageIO
 
 
 class DummyTool(BaseTool):
-    DEFAULT_TOOLMETA = dict(
-        name='Dummy Tool',
-        description='This is a dummy tool. It takes an image and a text '
-        'as the inputs, and returns an image.',
-        inputs=('image', 'text'),
-        outputs=('image', ),
-    )
+    default_desc = 'This is a dummy tool.'
 
-    def __init__(self):
-        super().__init__(toolmeta=self.DEFAULT_TOOLMETA, parser=DefaultParser)
-
-    def apply(self, image: ImageIO, query: str) -> ImageIO:
+    def apply(
+        self,
+        image: ImageIO,
+        query: Annotated[str, Info('The query.')],
+    ) -> Annotated[ImageIO, Info('The result image.')]:
         return image
 
 
@@ -24,11 +19,12 @@ def test_lagent():
     tool = DummyTool().to_lagent()
     assert isinstance(tool, BaseAction)
 
-    expected_description = (
-        'This is a dummy tool. It takes an image and a text as the inputs, '
-        'and returns an image. Args: image (image path), query (text string) '
-        'Combine all args to one json string like {"image": xxx, "query": xxx}'
-    )
+    expected_description = '''\
+This is a dummy tool.
+Args: image (path); query (str, The query.)
+Returns: path (The result image.)
+Combine all args to one json string like {"image": xxx, "query": xxx}
+'''
 
     assert tool.name == 'DummyTool'
     assert tool.description == expected_description
@@ -39,9 +35,11 @@ def test_hf_agent():
     tool = DummyTool().to_transformers_agent()
     assert isinstance(tool, Tool)
 
-    expected_description = (
-        'This is a dummy tool. It takes an image and a text as '
-        'the inputs, and returns an image. Args: image (image), query (text)')
+    expected_description = '''\
+This is a dummy tool.
+Args: image (image); query (str, The query.)
+Returns: image (The result image.)
+'''
 
     assert tool.name == 'agentlego_dummy_tool'
     assert tool.description == expected_description

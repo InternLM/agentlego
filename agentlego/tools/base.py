@@ -11,6 +11,7 @@ from agentlego.types import CatgoryToIO
 
 
 class BaseTool(metaclass=ABCMeta):
+    default_desc: Optional[str] = None
 
     def __init__(
         self,
@@ -115,7 +116,7 @@ class BaseTool(metaclass=ABCMeta):
             toolmeta.name = getattr(cls, 'default_name', cls.__name__)
 
         if toolmeta.description is None:
-            doc = getattr(cls, 'default_desc', '').strip()
+            doc = (cls.default_desc or '').strip()
             toolmeta.description = doc.partition('\n\n')[0].replace('\n', ' ')
 
         supported_types = set(CatgoryToIO.values())

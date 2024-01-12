@@ -1,9 +1,8 @@
-from typing import Callable, Tuple, Union
+from typing import Tuple
 
 from PIL import Image
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import ImageIO
 from agentlego.utils import require
 from ..base import BaseTool
@@ -14,31 +13,19 @@ class PoseToImage(BaseTool):
     """A tool to generate image according to a human pose image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         model (str): The pose controlnet model to use. You can choose
             from "sd" and "sdxl". Defaults to "sd".
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='PoseToImage',
-        description='This tool can generate an image from a human pose '
-        'image and a text. The text should be a series of English keywords '
-        'separated by comma.',
-        inputs=['image', 'text'],
-        outputs=['image'],
-    )
+    default_desc = ('This tool can generate an image from a human pose '
+                    'image and a text.')
 
     @require('diffusers')
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 model: str = 'sd',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, model: str = 'sd', device: str = 'cuda', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         assert model in ['sd', 'sdxl']
         self.model = model
         self.device = device
@@ -61,8 +48,13 @@ class PoseToImage(BaseTool):
                         ' missing fingers, extra digit, fewer digits, '\
                         'cropped, worst quality, low quality'
 
-    def apply(self, image: ImageIO, text: str) -> ImageIO:
-        text = f'{text}, {self.a_prompt}'
+    def apply(
+        self,
+        image: ImageIO,
+        keywords: Annotated[
+            str, Info('A series of English keywords separated by comma.')],
+    ) -> ImageIO:
+        text = f'{keywords}, {self.a_prompt}'
         width, height = self.get_image_size(
             image.to_pil(), canvas_size=self.canvas_size)
         image = self.pipe(

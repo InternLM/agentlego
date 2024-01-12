@@ -1,10 +1,9 @@
 from io import BytesIO
-from typing import Callable, Union
+from typing import Union
 
 import requests
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import AudioIO
 from agentlego.utils import is_package_available, require
 from ..base import BaseTool
@@ -12,44 +11,57 @@ from ..base import BaseTool
 if is_package_available('torch'):
     import torch
 
+LANG_CODES = {
+    'zh-cn': 'Chinese',
+    'en': 'English',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'tr': 'Turkish',
+    'ru': 'Russian',
+    'ar': 'Arabic',
+    'ja': 'Japanese',
+    'ko': 'Korean',
+    # "pt": "Portuguese",
+    # "pl": "Polish",
+    # "nl": "Dutch",
+    # "cs": "Czech",
+    # "hu": "Hungarian",
+    # "hi": "Hindi",
+}
+
 
 class TextToSpeech(BaseTool):
     """A tool to convert input text to speech audio.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         model (str): The model name used to inference. Which can be found
-            in the ``HuggingFace`` model page.
-            Defaults to ``microsoft/speecht5_tts``.
-        post_processor (str): The post-processor of the output audio.
-            Defaults to ``microsoft/speecht5_hifigan``.
+            in https://github.com/coqui-ai/TTSHuggingFace .
+            Defaults to ``tts_models/multilingual/multi-dataset/xtts_v2``.
         speaker_embeddings (str | dict): The speaker embedding
-            of the Speech-T5 model. Defaults to an embedding from
-            ``Matthijs/speecht5-tts-demo``.
+            of the TTS model. Defaults to a default embedding.
+        sampling_rate (int): The sampling rate. Defaults to 16000.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    SAMPLING_RATE = 16000
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='TextReader',
-        description='This is a tool that can speak the input text into audio.',
-        inputs=['text'],
-        outputs=['audio'],
-    )
+
+    SPEAKER_EMBEDDING = (
+        'http://download.openmmlab.com/agentlego/default_voice.pth')
+    default_desc = (
+        'The tool can speak the input text into audio. The language code '
+        'should be one of ' + ', '.join(f"'{k}' ({v})"
+                                        for k, v in LANG_CODES.items()) + '.')
 
     @require('TTS', 'langid')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  model: str = 'tts_models/multilingual/multi-dataset/xtts_v2',
-                 speaker_embeddings: Union[str, dict] = (
-                     'http://download.openmmlab.com/agentlego/'
-                     'default_voice.pth'),
-                 sampling_rate=16000,
-                 device='cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 speaker_embeddings: Union[str, dict] = SPEAKER_EMBEDDING,
+                 sampling_rate: int = 16000,
+                 device='cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.model_name = model
 
         if isinstance(speaker_embeddings, str):
@@ -65,14 +77,18 @@ class TextToSpeech(BaseTool):
         self.model = TTS(self.model_name).to(self.device).synthesizer.tts_model
         self.model: Xtts
 
-    def apply(self, text: str) -> AudioIO:
-        import langid
-        langid.set_languages([
-            lang if lang != 'zh-cn' else 'zh'
-            for lang in self.model.config.languages
-        ])
-        lang = langid.classify(text)[0]
-        lang = 'zh-cn' if lang == 'zh' else lang
+    def apply(
+        self,
+        text: str,
+        lang: Annotated[str, Info('The language code of text.')] = 'auto',
+    ) -> AudioIO:
+        if lang == 'auto':
+            import langid
+            langid.set_languages(
+                [lang if lang != 'zh-cn' else 'zh' for lang in LANG_CODES])
+            lang = langid.classify(text)[0]
+            lang = 'zh-cn' if lang == 'zh' else lang
+
         text = text.replace('，', ', ').replace('。', '. ').replace(
             '？', '? ').replace('！', '! ').replace('、', ', ').strip()
         out = self.model.inference(
@@ -84,4 +100,6 @@ class TextToSpeech(BaseTool):
         )
 
         return AudioIO(
-            torch.tensor(out['wav']).unsqueeze(0), sampling_rate=24000)
+            torch.tensor(out['wav']).unsqueeze(0),
+            sampling_rate=self.sampling_rate,
+        )

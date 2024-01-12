@@ -1,10 +1,6 @@
-from typing import Callable, Union
-
 import cv2
 import numpy as np
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
 from ..base import BaseTool
 
@@ -13,25 +9,14 @@ class ImageToCanny(BaseTool):
     """A tool to do edge detection by canny algorithm on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='EdgeDetectionOnImage',
-        description='This tool can extract the edge image from an image.',
-        inputs=['image'],
-        outputs=['image'],
-    )
+    default_desc = 'This tool can extract the edge image from an image.'
 
-    def __init__(
-        self,
-        toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-        parser: Callable = DefaultParser,
-    ):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.low_threshold = 100
         self.high_threshold = 200
 

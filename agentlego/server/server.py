@@ -21,7 +21,7 @@ try:
     from fastapi import (APIRouter, FastAPI, File, Form, HTTPException,
                          UploadFile)
     from makefun import create_function
-    from pydantic import BaseModel, Field
+    from pydantic import Field
     from rich.table import Table
     from typing_extensions import Annotated
 except ImportError:
@@ -58,7 +58,7 @@ def create_input_params(tool: BaseTool) -> List[inspect.Parameter]:
     return params
 
 
-def create_output_model(tool: BaseTool) -> BaseModel:
+def create_output_annotation(tool: BaseTool):
     output_schema = []
 
     for p in tool.outputs:
@@ -86,8 +86,9 @@ def add_tool(tool: BaseTool, router: APIRouter):
     tool_name = tool.name.replace(' ', '_')
 
     input_params = create_input_params(tool)
-    output_model = create_output_model(tool)
-    signature = inspect.Signature(input_params, return_annotation=output_model)
+    return_annotation = create_output_annotation(tool)
+    signature = inspect.Signature(
+        input_params, return_annotation=return_annotation)
 
     def _call(**kwargs):
         args = {}

@@ -8,45 +8,32 @@ AgentLego 是可扩展的，您可以轻松地添加自定义工具并将其应�
 
 ```python
 from agentlego.tools import BaseTool
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 
 class Clock(BaseTool):
-    def __init__(self):
-        toolmeta = ToolMeta(
-            name='Clock',
-            description='返回当前日期和时间的时钟。',
-            inputs=[],
-            outputs=['text'],
-        )
-        super().__init__(toolmeta=toolmeta, parser=DefaultParser)
-```
+    default_desc = '返回当前日期和时间的时钟。'
 
-在初始化方法中，您需要构建一个 `ToolMeta` 来指定名称、描述、输入参数类别和输出类别。目前可用的类别有 `text`、`image` 和 `audio`。
-
-然后，还需要指定一个默认解析器 (parser)，它用于处理输入和输出类型。通常情况下，您可以直接使用 `DefaultParser` 作为默认解析器。
-
-之后，可以重载 `BaseTool` 的 `setup` 和 `apply` 方法。`setup` 方法将在第一次调用工具时运行，通常用于延迟加载一些重型模块。`apply` 方法是在调用工具时执行的核心方法。在这个示例中，我们只需重载 `apply` 方法。
-
-```python
-class Clock(BaseTool):
-    ...
-
-    def apply(self):
+    def apply(self) -> str:
         from datetime import datetime
         return datetime.now().strftime('%Y/%m/%d %H:%M')
 ```
 
+在类的属性中，您需要用一个 `default_desc` 来指定工具的默认描述。
+
+之后，可以重载 `BaseTool` 的 `setup` 和 `apply` 方法。`setup` 方法将在第一次调用工具时运行，通常用于延迟加载一些重型模块。`apply` 方法是在调用工具时执行的核心方法。在这个示例中，我们只需重载 `apply` 方法。
+
+在 `apply` 方法中，我们需要使用**类型注解** (Type hint) 的方式指定输入输出的类型。
+
 我们已经完成了这个工具，现在您可以实例化它并在智能体系统中使用。
 
 ```python
-# 创建一个实例
+# 创建一个工具实例
 tool = Clock()
 
 # 在 langchain 中使用
 from langchain.agents import initialize_agent
 from langchain.chat_models import ChatOpenAI
 
+# 注意在环境变量中设定 OPENAI_API_KEY 以调用 ChatGPT
 agent = initialize_agent(
     agent='structured-chat-zero-shot-react-description',
     llm=ChatOpenAI(temperature=0.),
@@ -72,25 +59,16 @@ AgentLego 的一个核心特性是支持多模态工具，同时我们也需要�
 
 因此，我们使用代理类型作为工具的输入和输出类型，并使用一个`parser`自动将其转换为目标格式。
 
-假设我们要实现一个工具，它可以使用输入图像，用指定语言生成一个音频概述。
+假设我们要实现一个工具，它可以使用输入图像，用指定语言生成一段概述音频。
 
 ```python
 from agentlego.tools import BaseTool
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO, AudioIO
 
 class AudioCaption(BaseTool):
-    def __init__(self):
-        toolmeta = ToolMeta(
-            name='AudioCaption',
-            description='一个可以根据输入图像和指定语言，生成概要音频的工具。',
-            inputs=['image', 'text'],
-            outputs=['audio'],
-        )
-        super().__init__(toolmeta=toolmeta, parser=DefaultParser)
+    default_desc = '一个可以根据输入图像和指定语言，生成概要音频的工具。'
 
-    def apply(self, image: ImageIO, language: str):
+    def apply(self, image: ImageIO, language: str) -> AudioIO:
         # 将代理类型转换为工具中所需的格式。
         image = image.to_pil()
 

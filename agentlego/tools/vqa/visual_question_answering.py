@@ -1,37 +1,27 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import ImageIO
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
-class VisualQuestionAnswering(BaseTool):
+class VQA(BaseTool):
     """A tool to answer the question about an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         remote (bool): Whether to use the remote model. Defaults to False.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='VQA',
-        description='This tool can answer the input question based on the '
-        'input image. The question should be in English.',
-        inputs=['image', 'text'],
-        outputs=['text'])
+    default_desc = ('This tool can answer the input question based on the '
+                    'input image.')
 
     def __init__(self,
-                 toolmeta: Union[ToolMeta, dict] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  model: str = 'ofa-base_3rdparty-zeroshot_vqa',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta, parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta)
         self.device = device
         self.model = model
 
@@ -46,6 +36,11 @@ class VisualQuestionAnswering(BaseTool):
                 model=self.model,
                 device=self.device)
 
-    def apply(self, image: ImageIO, text: str) -> str:
+    def apply(
+        self,
+        image: ImageIO,
+        question: Annotated[str,
+                            Info('The question should be in English.')],
+    ) -> str:
         image = image.to_array()[:, :, ::-1]
-        return self._inferencer(image, text)[0]['pred_answer']
+        return self._inferencer(image, question)[0]['pred_answer']

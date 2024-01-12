@@ -1,13 +1,12 @@
 import random
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import cv2
 import numpy as np
 from PIL import Image
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import ImageIO
 from agentlego.utils import (download_checkpoint, download_url_to_file,
                              is_package_available, load_or_build_object,
@@ -314,30 +313,23 @@ class SegmentAnything(BaseTool):
     """A tool to segment all objects on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         sam_model (str): The model name used to inference. Which can be found
             in the ``segment_anything`` repository.
             Defaults to ``sam_vit_h_4b8939.pth``.
-        device (str): The device to load the model. Defaults to 'cpu'.
+        device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='SegmentAnything',
-        description='This tool can segment all items in the image and '
-        'return a segmentation result image',
-        inputs=['image'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can segment all items in the image and '
+                    'return a segmentation result image.')
 
     @require('segment_anything')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.sam_model = sam_model
         self.device = device
 
@@ -345,7 +337,9 @@ class SegmentAnything(BaseTool):
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.sam_model, device=self.device)
 
-    def apply(self, image: ImageIO) -> ImageIO:
+    def apply(
+        self, image: ImageIO
+    ) -> Annotated[ImageIO, Info('The segmentation result image.')]:
         image = image.to_path()
         annos = self.segment_anything(image)
         full_img, _ = self.show_annos(annos)
@@ -433,10 +427,6 @@ class SegmentObject(BaseTool):
     """A tool to segment all objects on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         sam_model (str): The model name used to inference. Which can be found
             in the ``segment_anything`` repository.
             Defaults to ``sam_vit_h_4b8939.pth``.
@@ -444,26 +434,23 @@ class SegmentObject(BaseTool):
             Which can be found in the ``MMDetection`` repository.
             Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='SegmentSpecifiedObject',
-        description=('This tool can segment the specified kind of '
-                     'objects in the input image, and return the '
-                     'segmentation result image.'),
-        inputs=['image', 'text'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can segment the specified kind of objects in '
+                    'the input image, and return the segmentation '
+                    'result image.')
 
     @require('segment_anything')
     @require('mmdet>=3.1.0')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
                  grounding_model: str = (
                      'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'),
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.sam_model = sam_model
         self.grounding_model = grounding_model
         self.device = device
@@ -477,7 +464,11 @@ class SegmentObject(BaseTool):
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.sam_model, device=self.device)
 
-    def apply(self, image: ImageIO, text: str) -> ImageIO:
+    def apply(
+        self,
+        image: ImageIO,
+        text: Annotated[str, Info('The object to segment.')],
+    ) -> Annotated[ImageIO, Info('The segmentation result image.')]:
 
         results = self.grounding(
             inputs=image.to_array()[:, :, ::-1],  # Input BGR

@@ -1,10 +1,8 @@
 import os
-from typing import Callable, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import requests
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from ..base import BaseTool
 
 
@@ -19,10 +17,6 @@ class GoogleSearch(BaseTool):
     To get an Serper.dev API key. you can create it at https://serper.dev
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         api_key (str): API key to use for serper google search API.
             Defaults to 'env', which means to use the `SERPER_API_KEY` in
             the environ variable.
@@ -37,6 +31,8 @@ class GoogleSearch(BaseTool):
             Defaults to False.
         k (int): select first k results in the search results as response.
             Defaults to 10.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
     result_key_for_type = {
@@ -46,24 +42,18 @@ class GoogleSearch(BaseTool):
         'search': 'organic',
     }
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='GoogleSearch',
-        description=('The tool can search the input query text from Google '
-                     'and return the related results'),
-        inputs=['text'],
-        outputs=['text'],
-    )
+    default_desc = ('The tool can search the input query text from Google '
+                    'and return the related results.')
 
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  api_key: str = 'env',
                  timeout: int = 5,
                  search_type: str = 'search',
                  max_out_len: int = 1500,
                  with_url: bool = False,
-                 k: int = 10) -> None:
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 k: int = 10,
+                 toolmeta=None) -> None:
+        super().__init__(toolmeta=toolmeta)
 
         if api_key == 'env':
             api_key = os.environ.get('SERPER_API_KEY', None)

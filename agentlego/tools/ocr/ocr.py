@@ -1,7 +1,6 @@
-from typing import Callable, Sequence, Union
+from typing import Sequence, Tuple, Union
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import ImageIO
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
@@ -11,33 +10,28 @@ class OCR(BaseTool):
     """A tool to recognize the optical characters on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         lang (str | Sequence[str]): The language to be recognized.
             Defaults to 'en'.
+        line_group_tolerance (int): The line group tolerance threshold.
+            Defaults to -1, which means to disable the line group method.
         device (str | bool): The device to load the model. Defaults to True,
             which means automatically select device.
         **read_args: Other keyword arguments for read text. Please check the
             `EasyOCR docs <https://www.jaided.ai/easyocr/documentation/>`_.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='OCR',
-        description='This tool can recognize all text on the input image.',
-        inputs=['image'],
-        outputs=['text'],
-    )
+
+    default_desc = 'This tool can recognize all text on the input image.'
 
     @require('easyocr')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  lang: Union[str, Sequence[str]] = 'en',
+                 line_group_tolerance: int = -1,
                  device: Union[bool, str] = True,
-                 line_group_tolerance = -1,
+                 toolmeta=None,
                  **read_args):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+        super().__init__(toolmeta=toolmeta)
         if isinstance(lang, str):
             lang = [lang]
         self.lang = list(lang)
@@ -56,32 +50,52 @@ class OCR(BaseTool):
         self._reader: easyocr.Reader = load_or_build_object(
             easyocr.Reader, self.lang, gpu=self.device)
 
-    def apply(self, image: ImageIO) -> str:
+    def apply(
+        self,
+        image: ImageIO,
+    ) -> Annotated[str,
+                   Info('OCR results, include bbox in x1, y1, x2, y2 format '
+                        'and the recognized text.')]:
 
         image = image.to_array()
+        results = self._reader.readtext(image, detail=1, **self.read_args)
+        results = [(self.extract_bbox(item[0]), item[1]) for item in results]
+
         if self.line_group_tolerance >= 0:
-            results = self._reader.readtext(image, **self.read_args)
-            results.sort(key=lambda x: x[0][0][1])
+            results.sort(key=lambda x: x[0][1])
 
-            lines = []
-            line = [results[0]]
+            groups = []
+            group = []
 
-            for result in results[1:]:
-                if abs(result[0][0][1] - line[0][0][0][1]) <= self.line_group_tolerance:
-                    line.append(result)
+            for item in results:
+                if not group:
+                    group.append(item)
+                    continue
+
+                if abs(item[0][1] - group[-1][0][1]) <= self.line_group_tolerance:
+                    group.append(item)
                 else:
-                    lines.append(line)
-                    line = [result]
+                    groups.append(group)
+                    group = [item]
 
-            lines.append(line)
+            groups.append(group)
 
-            ocr_results = []
-            for line in lines:
+            results = []
+            for group in groups:
                 # For each line, sort the elements by their left x-coordinate and join their texts
-                sorted_line = sorted(line, key=lambda x: x[0][0][0])
-                text_line = ' '.join(item[1] for item in sorted_line)
-                ocr_results.append(text_line)
-        else:
-            ocr_results = self._reader.readtext(image, detail=0, **self.read_args)
-        outputs = '\n'.join(ocr_results)
+                line = sorted(group, key=lambda x: x[0][0])
+                bboxes = [item[0] for item in line]
+                text = ' '.join(item[1] for item in line)
+                results.append((self.extract_bbox(bboxes), text))
+
+        outputs = []
+        for item in results:
+            outputs.append('({}, {}, {}, {}) {}'.format(*item[0], item[1]))
+        outputs = '\n'.join(outputs)
         return outputs
+
+    @staticmethod
+    def extract_bbox(char_boxes) -> Tuple[int, int, int, int]:
+        xs = [int(box[0]) for box in char_boxes]
+        ys = [int(box[1]) for box in char_boxes]
+        return min(xs), min(ys), max(xs), max(ys)

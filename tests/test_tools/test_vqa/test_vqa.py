@@ -12,8 +12,8 @@ test_image = (data_dir / 'images/dog.jpg').absolute()
 
 @pytest.fixture()
 def tool():
-    from agentlego.tools import VisualQuestionAnswering
-    return setup_tool(VisualQuestionAnswering, device='cuda')
+    from agentlego.tools import VQA
+    return setup_tool(VQA, device='cuda')
 
 
 def test_call(tool):

@@ -1,11 +1,8 @@
-from typing import Callable, Union
-
 import cv2
 import numpy as np
 from PIL import Image
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
+from agentlego.schema import Annotated, Info
 from agentlego.types import ImageIO
 from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
@@ -66,10 +63,6 @@ class ObjectReplace(BaseTool):
     """A tool to replace the certain objects in the image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         sam_model (str): The model name used to inference. Which can be found
             in the ``segment_anything`` repository.
             Defaults to ``sam_vit_h_4b8939.pth``.
@@ -77,29 +70,24 @@ class ObjectReplace(BaseTool):
             found in the ``MMdetection`` repository.
             Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ReplaceObjectInImage',
-        description='This tool can replace the specified object in the '
-        'input image with another object, like replacing a cat in an image '
-        'with a dog. You need to input the image to edit, the object name '
-        'to be replaced, and the object to replace with.',
-        inputs=['image', 'text', 'text'],
-        outputs=['image'],
-    )
+    default_desc = ('This tool can replace the specified object in the input '
+                    'image with another object, like replacing a cat in an '
+                    'image with a dog.')
 
     @require('mmdet')
     @require('segment_anything')
     @require('diffusers')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
                  grounding_model:
                  str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta, parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta)
         self.sam_model = sam_model
         self.grounding_model = grounding_model
         self.device = device
@@ -116,7 +104,12 @@ class ObjectReplace(BaseTool):
 
         self.inpainting = load_or_build_object(Inpainting, device=self.device)
 
-    def apply(self, image: ImageIO, text1: str, text2: str) -> ImageIO:
+    def apply(
+        self,
+        image: Annotated[ImageIO, Info('The image to edit.')],
+        text1: Annotated[str, Info('The object to be replaced.')],
+        text2: Annotated[str, Info('The object to replace with.')],
+    ) -> ImageIO:
         image_path = image.to_path()
         image_pil = image.to_pil()
 

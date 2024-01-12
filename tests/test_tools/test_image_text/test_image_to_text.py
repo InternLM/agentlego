@@ -11,8 +11,8 @@ test_img = (data_dir / 'images/dog.jpg').absolute()
 
 @pytest.fixture()
 def tool():
-    from agentlego.tools import ImageCaption
-    return setup_tool(ImageCaption, device='cuda')
+    from agentlego.tools import ImageDescription
+    return setup_tool(ImageDescription, device='cuda')
 
 
 def test_call(tool):
