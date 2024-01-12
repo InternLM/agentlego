@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 62.6"]
+requires = ["setuptools >= 62.6, < 64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,6 +23,9 @@ dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 [project.urls]
 Documentation = "https://agentlego.readthedocs.io"
 Repository = "https://github.com/InternLM/agentlego"
+
+[project.scripts]
+agentlego-server = "agentlego.server.server:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]

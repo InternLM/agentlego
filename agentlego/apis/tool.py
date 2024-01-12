@@ -8,14 +8,20 @@ from agentlego.utils.cache import load_or_build_object
 NAMES2TOOLS = {}
 
 
-def register_all_tools(module):
+def extract_all_tools(module):
     if isinstance(module, str):
         module = importlib.import_module(module)
 
+    tools = {}
     for k, v in module.__dict__.items():
         if (isinstance(v, type) and issubclass(v, BaseTool)
                 and (v is not BaseTool)):
-            NAMES2TOOLS[k] = v
+            tools[k] = v
+    return tools
+
+
+def register_all_tools(module):
+    NAMES2TOOLS.update(extract_all_tools(module))
 
 
 register_all_tools(agentlego.tools)

@@ -1,19 +1,23 @@
 import copy
 import inspect
 from abc import ABCMeta, abstractmethod
-from types import MethodType
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Mapping, Optional, Tuple, Union
 
-from agentlego.schema import Parameter, ToolMeta
+from typing_extensions import Annotated, get_args, get_origin
+
+from agentlego.parsers import DefaultParser
+from agentlego.schema import Info, Parameter, ToolMeta
+from agentlego.types import CatgoryToIO
 
 
 class BaseTool(metaclass=ABCMeta):
 
-    def __init__(self, toolmeta: Union[dict, ToolMeta], parser: Callable):
-        toolmeta = copy.deepcopy(toolmeta)
-        if isinstance(toolmeta, dict):
-            toolmeta = ToolMeta(**toolmeta)
-        self.toolmeta = toolmeta
+    def __init__(
+        self,
+        toolmeta: Union[dict, ToolMeta, None] = None,
+        parser: Callable = DefaultParser,
+    ):
+        self.toolmeta = self.get_default_toolmeta(toolmeta)
         self.set_parser(parser)
         self._is_setup = False
 
@@ -32,6 +36,141 @@ class BaseTool(metaclass=ABCMeta):
     @description.setter
     def description(self, val: str):
         self.toolmeta.description = val
+
+    @property
+    def inputs(self) -> Tuple[Parameter]:
+        return self.toolmeta.inputs
+
+    @property
+    def arguments(self) -> Mapping[str, Parameter]:
+        return {i.name: i for i in self.toolmeta.inputs}
+
+    @property
+    def outputs(self) -> Tuple[Parameter]:
+        return self.toolmeta.outputs
+
+    @classmethod
+    def _collect_inputs(cls) -> Tuple[Parameter]:
+        inputs = []
+        for p in inspect.signature(cls.apply).parameters.values():
+            if p.name == 'self':
+                continue
+
+            annotation = p.annotation
+            description = None
+            if get_origin(annotation) is Annotated:
+                for info in reversed(get_args(annotation)):
+                    if isinstance(info, Info):
+                        description = info.description
+                        break
+                annotation = get_args(annotation)[0]
+
+            input_ = Parameter(
+                name=p.name,
+                type=annotation,
+                description=description,
+                optional=p.default != inspect._empty,
+                default=p.default if p.default != inspect._empty else None,
+            )
+            inputs.append(input_)
+        return tuple(inputs)
+
+    @classmethod
+    def _collect_outputs(self) -> Optional[Tuple[Parameter]]:
+        outputs = []
+        return_ann = inspect.signature(self.apply).return_annotation
+        if return_ann is inspect._empty:
+            return None
+        elif get_origin(return_ann) is tuple:
+            annotations = get_args(return_ann)
+            assert len(annotations) > 1 and Ellipsis not in annotations, (
+                f'The number of outputs of `{type(self).__name__}.apply` '
+                'is undefined. Please specify like `Tuple[int, int, str]`')
+        else:
+            annotations = (return_ann, )
+
+        for annotation in annotations:
+            name = None
+            description = None
+            if get_origin(annotation) is Annotated:
+                for info in reversed(get_args(annotation)):
+                    if isinstance(info, Info):
+                        name = info.name
+                        description = info.description
+                annotation = get_args(annotation)[0]
+
+            output_ = Parameter(
+                name=name, type=annotation, description=description)
+            outputs.append(output_)
+        return tuple(outputs)
+
+    @classmethod
+    def get_default_toolmeta(cls, override=None) -> ToolMeta:
+        toolmeta = override or getattr(cls, 'DEFAULT_TOOLMETA', {})
+        toolmeta = copy.deepcopy(toolmeta)
+        if isinstance(toolmeta, dict):
+            toolmeta = ToolMeta(**toolmeta)
+
+        if toolmeta.name is None:
+            toolmeta.name = getattr(cls, 'default_name', cls.__name__)
+
+        if toolmeta.description is None:
+            doc = getattr(cls, 'default_desc', '').strip()
+            toolmeta.description = doc.partition('\n\n')[0].replace('\n', ' ')
+
+        supported_types = set(CatgoryToIO.values())
+
+        inputs = cls._collect_inputs()
+        new_inputs = []
+        if toolmeta.inputs is None:
+            toolmeta.inputs = inputs
+        else:
+            assert len(inputs) == len(toolmeta.inputs), (
+                'The length of `inputs` in toolmeta is different with '
+                f'the number of arguments of `{cls.__name__}.apply`.')
+        for i, item in enumerate(toolmeta.inputs):
+            if isinstance(item, str):
+                inputs[i].type = CatgoryToIO[item]
+                item = inputs[i]
+            if item.name is None:
+                item.name = inputs[i].name
+            new_inputs.append(item)
+            assert item.name == inputs[i].name, (
+                f'The name of input `{item.name}` in toolmeta is different '
+                f'with the correspondding argument name `{inputs[i].name}`')
+            assert item.type is not inspect._empty, (
+                f'The type of input `{item.name}` of '
+                f'`{cls.__name__}` is not specified.')
+            assert item.type in supported_types, (
+                f'The type of input `{item.name}` of '
+                f'`{cls.__name__}` is not supported. '
+                f'Supported types are {supported_types}')
+        toolmeta.inputs = tuple(new_inputs)
+
+        outputs = cls._collect_outputs()
+        new_outputs = []
+        if toolmeta.outputs is None:
+            assert outputs is not None, (
+                f'The type of output of `{cls.__name__}` is not specified.')
+            toolmeta.outputs = outputs
+        elif toolmeta.outputs is not None and outputs is not None:
+            assert len(outputs) == len(toolmeta.outputs), (
+                'The length of `outputs` in toolmeta is different with '
+                f'the type hint of return value of `{cls.__name__}.apply`.')
+        for i, item in enumerate(toolmeta.outputs):
+            if isinstance(item, str):
+                if outputs is not None:
+                    outputs[i].type = CatgoryToIO[item]
+                    item = outputs[i]
+                else:
+                    item = Parameter(CatgoryToIO[item])
+            new_outputs.append(item)
+            assert item.type in supported_types, (
+                f'The type of output of {cls.__name__}` is not supported. '
+                f'Supported types are {supported_types}')
+        toolmeta.outputs = tuple(new_outputs)
+
+        return toolmeta
 
     def set_parser(self, parser: Callable):
         self.parser = parser(self)
@@ -66,23 +205,6 @@ class BaseTool(metaclass=ABCMeta):
                     f'parser={type(self.parser).__name__})')
         return repr_str
 
-    @property
-    def parameters(self) -> Dict[str, Parameter]:
-        parameters = {}
-        for category, p in zip(
-                self.toolmeta.inputs,
-                inspect.signature(self.apply).parameters.values()):
-            if isinstance(self.apply, MethodType) and p.name == 'self':
-                continue
-            parameters[p.name] = Parameter(
-                name=p.name,
-                category=category,
-                description=None,
-                optional=p.default != inspect._empty,
-                default=p.default if p.default != inspect._empty else None,
-            )
-        return parameters
-
     def __copy__(self):
         obj = object.__new__(type(self))
         obj.__dict__.update(self.__dict__)
@@ -101,3 +223,7 @@ class BaseTool(metaclass=ABCMeta):
     def to_lagent(self):
         from .wrappers.lagent import LagentTool
         return LagentTool(self)
+
+    def to_ilagent(self):
+        from .wrappers.lagent import iLagentTool
+        return iLagentTool(self)

@@ -8,5 +8,6 @@ Pillow
 prompt_toolkit
 pyyaml
 requests
+rich
 thefuzz
 tqdm

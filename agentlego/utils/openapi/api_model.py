@@ -41,12 +41,12 @@ class APIPropertyLocation(Enum):
         try:
             return cls(location)
         except ValueError:
-            raise ValueError(
-                f'Invalid APIPropertyLocation. Valid values are {cls.__members__}'
-            )
+            raise ValueError('Invalid APIPropertyLocation. '
+                             f'Valid values are {cls.__members__}')
 
 
-_SUPPORTED_REQUEST_MEDIA_TYPES = ('application/json', 'multipart/form-data')
+_SUPPORTED_REQUEST_MEDIA_TYPES = ('application/json', 'multipart/form-data',
+                                  'application/x-www-form-urlencoded')
 _SUPPORTED_RESPONSE_MEDIA_TYPES = ('application/json', )
 
 SUPPORTED_LOCATIONS = {
@@ -64,13 +64,12 @@ SCHEMA_TYPE = Union[str, Type, tuple, None, Enum]
 class APIPropertyBase(BaseModel):
     """Base model for an API property."""
 
-    # The name of the parameter is required and is case-sensitive.
-    # If "in" is "path", the "name" field must correspond to a template expression
-    # within the path field in the Paths Object.
-    # If "in" is "header" and the "name" field is "Accept", "Content-Type",
-    # or "Authorization", the parameter definition is ignored.
-    # For all other cases, the "name" corresponds to the parameter
-    # name used by the "in" property.
+    # The name of the parameter is required and is case-sensitive. If "in" is
+    # "path", the "name" field must correspond to a template expression within
+    # the path field in the Paths Object. If "in" is "header" and the "name"
+    # field is "Accept", "Content-Type", or "Authorization", the parameter
+    # definition is ignored. For all other cases, the "name" corresponds to the
+    # parameter name used by the "in" property.
     name: str = Field(alias='name')
     """The name of the property."""
 
@@ -126,7 +125,8 @@ class APIProperty(APIPropertyBase):
             schema_type = APIProperty._cast_schema_list_type(items)
         elif isinstance(items, Reference):
             ref_name = items.ref.split('/')[-1]
-            schema_type = ref_name  # TODO: Add ref definitions to make his valid
+            # TODO: Add ref definitions to make his valid
+            schema_type = ref_name
         else:
             raise ValueError(f'Unsupported array items: {items}')
 
@@ -498,11 +498,11 @@ class APIResponse(BaseModel):
 
                 properties.append(
                     APIResponseProperty.from_schema(
-                        schema=prop_schema, name=str(i), required=True))
+                        schema=prop_schema, name='_null', required=True))
         else:
             # Simple style output
             properties = APIResponseProperty.from_schema(
-                schema=schema, name='body', required=True)
+                schema=schema, name='_null', required=True)
 
         return properties
 
@@ -686,7 +686,8 @@ class APIOperation(BaseModel):
                 f'{prop_desc}\n\t\t{prop_name}{prop_required}: {prop_type},')
 
         formatted_params = '\n'.join(params).strip()
-        description_str = f'/* {self.description} */' if self.description else ''
+        description_str = (f'/* {self.description} */'
+                           if self.description else '')
         typescript_definition = f"""
 {description_str}
 type {operation_name} = (_: {{

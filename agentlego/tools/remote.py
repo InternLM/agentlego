@@ -10,9 +10,10 @@ from agentlego.parsers import DefaultParser
 from agentlego.schema import Parameter, ToolMeta
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, ImageIO
-from agentlego.utils import APIOperation, OpenAPISpec, temp_path
-from agentlego.utils.openapi.api_model import (APIPropertyBase,
-                                               APIResponseProperty)
+from agentlego.utils import temp_path
+from agentlego.utils.openapi import (PRIMITIVE_TYPES, APIOperation,
+                                     APIPropertyBase, APIResponseProperty,
+                                     OpenAPISpec)
 
 
 def image_to_byte_file(image: ImageIO) -> IOBase:
@@ -75,9 +76,9 @@ class RemoteTool(BaseTool):
                 method=method,
             )
         self.operation = operation
-        toolmeta, parameters = self._get_toolmeta_and_params(operation)
-        self._parameters = parameters
-        super().__init__(toolmeta, parser)
+        self.toolmeta = self._get_toolmeta(operation)
+        self.set_parser(parser)
+        self._is_setup = False
 
     def _construct_path(self, kwargs: Dict[str, str]) -> str:
         """Construct the path from the tool input."""
@@ -112,22 +113,29 @@ class RemoteTool(BaseTool):
         return body_params
 
     def apply(self, *args, **kwargs):
-        for arg, arg_name in zip(args, self.parameters):
-            kwargs[arg_name] = arg
+        for arg, p in zip(args, self.inputs):
+            kwargs[p.name] = arg
 
         request_args = {
             'url': self._construct_path(kwargs),
             'params': self._extract_query_params(kwargs)
         }
         if self.operation.request_body:
-            if self.operation.request_body.media_type == 'multipart/form-data':
-                request_args['files'] = self._extract_body_params(kwargs)
+            media_type = self.operation.request_body.media_type
+            body = self._extract_body_params(kwargs)
+            if media_type == 'multipart/form-data':
+                request_args['files'] = {
+                    k: (k, v) if isinstance(v, IOBase) else (None, v)
+                    for k, v in body.items()
+                }
+            elif media_type == 'application/json':
+                request_args['json'] = body
             else:
-                request_args['data'] = self._extract_body_params(kwargs)
+                assert media_type == 'application/x-www-form-urlencoded'
+                request_args['data'] = body
 
         method = getattr(requests, self.operation.method.value)
         try:
-            requests.post
             response: requests.Response = method(
                 **request_args,
                 headers=self.headers,
@@ -151,12 +159,15 @@ class RemoteTool(BaseTool):
                                'because of unknown response.\n'
                                f'Response: {response.content.decode()}')
 
-        out_props = self._get_outputs(self.operation)
-        if out_props is None:
+        response_schema = self.operation.responses
+        if response_schema is None or response_schema.get('200') is None:
             # Directly use string if the response schema is not specified
             return str(response)
-        elif isinstance(out_props, APIResponseProperty):
-            return self._parse_output(response)
+        else:
+            out_props = response_schema['200'].properties
+
+        if isinstance(out_props, APIResponseProperty):
+            return self._parse_output(response, out_props)
         elif isinstance(out_props, list):
             return tuple(
                 self._parse_output(out, p)
@@ -182,6 +193,7 @@ class RemoteTool(BaseTool):
             out = base64_to_audio(out)
         else:
             out = out
+        return out
 
     @classmethod
     def from_server(cls, url: str, **kwargs) -> List['RemoteTool']:
@@ -214,82 +226,68 @@ class RemoteTool(BaseTool):
         return tools
 
     @staticmethod
-    def _get_toolmeta_and_params(
+    def _get_toolmeta(
         operation: APIOperation,
         toolkit: Optional[str] = None,
     ) -> Tuple[ToolMeta, List[Parameter]]:
         name = operation.operation_id
         if toolkit is not None:
             name = toolkit + '.' + name
-        parameters = RemoteTool._get_parameters(operation)
-        out_props = RemoteTool._get_outputs(operation)
-        if out_props is None:
-            # If not specify outputs, directly handle as a single text.
-            outputs = ['str']
-        elif isinstance(out_props, list):
-            outputs = [RemoteTool._extract_category(out) for out in out_props]
-        elif isinstance(out_props, dict):
-            out_props = out_props.values()
-            outputs = [RemoteTool._extract_category(out) for out in out_props]
-        else:
-            outputs = [RemoteTool._extract_category(out_props)]
-
+        inputs = RemoteTool._get_inputs(operation)
+        outputs = RemoteTool._get_outputs(operation)
         toolmeta = ToolMeta(
             name=name,
             description=operation.description,
-            inputs=[p.category for p in parameters.values()],
+            inputs=inputs,
             outputs=outputs,
         )
 
-        return toolmeta, parameters
+        return toolmeta
 
     @staticmethod
-    def _get_parameters(op: APIOperation) -> Dict[str, Parameter]:
-        params = {}
+    def _get_inputs(op: APIOperation) -> List[Parameter]:
+        inputs = []
         properties = []
         if op.properties:
             properties.extend(op.properties)
         if op.request_body and op.request_body.properties:
             properties.extend(op.request_body.properties)
         for p in properties:
-            params[p.name] = Parameter(
-                name=p.name,
-                category=RemoteTool._extract_category(p),
-                description=p.description,
-                default=p.default,
-                optional=not p.required,
-            )
-        return params
+            inputs.append(RemoteTool._prop_to_parameter(p))
+        return inputs
 
     @staticmethod
-    def _get_outputs(op: APIOperation):
+    def _get_outputs(op: APIOperation) -> List[Parameter]:
         if op.responses is None or op.responses.get('200') is None:
-            return None
+            # If not specify outputs, directly handle as a single text.
+            outputs = [Parameter(type=str)]
 
-        return op.responses['200'].properties
+        out_props = op.responses['200'].properties
+        if isinstance(out_props, list):
+            outputs = [RemoteTool._prop_to_parameter(out) for out in out_props]
+        elif isinstance(out_props, dict):
+            outputs = [
+                RemoteTool._prop_to_parameter(out)
+                for out in out_props.values()
+            ]
+        else:
+            outputs = [RemoteTool._prop_to_parameter(out_props)]
+
+        return outputs
 
     @staticmethod
-    def _extract_category(param: APIPropertyBase) -> str:
-        if param.type == 'string':
-            schema_format = param.format or ''
+    def _prop_to_parameter(prop: APIPropertyBase) -> Parameter:
+        p_type = PRIMITIVE_TYPES.get(prop.type)
+        if p_type is str:
+            schema_format = prop.format or ''
             if 'image' in schema_format:
-                return 'image'
+                p_type = ImageIO
             elif 'audio' in schema_format:
-                return 'audio'
-            else:
-                return 'text'
-        elif param.type == 'integer':
-            return 'int'
-        elif param.type == 'number':
-            return 'float'
-        elif param.type == 'boolean':
-            return 'bool'
-        elif param.type is None:
-            # Handle unspecified type as simple string.
-            return 'text'
-        else:
-            raise NotImplementedError(f'Unsupported type `{param.type}`.')
-
-    @property
-    def parameters(self) -> Dict[str, Parameter]:
-        return self._parameters
+                p_type = AudioIO
+        return Parameter(
+            type=p_type,
+            name=prop.name if prop.name != '_null' else None,
+            description=prop.description,
+            optional=not prop.required,
+            default=prop.default,
+        )

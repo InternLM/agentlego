@@ -6,7 +6,7 @@ from transformers.tools.agent_types import (AgentAudio, AgentImage, AgentText,
 
 from agentlego.parsers import NaiveParser
 from agentlego.tools.base import BaseTool
-from agentlego.types import AudioIO, CatgoryToIO, ImageIO
+from agentlego.types import AudioIO, ImageIO
 
 
 def cast_lego_to_hf(value):
@@ -33,9 +33,12 @@ class TransformersAgentTool(Tool):
         self.name: str = 'agentlego_' + tool.name.lower().replace(' ', '_')
 
         inputs_desc = []
-        for p in tool.parameters.values():
-            default = f', Defaults to {p.default}' if p.optional else ''
-            inputs_desc.append(f'{p.name} ({p.category}{default})')
+        type2format = {ImageIO: 'image', AudioIO: 'audio'}
+        for p in tool.inputs:
+            format = type2format.get(p.type, p.type.__name__)
+            format += (f'. Optional, Defaults to {p.default}'
+                       if p.optional else '')
+            inputs_desc.append(f'{p.name} ({format})')
         inputs_desc = 'Args: ' + ', '.join(inputs_desc)
         self.description: str = f'{tool.toolmeta.description} {inputs_desc}'
 
@@ -43,18 +46,18 @@ class TransformersAgentTool(Tool):
         self.outputs = list(tool.toolmeta.outputs)
 
     def __call__(self, *args, **kwargs):
-        for k, v in zip(self.tool.parameters, args):
-            kwargs[k] = v
+        for arg, p in zip(args, self.tool.inputs):
+            kwargs[p.name] = arg
 
         parsed_kwargs = {}
         for k, v in kwargs.items():
-            p = self.tool.parameters[k]
-            if p.category == 'audio':
+            p = self.tool.arguments[k]
+            if p.type is AudioIO:
                 parsed_kwargs[k] = AudioIO(v)
-            elif p.category == 'image':
+            elif p.type is ImageIO:
                 parsed_kwargs[k] = ImageIO(v)
             else:
-                parsed_kwargs[k] = CatgoryToIO[p.category](v)
+                parsed_kwargs[k] = p.type(v)
 
         outputs = self.tool(**parsed_kwargs)
 

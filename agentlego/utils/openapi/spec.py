@@ -1,10 +1,9 @@
-# Copied from https://github.com/langchain-ai/langchain/blob/master/libs/community/langchain_community/utilities/openapi.py
+# Copied from https://github.com/langchain-ai/langchain/blob/master/libs/community/langchain_community/utilities/openapi.py  # noqa: E501
 """Utility functions for parsing an OpenAPI spec."""
 from __future__ import annotations
-import copy
 import json
-import logging
 import re
+import warnings
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Tuple, Union
@@ -13,13 +12,10 @@ from urllib.parse import urljoin
 import requests
 import yaml
 from openapi_pydantic import OpenAPI, Response
-from pydantic import ValidationError
 
 if TYPE_CHECKING:
     from openapi_pydantic import (Components, Operation, Parameter, PathItem,
                                   Paths, Reference, RequestBody, Schema)
-
-logger = logging.getLogger(__name__)
 
 
 class HTTPVerb(str, Enum):
@@ -47,7 +43,8 @@ class HTTPVerb(str, Enum):
 class OpenAPISpec(OpenAPI):
     """OpenAPI Model that removes mis-formatted parts of the spec."""
 
-    openapi: str = '3.1.0'  # overriding overly restrictive type from parent class
+    # overriding overly restrictive type from parent class
+    openapi: str = '3.1.0'
 
     @property
     def _paths_strict(self) -> Paths:
@@ -191,39 +188,27 @@ class OpenAPISpec(OpenAPI):
         openapi_version = obj.get('openapi')
         if isinstance(openapi_version, str):
             if openapi_version != '3.1.0':
-                logger.warning(
+                warnings.warn(
                     f'Attempting to load an OpenAPI {openapi_version}'
                     f' spec. {warning_message}')
             else:
                 pass
         elif isinstance(swagger_version, str):
-            logger.warning(f'Attempting to load a Swagger {swagger_version}'
-                           f' spec. {warning_message}')
+            warnings.warn(f'Attempting to load a Swagger {swagger_version}'
+                          f' spec. {warning_message}')
         else:
             raise ValueError('Attempting to load an unsupported spec:'
                              f'\n\n{obj}\n{warning_message}')
 
     @classmethod
-    def parse_obj(cls, obj: dict) -> OpenAPISpec:
-        try:
-            cls._alert_unsupported_spec(obj)
-            return super().parse_obj(obj)
-        except ValidationError as e:
-            # We are handling possibly misconfigured specs and
-            # want to do a best-effort job to get a reasonable interface out of it.
-            new_obj = copy.deepcopy(obj)
-            for error in e.errors():
-                keys = error['loc']
-                item = new_obj
-                for key in keys[:-1]:
-                    item = item[key]
-                item.pop(keys[-1], None)
-            return cls.parse_obj(new_obj)
+    def model_validate(cls, obj: dict) -> OpenAPISpec:
+        cls._alert_unsupported_spec(obj)
+        return super().model_validate(obj)
 
     @classmethod
     def from_spec_dict(cls, spec_dict: dict) -> OpenAPISpec:
         """Get an OpenAPI spec from a dict."""
-        return cls.parse_obj(spec_dict)
+        return cls.model_validate(spec_dict)
 
     @classmethod
     def from_text(cls, text: str) -> OpenAPISpec:

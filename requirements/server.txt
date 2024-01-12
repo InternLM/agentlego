@@ -1,4 +1,5 @@
 fastapi
 python-multipart
+typer
 typing-extensions
 uvicorn[standard]
