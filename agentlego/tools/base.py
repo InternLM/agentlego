@@ -224,7 +224,3 @@ class BaseTool(metaclass=ABCMeta):
     def to_lagent(self):
         from .wrappers.lagent import LagentTool
         return LagentTool(self)
-
-    def to_ilagent(self):
-        from .wrappers.lagent import iLagentTool
-        return iLagentTool(self)

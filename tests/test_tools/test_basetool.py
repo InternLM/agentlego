@@ -23,8 +23,7 @@ def test_lagent():
 This is a dummy tool.
 Args: image (path); query (str, The query.)
 Returns: path (The result image.)
-Combine all args to one json string like {"image": xxx, "query": xxx}
-'''
+Combine all args to one json string like {"image": xxx, "query": xxx}'''
 
     assert tool.name == 'DummyTool'
     assert tool.description == expected_description
@@ -38,10 +37,9 @@ def test_hf_agent():
     expected_description = '''\
 This is a dummy tool.
 Args: image (image); query (str, The query.)
-Returns: image (The result image.)
-'''
+Returns: image (The result image.)'''
 
-    assert tool.name == 'agentlego_dummy_tool'
+    assert tool.name == 'agentlego_dummytool'
     assert tool.description == expected_description
 
 
@@ -54,5 +52,5 @@ def test_langchain():
         'Dummy Tool(image: str, query: str) - This is a dummy tool. '
         'It takes an image and a text as the inputs, and returns an image.')
 
-    assert tool.name == 'Dummy Tool'
+    assert tool.name == 'DummyTool'
     assert tool.description == expected_description

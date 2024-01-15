@@ -79,7 +79,7 @@ def create_output_annotation(tool: BaseTool):
     elif len(output_schema) == 1:
         return output_schema[0]
     else:
-        return Tuple[*output_schema]
+        return Tuple.copy_with(tuple(output_schema))
 
 
 def add_tool(tool: BaseTool, router: APIRouter):

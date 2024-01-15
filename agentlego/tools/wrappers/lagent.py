@@ -20,7 +20,7 @@ class LagentTool(BaseAction):
         self.tool = tool
 
         example_args = ', '.join(f'"{name}": xxx' for name in tool.arguments)
-        description = (f'{tool.description} Combine all args to one json '
+        description = (f'{tool.description}\nCombine all args to one json '
                        f'string like {{{example_args}}}')
 
         super().__init__(
