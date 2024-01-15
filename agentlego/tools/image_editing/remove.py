@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 from PIL import Image
 
@@ -74,9 +73,7 @@ class ObjectRemove(BaseTool):
 
         boxes_filt = results.bboxes
 
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        self.sam_predictor.set_image(image)
+        self.sam_predictor.set_image(image.to_array())
         masks = self.get_mask_with_boxes(image_pil, image, boxes_filt)
         mask = torch.sum(masks, dim=0).unsqueeze(0)
         mask = torch.where(mask > 0, True, False)

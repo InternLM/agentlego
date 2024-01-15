@@ -41,7 +41,6 @@ class TextToSpeech(BaseTool):
             Defaults to ``tts_models/multilingual/multi-dataset/xtts_v2``.
         speaker_embeddings (str | dict): The speaker embedding
             of the TTS model. Defaults to a default embedding.
-        sampling_rate (int): The sampling rate. Defaults to 16000.
         device (str): The device to load the model. Defaults to 'cuda'.
         toolmeta (None | dict | ToolMeta): The additional info of the tool.
             Defaults to None.
@@ -58,7 +57,6 @@ class TextToSpeech(BaseTool):
     def __init__(self,
                  model: str = 'tts_models/multilingual/multi-dataset/xtts_v2',
                  speaker_embeddings: Union[str, dict] = SPEAKER_EMBEDDING,
-                 sampling_rate: int = 16000,
                  device='cuda',
                  toolmeta=None):
         super().__init__(toolmeta=toolmeta)
@@ -68,7 +66,6 @@ class TextToSpeech(BaseTool):
             with BytesIO(requests.get(speaker_embeddings).content) as f:
                 speaker_embeddings = torch.load(f, map_location=device)
         self.speaker_embeddings = speaker_embeddings
-        self.sampling_rate = sampling_rate
         self.device = device
 
     def setup(self) -> None:
@@ -100,6 +97,4 @@ class TextToSpeech(BaseTool):
         )
 
         return AudioIO(
-            torch.tensor(out['wav']).unsqueeze(0),
-            sampling_rate=self.sampling_rate,
-        )
+            torch.tensor(out['wav']).unsqueeze(0), sampling_rate=24000)

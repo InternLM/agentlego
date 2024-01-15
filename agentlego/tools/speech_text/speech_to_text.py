@@ -1,7 +1,6 @@
-from mmengine.utils import apply_to
-
 from agentlego.types import AudioIO
-from agentlego.utils import is_package_available, load_or_build_object, require
+from agentlego.utils import (apply_to, is_package_available,
+                             load_or_build_object, require)
 from ..base import BaseTool
 
 if is_package_available('torch'):

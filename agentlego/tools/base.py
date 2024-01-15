@@ -70,8 +70,8 @@ class BaseTool(metaclass=ABCMeta):
                 name=p.name,
                 type=annotation,
                 description=description,
-                optional=p.default != inspect._empty,
-                default=p.default if p.default != inspect._empty else None,
+                optional=p.default is not inspect._empty,
+                default=p.default if p.default is not inspect._empty else None,
             )
             inputs.append(input_)
         return tuple(inputs)
@@ -131,19 +131,17 @@ class BaseTool(metaclass=ABCMeta):
                 f'the number of arguments of `{cls.__name__}.apply`.')
         for i, item in enumerate(toolmeta.inputs):
             if isinstance(item, str):
-                inputs[i].type = CatgoryToIO[item]
-                item = inputs[i]
-            if item.name is None:
-                item.name = inputs[i].name
-            new_inputs.append(item)
-            assert item.name == inputs[i].name, (
-                f'The name of input `{item.name}` in toolmeta is different '
-                f'with the correspondding argument name `{inputs[i].name}`')
-            assert item.type is not inspect._empty, (
-                f'The type of input `{item.name}` of '
+                item = Parameter(type=CatgoryToIO[item])
+            assert isinstance(item, Parameter), \
+                ('The type of elements in inputs should be `str` '
+                 f'or `Parameter`, got `{type(item)}` instead.')
+            inputs[i].update(item)
+            new_inputs.append(inputs[i])
+            assert inputs[i].type is not inspect._empty, (
+                f'The type of input `{inputs[i].name}` of '
                 f'`{cls.__name__}` is not specified.')
-            assert item.type in supported_types, (
-                f'The type of input `{item.name}` of '
+            assert inputs[i].type in supported_types, (
+                f'The type of input `{inputs[i].name}` of '
                 f'`{cls.__name__}` is not supported. '
                 f'Supported types are {supported_types}')
         toolmeta.inputs = tuple(new_inputs)
@@ -160,14 +158,16 @@ class BaseTool(metaclass=ABCMeta):
                 f'the type hint of return value of `{cls.__name__}.apply`.')
         for i, item in enumerate(toolmeta.outputs):
             if isinstance(item, str):
-                if outputs is not None:
-                    outputs[i].type = CatgoryToIO[item]
-                    item = outputs[i]
-                else:
-                    item = Parameter(CatgoryToIO[item])
+                item = Parameter(type=CatgoryToIO[item])
+            assert isinstance(item, Parameter), \
+                ('The type of elements in outputs should be `str` '
+                 f'or `Parameter`, got `{type(item)}` instead.')
+            if outputs is not None:
+                outputs[i].update(item)
+                item = outputs[i]
             new_outputs.append(item)
             assert item.type in supported_types, (
-                f'The type of output of {cls.__name__}` is not supported. '
+                f'The type of output of `{cls.__name__}` is not supported. '
                 f'Supported types are {supported_types}')
         toolmeta.outputs = tuple(new_outputs)
 

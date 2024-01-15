@@ -1,8 +1,7 @@
+import copy
 import typing
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple, Union
-
-from pydantic import BaseModel
 
 if hasattr(typing, 'Annotated'):
     Annotated = typing.Annotated
@@ -11,33 +10,47 @@ else:
     Annotated = Annotated
 
 
-class Parameter(BaseModel):
+@dataclass
+class Parameter:
     """Meta information for parameters.
 
     Args:
+        type (type): The type of the value.
         name (str): tool name for agent to identify the tool.
-        category (str): Category of the parameter.
-        description (Optional[str]): Description for the parameter.
-            Defaults to None.
+        description (str): Description for the parameter.
         optional (bool): Whether the parameter has a default value.
             Defaults to False.
         default (Any): The default value of the parameter.
     """
-    type: type
+    type: Optional[type] = None
     name: Optional[str] = None
     description: Optional[str] = None
-    optional: bool = False
-    default: Any = None
+    optional: Optional[bool] = None
+    default: Optional[Any] = None
+
+    def update(self, other: 'Parameter'):
+        other = copy.deepcopy(other)
+        if other.type is not None:
+            self.type = other.type
+        if other.name is not None:
+            self.name = other.name
+        if other.description is not None:
+            self.description = other.description
+        if other.optional is not None:
+            self.optional = other.optional
+        if other.default is not None:
+            self.default = other.default
 
 
-class ToolMeta(BaseModel):
+@dataclass
+class ToolMeta:
     """Meta information for tool.
 
     Args:
         name (str): tool name for agent to identify the tool.
         description (str): Description for tool.
-        inputs (tuple[str, ...]): Input categories for tool.
-        outputs (tuple[str, ...]): Output categories for tool.
+        inputs (tuple[str | Parameter, ...]): Input categories for tool.
+        outputs (tuple[str | Parameter, ...]): Output categories for tool.
     """
     name: Optional[str] = None
     description: Optional[str] = None

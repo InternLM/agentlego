@@ -1,6 +1,5 @@
 import math
 
-import cv2
 import numpy as np
 from PIL import Image, ImageOps
 
@@ -26,6 +25,7 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     Returns:
         PIL.Image.Image: The blended image.
     """
+    import cv2
     new_size = new_image.size
     old_size = old_image.size
     easy_img = np.array(new_image)

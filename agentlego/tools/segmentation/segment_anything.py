@@ -2,7 +2,6 @@ import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple
 
-import cv2
 import numpy as np
 from PIL import Image
 
@@ -340,18 +339,14 @@ class SegmentAnything(BaseTool):
     def apply(
         self, image: ImageIO
     ) -> Annotated[ImageIO, Info('The segmentation result image.')]:
-        image = image.to_path()
-        annos = self.segment_anything(image)
+        annos = self.segment_anything(image.to_array())
         full_img, _ = self.show_annos(annos)
         return ImageIO(full_img)
 
-    def segment_anything(self, img_path):
+    def segment_anything(self, img):
         if not self._is_setup:
             self.setup()
             self._is_setup = True
-
-        img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         from segment_anything import SamAutomaticMaskGenerator
 
@@ -380,8 +375,8 @@ class SegmentAnything(BaseTool):
 
         return res_masks[np.argmax(scores), :, :]
 
-    def get_detection_map(self, img_path):
-        annos = self.segment_anything(img_path)
+    def get_detection_map(self, img):
+        annos = self.segment_anything(img)
         _, detection_map = self.show_anns(annos)
 
         return detection_map
@@ -537,6 +532,7 @@ class SegmentObject(BaseTool):
             visualized on top of the image.
             transparenccy: the transparency of the segmentation mask
         """
+        import cv2
 
         if random_color:
             color = np.concatenate([np.random.random(3)], axis=0)

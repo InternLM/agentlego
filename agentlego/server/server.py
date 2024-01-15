@@ -63,6 +63,8 @@ def create_output_annotation(tool: BaseTool):
 
     for p in tool.outputs:
         field_kwargs = {}
+        if p.description:
+            field_kwargs['description'] = p.description
         if p.type is ImageIO:
             annotation = str
             field_kwargs['format'] = 'image/png;base64'
