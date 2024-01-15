@@ -3,3 +3,4 @@ python-multipart
 typer
 typing-extensions
 uvicorn[standard]
+makefun
