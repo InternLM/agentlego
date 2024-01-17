@@ -29,5 +29,5 @@ def construct_langchain_tool(tool: BaseTool):
     return StructuredTool.from_function(
         func=call,
         name=tool.name,
-        description=tool.toolmeta.description,
+        description=tool.description,
     )
