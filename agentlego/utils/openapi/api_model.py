@@ -3,16 +3,13 @@
 """Pydantic models for parsing an OpenAPI spec."""
 from __future__ import annotations
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple,
-                    Type, Union)
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
-from openapi_pydantic import Response
+from openapi_pydantic import (MediaType, Parameter, RequestBody, Response,
+                              Schema)
 from pydantic import BaseModel, Field
 
 from .spec import HTTPVerb, OpenAPISpec
-
-if TYPE_CHECKING:
-    from openapi_pydantic import MediaType, Parameter, RequestBody, Schema
 
 PRIMITIVE_TYPES = {
     'integer': int,
@@ -359,6 +356,8 @@ class APIRequestBody(BaseModel):
 
         references_used = []
         schema = media_type_obj.media_type_schema
+        if isinstance(schema, Schema) and schema.allOf:
+            schema = schema.allOf[0]
         if isinstance(schema, Reference):
             references_used.append(schema.ref.split('/')[-1])
             schema = spec.get_referenced_schema(schema)
