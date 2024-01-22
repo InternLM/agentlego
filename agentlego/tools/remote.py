@@ -11,9 +11,8 @@ from agentlego.schema import Parameter, ToolMeta
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, ImageIO
 from agentlego.utils import temp_path
-from agentlego.utils.openapi import (PRIMITIVE_TYPES, APIOperation,
-                                     APIPropertyBase, APIResponseProperty,
-                                     OpenAPISpec)
+from agentlego.utils.openapi import (PRIMITIVE_TYPES, APIOperation, APIPropertyBase,
+                                     APIResponseProperty, OpenAPISpec)
 
 
 def image_to_byte_file(image: ImageIO) -> IOBase:
@@ -95,9 +94,7 @@ class RemoteTool(BaseTool):
                 query_params[param] = kwargs.pop(param)
         return query_params
 
-    def _extract_body_params(self,
-                             kwargs: Dict[str,
-                                          str]) -> Optional[Dict[str, str]]:
+    def _extract_body_params(self, kwargs: Dict[str, str]) -> Optional[Dict[str, str]]:
         """Extract the request body params from the tool input."""
         body_params = None
         if self.operation.body_params:
@@ -142,16 +139,14 @@ class RemoteTool(BaseTool):
                 auth=self.auth,
             )
         except requests.ConnectionError as e:
-            raise ConnectionError(
-                f'Failed to connect the remote tool `{self.name}`.') from e
+            raise ConnectionError(f'Failed to connect the remote tool `{self.name}`.') from e
         if response.status_code != 200:
             if response.headers.get('Content-Type') == 'application/json':
                 content = response.json()
             else:
                 content = response.content.decode()
-            raise RuntimeError(
-                f'Failed to call the remote tool `{self.name}` '
-                f'because of {response.reason}.\nResponse: {content}')
+            raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
+                               f'because of {response.reason}.\nResponse: {content}')
         try:
             response = response.json()
         except requests.JSONDecodeError:
@@ -169,14 +164,9 @@ class RemoteTool(BaseTool):
         if isinstance(out_props, APIResponseProperty):
             return self._parse_output(response, out_props)
         elif isinstance(out_props, list):
-            return tuple(
-                self._parse_output(out, p)
-                for out, p in zip(response, out_props))
+            return tuple(self._parse_output(out, p) for out, p in zip(response, out_props))
         else:
-            return {
-                p.name: self._parse_output(out, p)
-                for out, p in zip(response, out_props)
-            }
+            return {p.name: self._parse_output(out, p) for out, p in zip(response, out_props)}
 
     @staticmethod
     def _parse_output(out, p: APIResponseProperty):
@@ -266,10 +256,7 @@ class RemoteTool(BaseTool):
         if isinstance(out_props, list):
             outputs = [RemoteTool._prop_to_parameter(out) for out in out_props]
         elif isinstance(out_props, dict):
-            outputs = [
-                RemoteTool._prop_to_parameter(out)
-                for out in out_props.values()
-            ]
+            outputs = [RemoteTool._prop_to_parameter(out) for out in out_props.values()]
         else:
             outputs = [RemoteTool._prop_to_parameter(out_props)]
 

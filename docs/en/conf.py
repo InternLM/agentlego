@@ -110,8 +110,7 @@ html_css_files = [
     'css/readthedocs.css'
 ]
 html_js_files = [
-    'https://cdn.datatables.net/v/bs4/dt-1.12.1/datatables.min.js',
-    'js/custom.js'
+    'https://cdn.datatables.net/v/bs4/dt-1.12.1/datatables.min.js', 'js/custom.js'
 ]
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -155,8 +154,7 @@ man_pages = [(root_doc, 'agentlego', 'AgentLego Documentation', [author], 1)]
 #  dir menu entry, description, category)
 texinfo_documents = [
     (root_doc, 'agentlego', 'AgentLego Documentation', author, 'agentlego',
-     'A versatile tool library for enhancing LLM-based agents',
-     'Miscellaneous'),
+     'A versatile tool library for enhancing LLM-based agents', 'Miscellaneous'),
 ]
 
 # -- Options for Epub output -------------------------------------------------

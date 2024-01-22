@@ -31,12 +31,10 @@ class LagentTool(BaseAction):
     def run(self, json_args: str):
         # load json format arguments
         try:
-            item = next(
-                re.finditer('{.*}', json_args, re.MULTILINE | re.DOTALL))
+            item = next(re.finditer('{.*}', json_args, re.MULTILINE | re.DOTALL))
             kwargs = json.loads(item.group())
         except Exception:
-            error = ValueError(
-                'All arguments should be combined into one json string.')
+            error = ValueError('All arguments should be combined into one json string.')
             return ActionReturn(
                 type=self.name,
                 errmsg=repr(error),

@@ -159,8 +159,7 @@ class ConversationBot:
         self.models = {}
         # Load tools
         for class_name, device in load_dict.items():
-            self.models[class_name] = load_tool(
-                class_name, device=device).to_langchain()
+            self.models[class_name] = load_tool(class_name, device=device).to_langchain()
 
         print(f'All the Available Functions: {self.models}')
 
@@ -225,8 +224,7 @@ class ConversationBot:
         img = img.resize((width_new, height_new))
         img = img.convert('RGB')
         img.save(image_filename, 'PNG')
-        print(
-            f'Resize image form {width}x{height} to {width_new}x{height_new}')
+        print(f'Resize image form {width}x{height} to {width_new}x{height_new}')
         description = self.models['ImageCaption'](image_filename)
         if lang == 'Chinese':
             Human_prompt = (f'\nHuman: 提供一张名为 {image_filename}的图片。'
@@ -248,9 +246,7 @@ class ConversationBot:
             AI_prompt = 'Received.  '
         self.agent.memory.buffer = self.agent.memory.buffer + \
             Human_prompt + 'AI: ' + AI_prompt
-        state = state + [
-            (f'![](file={image_filename})*{image_filename}*', AI_prompt)
-        ]
+        state = state + [(f'![](file={image_filename})*{image_filename}*', AI_prompt)]
         return state, state, f'{txt} {image_filename} '
 
 
@@ -266,8 +262,7 @@ if __name__ == '__main__':
     }
     bot = ConversationBot(load_dict=load_dict)
     with gr.Blocks(css='#chatbot .overflow-y-auto{height:500px}') as demo:
-        lang = gr.Radio(
-            choices=['Chinese', 'English'], value=None, label='Language')
+        lang = gr.Radio(choices=['Chinese', 'English'], value=None, label='Language')
         chatbot = gr.Chatbot(elem_id='chatbot', label='Visual ChatGPT')
         state = gr.State([])
         with gr.Row(visible=False) as input_raws:
@@ -284,8 +279,7 @@ if __name__ == '__main__':
         lang.change(bot.init_agent, [lang], [input_raws, lang, txt, clear])
         txt.submit(bot.run_text, [txt, state], [chatbot, state])
         txt.submit(lambda: '', None, txt)
-        btn.upload(bot.run_image, [btn, state, txt, lang],
-                   [chatbot, state, txt])
+        btn.upload(bot.run_image, [btn, state, txt, lang], [chatbot, state, txt])
         clear.click(bot.memory.clear)
         clear.click(lambda: [], None, chatbot)
         clear.click(lambda: [], None, state)

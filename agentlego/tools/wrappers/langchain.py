@@ -20,9 +20,7 @@ def construct_langchain_tool(tool: BaseTool):
         call_args[p.name] = str
         call_params.append(
             inspect.Parameter(
-                p.name,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=str))
+                p.name, inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=str))
     call.__signature__ = inspect.Signature(call_params)
     call.__annotations__ = call_args
 

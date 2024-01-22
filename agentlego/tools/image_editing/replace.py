@@ -82,8 +82,7 @@ class ObjectReplace(BaseTool):
     @require('diffusers')
     def __init__(self,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
-                 grounding_model:
-                 str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
+                 grounding_model: str = 'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365',
                  device: str = 'cuda',
                  toolmeta=None):
         super().__init__(toolmeta)
@@ -113,10 +112,7 @@ class ObjectReplace(BaseTool):
         image_pil = image.to_pil()
 
         results = self.grounding(
-            inputs=image_path,
-            texts=[text1],
-            no_save_vis=True,
-            return_datasamples=True)
+            inputs=image_path, texts=[text1], no_save_vis=True, return_datasamples=True)
         results = results['predictions'][0].pred_instances
 
         boxes_filt = results.bboxes

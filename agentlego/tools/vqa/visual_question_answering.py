@@ -32,15 +32,12 @@ class VQA(BaseTool):
 
         with DefaultScope.overwrite_default_scope('mmpretrain'):
             self._inferencer = load_or_build_object(
-                VisualQuestionAnsweringInferencer,
-                model=self.model,
-                device=self.device)
+                VisualQuestionAnsweringInferencer, model=self.model, device=self.device)
 
     def apply(
         self,
         image: ImageIO,
-        question: Annotated[str,
-                            Info('The question should be in English.')],
+        question: Annotated[str, Info('The question should be in English.')],
     ) -> str:
         image = image.to_array()[:, :, ::-1]
         return self._inferencer(image, question)[0]['pred_answer']

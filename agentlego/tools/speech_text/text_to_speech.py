@@ -46,12 +46,10 @@ class TextToSpeech(BaseTool):
             Defaults to None.
     """
 
-    SPEAKER_EMBEDDING = (
-        'http://download.openmmlab.com/agentlego/default_voice.pth')
-    default_desc = (
-        'The tool can speak the input text into audio. The language code '
-        'should be one of ' + ', '.join(f"'{k}' ({v})"
-                                        for k, v in LANG_CODES.items()) + '.')
+    SPEAKER_EMBEDDING = ('http://download.openmmlab.com/agentlego/default_voice.pth')
+    default_desc = ('The tool can speak the input text into audio. The language code '
+                    'should be one of ' +
+                    ', '.join(f"'{k}' ({v})" for k, v in LANG_CODES.items()) + '.')
 
     @require('TTS', 'langid')
     def __init__(self,
@@ -86,8 +84,8 @@ class TextToSpeech(BaseTool):
             lang = langid.classify(text)[0]
             lang = 'zh-cn' if lang == 'zh' else lang
 
-        text = text.replace('，', ', ').replace('。', '. ').replace(
-            '？', '? ').replace('！', '! ').replace('、', ', ').strip()
+        text = text.replace('，', ', ').replace('。', '. ').replace('？', '? ').replace(
+            '！', '! ').replace('、', ', ').strip()
         out = self.model.inference(
             text,
             language=lang,
@@ -96,5 +94,4 @@ class TextToSpeech(BaseTool):
             **self.speaker_embeddings,
         )
 
-        return AudioIO(
-            torch.tensor(out['wav']).unsqueeze(0), sampling_rate=24000)
+        return AudioIO(torch.tensor(out['wav']).unsqueeze(0), sampling_rate=24000)

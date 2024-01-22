@@ -58,9 +58,8 @@ class GoogleSearch(BaseTool):
         if api_key == 'env':
             api_key = os.environ.get('SERPER_API_KEY', None)
         if not api_key:
-            raise ValueError(
-                'Please set Serper API key either in the environment '
-                ' as SERPER_API_KEY or pass it as `api_key` parameter.')
+            raise ValueError('Please set Serper API key either in the environment '
+                             ' as SERPER_API_KEY or pass it as `api_key` parameter.')
 
         self.api_key = api_key
         self.timeout = timeout
@@ -113,13 +112,11 @@ class GoogleSearch(BaseTool):
             if kg.get('description'):
                 content += kg['description']
             if kg.get('attributes'):
-                attributes = ', '.join(f'{k}: {v}'
-                                       for k, v in kg['attributes'].items())
+                attributes = ', '.join(f'{k}: {v}' for k, v in kg['attributes'].items())
                 content += f'({attributes})'
             snippets.append(content)
 
-        for item in results[self.result_key_for_type[
-                self.search_type]][:self.k]:
+        for item in results[self.result_key_for_type[self.search_type]][:self.k]:
             content = ''
             if item.get('title'):
                 content += item['title'] + ': '

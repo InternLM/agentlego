@@ -12,8 +12,7 @@ def load_sd(model: str = 'runwayml/stable-diffusion-v1-5',
             device=None):
     import torch
     from diffusers import (AutoencoderKL, ControlNetModel,
-                           StableDiffusionControlNetPipeline,
-                           StableDiffusionPipeline)
+                           StableDiffusionControlNetPipeline, StableDiffusionPipeline)
 
     dtype = torch.float16 if 'cuda' in str(device) else torch.float32
     params = {'torch_dtype': dtype}
@@ -29,8 +28,7 @@ def load_sd(model: str = 'runwayml/stable-diffusion-v1-5',
         )
         params['vae'] = vae
 
-    t2i = load_or_build_object(StableDiffusionPipeline.from_pretrained, model,
-                               **params)
+    t2i = load_or_build_object(StableDiffusionPipeline.from_pretrained, model, **params)
 
     if controlnet is None:
         return t2i.to(device)
@@ -41,8 +39,7 @@ def load_sd(model: str = 'runwayml/stable-diffusion-v1-5',
             torch_dtype=dtype,
             variant=controlnet_variant,
         )
-        pipe = StableDiffusionControlNetPipeline(
-            **t2i.components, controlnet=controlnet)
+        pipe = StableDiffusionControlNetPipeline(**t2i.components, controlnet=controlnet)
         return pipe.to(device)
 
 
@@ -71,8 +68,8 @@ def load_sdxl(model: str = 'stabilityai/stable-diffusion-xl-base-1.0',
         )
         params['vae'] = vae
 
-    t2i = load_or_build_object(StableDiffusionXLPipeline.from_pretrained,
-                               model, **params)
+    t2i = load_or_build_object(StableDiffusionXLPipeline.from_pretrained, model,
+                               **params)
 
     if controlnet is None:
         return t2i.to(device)

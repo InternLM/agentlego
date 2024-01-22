@@ -31,9 +31,8 @@ class IOType:
                 self.value = value
                 self.type = name
         if self.type is None:
-            raise NotImplementedError(
-                f'The value type `{type(value)}` is not '
-                f'supported by `{self.__class__.__name__}`')
+            raise NotImplementedError(f'The value type `{type(value)}` is not '
+                                      f'supported by `{self.__class__.__name__}`')
 
     def to(self, dst_type: str):
         if self.type == dst_type:
@@ -140,6 +139,33 @@ class AudioIO(IOType):
         filename = temp_path('audio', '.wav')
         torchaudio.save(filename, tensor, self.sampling_rate)
         return filename
+
+
+def Info(description: Optional[str] = None,
+         *,
+         name: Optional[str] = None,
+         filetype: Optional[str] = None):
+    """Used to add additional information of arguments and outputs.
+
+    Args:
+        description (str | None): Description for the parameter. Defaults to None.
+        name (str | None): tool name for agent to identify the tool. Defaults to None.
+        filetype (str | None): The file type for `File` inputs and outputs.
+            Defaults to None.
+
+    Examples:
+
+        .. code:: python
+        from agentlego.types import Annotated, Info, File
+
+        class CustomTool(BaseTool):
+            ...
+            def apply(
+                self, arg1: Annotated[str, Info('Description of arg1')]
+            ) -> Annotated[File, Info('Description of output.', filetype='office/xlsx')]:
+                pass
+    """
+    return Parameter(description=description, name=name, filetype=filetype)
 
 
 CatgoryToIO = {

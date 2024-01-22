@@ -7,10 +7,7 @@ from ..base import BaseTool
 
 
 def safe_eval(expr):
-    math_methods = {
-        k: v
-        for k, v in math.__dict__.items() if not k.startswith('_')
-    }
+    math_methods = {k: v for k, v in math.__dict__.items() if not k.startswith('_')}
     allowed_methods = {
         'math': addict.Addict(math_methods),
         'max': max,
@@ -33,10 +30,9 @@ class Calculator(BaseTool):
             Defaults to None.
     """
 
-    default_desc = (
-        'A calculator tool. The input must be a single Python '
-        'expression and you cannot import packages. You can use functions '
-        'in the `math` package without import.')
+    default_desc = ('A calculator tool. The input must be a single Python '
+                    'expression and you cannot import packages. You can use functions '
+                    'in the `math` package without import.')
 
     def __init__(self, timeout=2, toolmeta=None):
         super().__init__(toolmeta=toolmeta)

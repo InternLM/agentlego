@@ -7,8 +7,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from agentlego.apis.tool import (extract_all_tools, list_tools, load_tool,
-                                 register_all_tools)
+from agentlego.apis.tool import extract_all_tools, list_tools, load_tool, register_all_tools
 from agentlego.parsers import NaiveParser
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, ImageIO
@@ -18,8 +17,7 @@ try:
     import rich
     import typer
     import uvicorn
-    from fastapi import (APIRouter, FastAPI, File, Form, HTTPException,
-                         UploadFile)
+    from fastapi import APIRouter, FastAPI, File, Form, HTTPException, UploadFile
     from makefun import create_function
     from pydantic import Field
     from rich.table import Table
@@ -89,8 +87,7 @@ def add_tool(tool: BaseTool, router: APIRouter):
 
     input_params = create_input_params(tool)
     return_annotation = create_output_annotation(tool)
-    signature = inspect.Signature(
-        input_params, return_annotation=return_annotation)
+    signature = inspect.Signature(input_params, return_annotation=return_annotation)
 
     def _call(**kwargs):
         args = {}
@@ -123,8 +120,7 @@ def add_tool(tool: BaseTool, router: APIRouter):
             elif p.type is AudioIO:
                 import torchaudio
                 file = BytesIO()
-                torchaudio.save(
-                    file, out.to_tensor(), out.sampling_rate, format='wav')
+                torchaudio.save(file, out.to_tensor(), out.sampling_rate, format='wav')
                 out = base64.b64encode(file.getvalue()).decode()
             res.append(out)
 
@@ -159,23 +155,22 @@ async def lifespan(app: FastAPI):
 
 @cli.command(no_args_is_help=True)
 def start(
-    tools: List[str] = typer.Argument(
-        help='The class name of tools to deploy.', show_default=False),
-    device: str = typer.Option(
-        'cuda:0', help='The device to use to deploy the tools.'),
-    setup: bool = typer.Option(
-        True, help='Setup tools during starting the server.'),
-    extra: Optional[List[Path]] = typer.Option(
-        None,
-        help='The extra Python source files or modules includes tools.',
-        file_okay=True,
-        dir_okay=True,
-        exists=True,
-        show_default=False),
-    host: str = typer.Option('127.0.0.1', help='The server address.'),
-    port: int = typer.Option(16180, help='The server port.'),
-    title: str = typer.Option(
-        'AgentLego', help='The title of the tool collection.'),
+        tools: List[str] = typer.Argument(
+            help='The class name of tools to deploy.', show_default=False),
+        device: str = typer.Option('cuda:0', help='The device to use to deploy the tools.'),
+        setup: bool = typer.Option(True, help='Setup tools during starting the server.'),
+        extra: Optional[
+            List[
+                Path]] = typer.Option(
+                    None,
+                    help='The extra Python source files or modules includes tools.',
+                    file_okay=True,
+                    dir_okay=True,
+                    exists=True,
+                    show_default=False),
+        host: str = typer.Option('127.0.0.1', help='The server address.'),
+        port: int = typer.Option(16180, help='The server port.'),
+        title: str = typer.Option('AgentLego', help='The title of the tool collection.'),
 ):
     """Start a tool server with the specified tools."""
     app = FastAPI(title=title, openapi_url='/openapi.json', lifespan=lifespan)
@@ -198,8 +193,7 @@ def start(
 
 @cli.command(name='list')
 def list_available_tools(
-    official: bool = typer.Option(
-        True, help='Whether to show AgentLego official tools.'),
+    official: bool = typer.Option(True, help='Whether to show AgentLego official tools.'),
     extra: Optional[List[Path]] = typer.Option(
         None,
         help='The extra Python source files or modules includes tools.',

@@ -65,10 +65,7 @@ class ObjectRemove(BaseTool):
         text1 = text
         text2 = 'background'
         results = self.grounding(
-            inputs=image_path,
-            texts=[text1],
-            no_save_vis=True,
-            return_datasamples=True)
+            inputs=image_path, texts=[text1], no_save_vis=True, return_datasamples=True)
         results = results['predictions'][0].pred_instances
 
         boxes_filt = results.bboxes

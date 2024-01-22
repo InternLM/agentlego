@@ -39,7 +39,7 @@ class BaseTool(metaclass=ABCMeta):
         self.toolmeta.description = val
 
     @property
-    def inputs(self) -> Tuple[Parameter]:
+    def inputs(self) -> Tuple[Parameter, ...]:
         return self.toolmeta.inputs
 
     @property
@@ -47,11 +47,11 @@ class BaseTool(metaclass=ABCMeta):
         return {i.name: i for i in self.toolmeta.inputs}
 
     @property
-    def outputs(self) -> Tuple[Parameter]:
+    def outputs(self) -> Tuple[Parameter, ...]:
         return self.toolmeta.outputs
 
     @classmethod
-    def _collect_inputs(cls) -> Tuple[Parameter]:
+    def _collect_inputs(cls) -> Tuple[Parameter, ...]:
         inputs = []
         for p in inspect.signature(cls.apply).parameters.values():
             if p.name == 'self':
@@ -77,15 +77,15 @@ class BaseTool(metaclass=ABCMeta):
         return tuple(inputs)
 
     @classmethod
-    def _collect_outputs(self) -> Optional[Tuple[Parameter]]:
+    def _collect_outputs(cls) -> Optional[Tuple[Parameter, ...]]:
         outputs = []
-        return_ann = inspect.signature(self.apply).return_annotation
+        return_ann = inspect.signature(cls.apply).return_annotation
         if return_ann is inspect._empty:
             return None
         elif get_origin(return_ann) is tuple:
             annotations = get_args(return_ann)
             assert len(annotations) > 1 and Ellipsis not in annotations, (
-                f'The number of outputs of `{type(self).__name__}.apply` '
+                f'The number of outputs of `{cls.__name__}.apply` '
                 'is undefined. Please specify like `Tuple[int, int, str]`')
         else:
             annotations = (return_ann, )
@@ -100,8 +100,7 @@ class BaseTool(metaclass=ABCMeta):
                         description = info.description
                 annotation = get_args(annotation)[0]
 
-            output_ = Parameter(
-                name=name, type=annotation, description=description)
+            output_ = Parameter(name=name, type=annotation, description=description)
             outputs.append(output_)
         return tuple(outputs)
 
@@ -126,9 +125,9 @@ class BaseTool(metaclass=ABCMeta):
         if toolmeta.inputs is None:
             toolmeta.inputs = inputs
         else:
-            assert len(inputs) == len(toolmeta.inputs), (
-                'The length of `inputs` in toolmeta is different with '
-                f'the number of arguments of `{cls.__name__}.apply`.')
+            assert len(inputs) == len(
+                toolmeta.inputs), ('The length of `inputs` in toolmeta is different with '
+                                   f'the number of arguments of `{cls.__name__}.apply`.')
         for i, item in enumerate(toolmeta.inputs):
             if isinstance(item, str):
                 item = Parameter(type=CatgoryToIO[item])
@@ -140,10 +139,9 @@ class BaseTool(metaclass=ABCMeta):
             assert inputs[i].type is not inspect._empty, (
                 f'The type of input `{inputs[i].name}` of '
                 f'`{cls.__name__}` is not specified.')
-            assert inputs[i].type in supported_types, (
-                f'The type of input `{inputs[i].name}` of '
-                f'`{cls.__name__}` is not supported. '
-                f'Supported types are {supported_types}')
+            assert inputs[i].type in supported_types, (f'The type of input `{inputs[i].name}` of '
+                                                       f'`{cls.__name__}` is not supported. '
+                                                       f'Supported types are {supported_types}')
         toolmeta.inputs = tuple(new_inputs)
 
         outputs = cls._collect_outputs()
@@ -153,9 +151,9 @@ class BaseTool(metaclass=ABCMeta):
                 f'The type of output of `{cls.__name__}` is not specified.')
             toolmeta.outputs = outputs
         elif toolmeta.outputs is not None and outputs is not None:
-            assert len(outputs) == len(toolmeta.outputs), (
-                'The length of `outputs` in toolmeta is different with '
-                f'the type hint of return value of `{cls.__name__}.apply`.')
+            assert len(outputs) == len(
+                toolmeta.outputs), ('The length of `outputs` in toolmeta is different with '
+                                    f'the type hint of return value of `{cls.__name__}.apply`.')
         for i, item in enumerate(toolmeta.outputs):
             if isinstance(item, str):
                 item = Parameter(type=CatgoryToIO[item])

@@ -15,8 +15,7 @@ tools = [
 ]
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
-    chat_prompt_template=(Path(__file__).parent /
-                          'hf_demo_prompts.txt').read_text(),
+    chat_prompt_template=(Path(__file__).parent / 'hf_demo_prompts.txt').read_text(),
     additional_tools=tools,
 )
 

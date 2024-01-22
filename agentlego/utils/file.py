@@ -16,7 +16,9 @@ from tqdm import tqdm
 def temp_path(category: str,
               suffix: str,
               prefix: str = '',
-              root: str = 'generated') -> str:
+              root: Optional[str] = None) -> str:
+    if root is None:
+        root = os.getenv('AGENTLEGO_TMPDIR', 'generated')
     output_dir = Path(root) / category
     output_dir.mkdir(exist_ok=True, parents=True)
     timestamp = datetime.now().strftime('%Y%m%d')
@@ -28,9 +30,8 @@ def temp_path(category: str,
 
 def _get_torchhub_dir():
     torch_home = os.path.expanduser(
-        os.getenv(
-            'TORCH_HOME',
-            os.path.join(os.getenv('XDG_CACHE_HOME', '~/.cache'), 'torch')))
+        os.getenv('TORCH_HOME',
+                  os.path.join(os.getenv('XDG_CACHE_HOME', '~/.cache'), 'torch')))
     return os.path.join(torch_home, 'hub')
 
 
@@ -87,9 +88,8 @@ def download_url_to_file(url, dst, hash_prefix=None, progress=True):
         if hash_prefix is not None:
             digest = sha256.hexdigest()
             if digest[:len(hash_prefix)] != hash_prefix:
-                raise RuntimeError(
-                    'invalid hash value (expected "{}", got "{}")'.format(
-                        hash_prefix, digest))
+                raise RuntimeError('invalid hash value (expected "{}", got "{}")'.format(
+                    hash_prefix, digest))
         Path(f.name).rename(dst)
     finally:
         f.close()

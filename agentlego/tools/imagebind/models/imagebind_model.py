@@ -12,11 +12,10 @@ from types import SimpleNamespace
 import torch
 import torch.nn as nn
 
-from .helpers import (EinOpsRearrange, LearnableLogitScaling, Normalize,
-                      SelectElement, SelectEOSAndProject)
-from .multimodal_preprocessors import (AudioPreprocessor, IMUPreprocessor,
-                                       PadIm2Video, PatchEmbedGeneric,
-                                       RGBDTPreprocessor,
+from .helpers import (EinOpsRearrange, LearnableLogitScaling, Normalize, SelectElement,
+                      SelectEOSAndProject)
+from .multimodal_preprocessors import (AudioPreprocessor, IMUPreprocessor, PadIm2Video,
+                                       PatchEmbedGeneric, RGBDTPreprocessor,
                                        SpatioTemporalPosEmbeddingHelper,
                                        TextPreprocessor, ThermalPreprocessor)
 from .transformer import MultiheadAttention, SimpleTransformer
@@ -155,8 +154,7 @@ class ImageBindModel(nn.Module):
         rgbt_preprocessor = RGBDTPreprocessor(
             img_size=[3, video_frames, 224, 224],
             num_cls_tokens=1,
-            pos_embed_fn=partial(
-                SpatioTemporalPosEmbeddingHelper, learnable=True),
+            pos_embed_fn=partial(SpatioTemporalPosEmbeddingHelper, learnable=True),
             rgbt_stem=rgbt_stem,
             depth_stem=None,
         )
@@ -183,8 +181,7 @@ class ImageBindModel(nn.Module):
         audio_preprocessor = AudioPreprocessor(
             img_size=[1, audio_num_mel_bins, audio_target_len],
             num_cls_tokens=1,
-            pos_embed_fn=partial(
-                SpatioTemporalPosEmbeddingHelper, learnable=True),
+            pos_embed_fn=partial(SpatioTemporalPosEmbeddingHelper, learnable=True),
             audio_stem=audio_stem,
         )
 
@@ -204,8 +201,7 @@ class ImageBindModel(nn.Module):
         depth_preprocessor = RGBDTPreprocessor(
             img_size=[1, 224, 224],
             num_cls_tokens=1,
-            pos_embed_fn=partial(
-                SpatioTemporalPosEmbeddingHelper, learnable=True),
+            pos_embed_fn=partial(SpatioTemporalPosEmbeddingHelper, learnable=True),
             rgbt_stem=None,
             depth_stem=depth_stem,
         )
@@ -225,8 +221,7 @@ class ImageBindModel(nn.Module):
         thermal_preprocessor = ThermalPreprocessor(
             img_size=[1, 224, 224],
             num_cls_tokens=1,
-            pos_embed_fn=partial(
-                SpatioTemporalPosEmbeddingHelper, learnable=True),
+            pos_embed_fn=partial(SpatioTemporalPosEmbeddingHelper, learnable=True),
             thermal_stem=thermal_stem,
         )
 
@@ -246,8 +241,7 @@ class ImageBindModel(nn.Module):
             num_cls_tokens=1,
             kernel_size=8,
             embed_dim=imu_embed_dim,
-            pos_embed_fn=partial(
-                SpatioTemporalPosEmbeddingHelper, learnable=True),
+            pos_embed_fn=partial(SpatioTemporalPosEmbeddingHelper, learnable=True),
             imu_stem=imu_stem,
         )
 
@@ -288,8 +282,8 @@ class ImageBindModel(nn.Module):
         imu_drop_path=0.7,
     ):
 
-        def instantiate_trunk(embed_dim, num_blocks, num_heads,
-                              pre_transformer_ln, add_bias_kv, drop_path):
+        def instantiate_trunk(embed_dim, num_blocks, num_heads, pre_transformer_ln,
+                              add_bias_kv, drop_path):
             return SimpleTransformer(
                 embed_dim=embed_dim,
                 num_blocks=num_blocks,
@@ -441,13 +435,11 @@ class ImageBindModel(nn.Module):
     def forward(self, inputs, normalize=True):
         outputs = {}
         for modality_key, modality_value in inputs.items():
-            reduce_list = (
-                modality_value.ndim
-                >= 5)  # Audio and Video inputs consist of multiple clips
+            reduce_list = (modality_value.ndim
+                           >= 5)  # Audio and Video inputs consist of multiple clips
             if reduce_list:
                 B, S = modality_value.shape[:2]
-                modality_value = modality_value.reshape(
-                    B * S, *modality_value.shape[2:])
+                modality_value = modality_value.reshape(B * S, *modality_value.shape[2:])
 
             if modality_value is not None:
                 modality_value = self.modality_preprocessors[modality_key](
@@ -456,14 +448,12 @@ class ImageBindModel(nn.Module):
                     })
                 trunk_inputs = modality_value['trunk']
                 head_inputs = modality_value['head']
-                modality_value = self.modality_trunks[modality_key](
-                    **trunk_inputs)
-                modality_value = self.modality_heads[modality_key](
-                    modality_value, **head_inputs)
+                modality_value = self.modality_trunks[modality_key](**trunk_inputs)
+                modality_value = self.modality_heads[modality_key](modality_value,
+                                                                   **head_inputs)
                 if normalize:
-                    modality_value = self.modality_postprocessors[
-                        modality_key](
-                            modality_value)
+                    modality_value = self.modality_postprocessors[modality_key](
+                        modality_value)
 
                 if reduce_list:
                     modality_value = modality_value.reshape(B, S, -1)

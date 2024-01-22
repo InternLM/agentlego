@@ -15,10 +15,7 @@ def _cosine_similarity(a: np.array, b: np.array) -> list:
     return res
 
 
-def _search_with_openai(query,
-                        choices,
-                        model='text-embedding-ada-002',
-                        topk=5):
+def _search_with_openai(query, choices, model='text-embedding-ada-002', topk=5):
     """Search tools with openai API.
 
     Note:
@@ -43,18 +40,16 @@ def _search_with_openai(query,
             'openai')
 
     embeddings = get_embeddings([query] + choices, engine=model)
-    similarity = _cosine_similarity(
-        np.array(embeddings[0]), np.array(embeddings[1:]))
+    similarity = _cosine_similarity(np.array(embeddings[0]), np.array(embeddings[1:]))
 
     indices = np.argsort(-similarity)[:topk]
     return [choices[i] for i in indices]
 
 
-def _serach_with_sentence_transformers(
-        query,
-        choices,
-        model='sentence-transformers/all-mpnet-base-v2',
-        topk=5):
+def _serach_with_sentence_transformers(query,
+                                       choices,
+                                       model='sentence-transformers/all-mpnet-base-v2',
+                                       topk=5):
     """Search tools with sentence-transformers.
 
     Args:

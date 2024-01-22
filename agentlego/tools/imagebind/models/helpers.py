@@ -46,8 +46,7 @@ class LearnableLogitScaling(nn.Module):
             self.register_buffer('log_logit_scale', log_logit_scale)
 
     def forward(self, x):
-        return torch.clip(
-            self.log_logit_scale.exp(), max=self.max_logit_scale) * x
+        return torch.clip(self.log_logit_scale.exp(), max=self.max_logit_scale) * x
 
     def extra_repr(self):
         st = (f'logit_scale_init={self.logit_scale_init},'

@@ -27,8 +27,7 @@ def main():
     tools = [load_tool(tool_type).to_langchain() for tool_type in args.tools]
     # set OPEN_API_KEY in your environment or directly pass it with key=''
     llm = ChatOpenAI(temperature=0, model=args.model)
-    memory = ConversationBufferMemory(
-        memory_key='chat_history', return_messages=True)
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
     agent = initialize_agent(
         tools,

@@ -96,8 +96,7 @@ class Mlp(nn.Module):
 class MultiheadAttention(nn.MultiheadAttention):
 
     def forward(self, x: torch.Tensor, attn_mask: torch.Tensor):
-        return super().forward(
-            x, x, x, need_weights=False, attn_mask=attn_mask)[0]
+        return super().forward(x, x, x, need_weights=False, attn_mask=attn_mask)[0]
 
 
 class ViTAttention(Attention):
@@ -170,8 +169,7 @@ class BlockWithMasking(nn.Module):
             x = (
                 x + self.drop_path(self.attn(self.norm_1(x), attn_mask)) *
                 self.layer_scale_gamma1)
-            x = x + self.drop_path(self.mlp(
-                self.norm_2(x))) * self.layer_scale_gamma2
+            x = x + self.drop_path(self.mlp(self.norm_2(x))) * self.layer_scale_gamma2
         return x
 
 
@@ -209,9 +207,7 @@ class SimpleTransformer(nn.Module):
         super().__init__()
         self.pre_transformer_layer = pre_transformer_layer
         if drop_path_type == 'progressive':
-            dpr = [
-                x.item() for x in torch.linspace(0, drop_path_rate, num_blocks)
-            ]
+            dpr = [x.item() for x in torch.linspace(0, drop_path_rate, num_blocks)]
         elif drop_path_type == 'uniform':
             dpr = [drop_path_rate for i in range(num_blocks)]
         else:

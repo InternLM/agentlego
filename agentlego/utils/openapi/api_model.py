@@ -5,8 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union
 
-from openapi_pydantic import (MediaType, Parameter, RequestBody, Response,
-                              Schema)
+from openapi_pydantic import MediaType, Parameter, RequestBody, Response, Schema
 from pydantic import BaseModel, Field
 
 from .spec import HTTPVerb, OpenAPISpec
@@ -106,8 +105,7 @@ class APIProperty(APIPropertyBase):
             return tuple(type_)
 
     @staticmethod
-    def _get_schema_type_for_enum(parameter: Parameter,
-                                  schema: Schema) -> Enum:
+    def _get_schema_type_for_enum(parameter: Parameter, schema: Schema) -> Enum:
         """Get the schema type when the parameter is an enum."""
         param_name = f'{parameter.name}Enum'
         return Enum(param_name, {str(v): v for v in schema.enum})
@@ -134,8 +132,7 @@ class APIProperty(APIPropertyBase):
         return schema_type
 
     @staticmethod
-    def _get_schema_type(parameter: Parameter,
-                         schema: Optional[Schema]) -> SCHEMA_TYPE:
+    def _get_schema_type(parameter: Parameter, schema: Optional[Schema]) -> SCHEMA_TYPE:
         if schema is None:
             return None
         schema_type: SCHEMA_TYPE = APIProperty._cast_schema_list_type(schema)
@@ -145,8 +142,7 @@ class APIProperty(APIPropertyBase):
             raise NotImplementedError('Objects not yet supported')
         elif schema_type in PRIMITIVE_TYPES:
             if schema.enum:
-                schema_type = APIProperty._get_schema_type_for_enum(
-                    parameter, schema)
+                schema_type = APIProperty._get_schema_type_for_enum(parameter, schema)
             else:
                 # Directly use the primitive type
                 pass
@@ -171,8 +167,7 @@ class APIProperty(APIPropertyBase):
                 "Media content only supported within APIRequestBodyProperty's")
 
     @staticmethod
-    def _get_schema(parameter: Parameter,
-                    spec: OpenAPISpec) -> Optional[Schema]:
+    def _get_schema(parameter: Parameter, spec: OpenAPISpec) -> Optional[Schema]:
         from openapi_pydantic import Reference, Schema
 
         schema = parameter.param_schema
@@ -189,14 +184,12 @@ class APIProperty(APIPropertyBase):
     def is_supported_location(location: str) -> bool:
         """Return whether the provided location is supported."""
         try:
-            return APIPropertyLocation.from_str(
-                location) in SUPPORTED_LOCATIONS
+            return APIPropertyLocation.from_str(location) in SUPPORTED_LOCATIONS
         except ValueError:
             return False
 
     @classmethod
-    def from_parameter(cls, parameter: Parameter,
-                       spec: OpenAPISpec) -> 'APIProperty':
+    def from_parameter(cls, parameter: Parameter, spec: OpenAPISpec) -> 'APIProperty':
         """Instantiate from an OpenAPI Parameter."""
         location = APIPropertyLocation.from_str(parameter.param_in)
         cls._validate_location(
@@ -450,8 +443,7 @@ class APIResponse(BaseModel):
     description: Optional[str] = Field(alias='description')
     """The description of the response."""
 
-    properties: Union[List[APIResponseProperty], Dict[str,
-                                                      APIResponseProperty],
+    properties: Union[List[APIResponseProperty], Dict[str, APIResponseProperty],
                       APIResponseProperty] = Field(alias='properties')
 
     # E.g., application/json - we only support JSON at the moment.
@@ -506,17 +498,15 @@ class APIResponse(BaseModel):
         return properties
 
     @classmethod
-    def from_response(cls, response: Response,
-                      spec: OpenAPISpec) -> 'APIResponse':
+    def from_response(cls, response: Response, spec: OpenAPISpec) -> 'APIResponse':
         """Instantiate from an OpenAPI Response."""
         # Only handle one potential response payload style.
-        media_type = next((k for k in response.content
-                           if k in _SUPPORTED_RESPONSE_MEDIA_TYPES), None)
+        media_type = next(
+            (k for k in response.content if k in _SUPPORTED_RESPONSE_MEDIA_TYPES), None)
 
         if media_type is not None:
             media_type_obj = response.content[media_type]
-            properties = cls._process_supported_media_type(
-                media_type_obj, spec)
+            properties = cls._process_supported_media_type(media_type_obj, spec)
 
         return cls(
             description=response.description,
@@ -559,8 +549,7 @@ class APIOperation(BaseModel):
 
     @staticmethod
     def _get_properties_from_parameters(parameters: List[Parameter],
-                                        spec: OpenAPISpec
-                                        ) -> List[APIProperty]:
+                                        spec: OpenAPISpec) -> List[APIProperty]:
         """Get the properties of the operation."""
         properties = []
         for param in parameters:
@@ -594,8 +583,7 @@ class APIOperation(BaseModel):
         operation = spec.get_operation(path, method)
         parameters = spec.get_parameters_for_operation(operation)
         properties = cls._get_properties_from_parameters(parameters, spec)
-        operation_id = OpenAPISpec.get_cleaned_operation_id(
-            operation, path, method)
+        operation_id = OpenAPISpec.get_cleaned_operation_id(operation, path, method)
         request_body = spec.get_request_body_for_operation(operation)
         api_request_body = (
             APIRequestBody.from_request_body(request_body, spec)
@@ -611,8 +599,7 @@ class APIOperation(BaseModel):
 
         description = operation.description or operation.summary
         if not description and spec.paths is not None:
-            description = spec.paths[path].description or spec.paths[
-                path].summary
+            description = spec.paths[path].description or spec.paths[path].summary
         return cls(
             operation_id=operation_id,
             description=description or '',
@@ -657,8 +644,8 @@ class APIOperation(BaseModel):
             prop_desc = f'/* {prop.description} */' if prop.description else ''
 
             if prop.properties:
-                nested_props = self._format_nested_properties(
-                    prop.properties, indent + 2)
+                nested_props = self._format_nested_properties(prop.properties,
+                                                              indent + 2)
                 prop_type = f"{{\n{nested_props}\n{' ' * indent}}}"
 
             formatted_props.append(f"{prop_desc}\n{' ' * indent}{prop_name}"
@@ -681,12 +668,10 @@ class APIOperation(BaseModel):
             prop_type = self.ts_type_from_python(prop.type)
             prop_required = '' if prop.required else '?'
             prop_desc = f'/* {prop.description} */' if prop.description else ''
-            params.append(
-                f'{prop_desc}\n\t\t{prop_name}{prop_required}: {prop_type},')
+            params.append(f'{prop_desc}\n\t\t{prop_name}{prop_required}: {prop_type},')
 
         formatted_params = '\n'.join(params).strip()
-        description_str = (f'/* {self.description} */'
-                           if self.description else '')
+        description_str = (f'/* {self.description} */' if self.description else '')
         typescript_definition = f"""
 {description_str}
 type {operation_name} = (_: {{

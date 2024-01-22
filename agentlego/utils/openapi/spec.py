@@ -14,8 +14,8 @@ import yaml
 from openapi_pydantic import OpenAPI, Response
 
 if TYPE_CHECKING:
-    from openapi_pydantic import (Components, Operation, Parameter, PathItem,
-                                  Paths, Reference, RequestBody, Schema)
+    from openapi_pydantic import (Components, Operation, Parameter, PathItem, Paths,
+                                  Reference, RequestBody, Schema)
 
 
 class HTTPVerb(str, Enum):
@@ -36,8 +36,7 @@ class HTTPVerb(str, Enum):
         try:
             return cls(verb)
         except ValueError:
-            raise ValueError(
-                f'Invalid HTTP verb. Valid values are {cls.__members__}')
+            raise ValueError(f'Invalid HTTP verb. Valid values are {cls.__members__}')
 
 
 class OpenAPISpec(OpenAPI):
@@ -82,8 +81,7 @@ class OpenAPISpec(OpenAPI):
         return schemas
 
     @property
-    def _request_bodies_strict(self
-                               ) -> Dict[str, Union[RequestBody, Reference]]:
+    def _request_bodies_strict(self) -> Dict[str, Union[RequestBody, Reference]]:
         """Get the request body or err."""
         request_bodies = self._components_strict.requestBodies
         if request_bodies is None:
@@ -98,8 +96,7 @@ class OpenAPISpec(OpenAPI):
             raise ValueError('No responses found in spec. ')
         return responses
 
-    def _get_referenced_parameter(self, ref: Reference
-                                  ) -> Union[Parameter, Reference]:
+    def _get_referenced_parameter(self, ref: Reference) -> Union[Parameter, Reference]:
         """Get a parameter (or nested reference) or err."""
         ref_name = ref.ref.split('/')[-1]
         parameters = self._parameters_strict
@@ -140,8 +137,8 @@ class OpenAPISpec(OpenAPI):
             schema = self.get_referenced_schema(schema)
         return schema
 
-    def _get_referenced_request_body(
-            self, ref: Reference) -> Optional[Union[Reference, RequestBody]]:
+    def _get_referenced_request_body(self, ref: Reference
+                                     ) -> Optional[Union[Reference, RequestBody]]:
         """Get a request body (or nested reference) or err."""
         ref_name = ref.ref.split('/')[-1]
         request_bodies = self._request_bodies_strict
@@ -149,8 +146,7 @@ class OpenAPISpec(OpenAPI):
             raise ValueError(f'No request body found for {ref_name}')
         return request_bodies[ref_name]
 
-    def _get_root_referenced_request_body(self, ref: Reference
-                                          ) -> Optional[RequestBody]:
+    def _get_root_referenced_request_body(self, ref: Reference) -> Optional[RequestBody]:
         """Get the root request Body or err."""
         from openapi_pydantic import Reference
 
@@ -159,8 +155,8 @@ class OpenAPISpec(OpenAPI):
             request_body = self._get_referenced_request_body(request_body)
         return request_body
 
-    def _get_referenced_response(self, ref: Reference
-                                 ) -> Optional[Union[Reference, Response]]:
+    def _get_referenced_response(self,
+                                 ref: Reference) -> Optional[Union[Reference, Response]]:
         """Get a response (or nested reference) or err."""
         ref_name = ref.ref.split('/')[-1]
         responses = self._responses_strict
@@ -168,8 +164,7 @@ class OpenAPISpec(OpenAPI):
             raise ValueError(f'No responses found for {ref_name}')
         return responses[ref_name]
 
-    def _get_root_referenced_response(self,
-                                      ref: Reference) -> Optional[Response]:
+    def _get_root_referenced_response(self, ref: Reference) -> Optional[Response]:
         """Get the root response or err."""
         from openapi_pydantic import Reference
 
@@ -188,9 +183,8 @@ class OpenAPISpec(OpenAPI):
         openapi_version = obj.get('openapi')
         if isinstance(openapi_version, str):
             if openapi_version != '3.1.0':
-                warnings.warn(
-                    f'Attempting to load an OpenAPI {openapi_version}'
-                    f' spec. {warning_message}')
+                warnings.warn(f'Attempting to load an OpenAPI {openapi_version}'
+                              f' spec. {warning_message}')
             else:
                 pass
         elif isinstance(swagger_version, str):
@@ -277,8 +271,7 @@ class OpenAPISpec(OpenAPI):
             raise ValueError(f'No {method} method found for {path}')
         return operation_obj
 
-    def get_parameters_for_operation(self,
-                                     operation: Operation) -> List[Parameter]:
+    def get_parameters_for_operation(self, operation: Operation) -> List[Parameter]:
         """Get the components for a given operation."""
         from openapi_pydantic import Reference
 
@@ -290,8 +283,8 @@ class OpenAPISpec(OpenAPI):
                 parameters.append(parameter)
         return parameters
 
-    def get_request_body_for_operation(self, operation: Operation
-                                       ) -> Optional[RequestBody]:
+    def get_request_body_for_operation(self,
+                                       operation: Operation) -> Optional[RequestBody]:
         """Get the request body for a given operation."""
         from openapi_pydantic import Reference
 
@@ -318,16 +311,14 @@ class OpenAPISpec(OpenAPI):
         return results
 
     @staticmethod
-    def get_cleaned_operation_id(operation: Operation, path: str,
-                                 method: str) -> str:
+    def get_cleaned_operation_id(operation: Operation, path: str, method: str) -> str:
         """Get a cleaned operation id from an operation id."""
         operation_id = operation.operationId
         if operation_id is None:
             # Replace all punctuation of any kind with underscore
             path = re.sub(r'[^a-zA-Z0-9]', '_', path.lstrip('/'))
             operation_id = f'{path}_{method}'
-        return operation_id.replace('-', '_').replace('.',
-                                                      '_').replace('/', '_')
+        return operation_id.replace('-', '_').replace('.', '_').replace('/', '_')
 
     def iter_all_method(self) -> Iterator[Tuple[str, str]]:
         for path in self._paths_strict:

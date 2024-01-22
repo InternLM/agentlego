@@ -118,12 +118,9 @@ class ImageExpansion(BaseTool):
         from mmpretrain.apis import ImageCaptionInferencer
 
         self.caption_inferencer = load_or_build_object(
-            ImageCaptionInferencer,
-            model=self.caption_model_name,
-            device=self.device)
+            ImageCaptionInferencer, model=self.caption_model_name, device=self.device)
 
-        self.inpainting_inferencer = load_or_build_object(
-            Inpainting, device=self.device)
+        self.inpainting_inferencer = load_or_build_object(Inpainting, device=self.device)
 
     def apply(
         self,
@@ -143,10 +140,8 @@ class ImageExpansion(BaseTool):
             caption = self.get_caption(old_img)
 
             # crop the some border to re-generation.
-            crop_w = 15 if (old_img.width != target_w
-                            and old_img.width > 100) else 0
-            crop_h = 15 if (old_img.height != target_h
-                            and old_img.height > 100) else 0
+            crop_w = 15 if (old_img.width != target_w and old_img.width > 100) else 0
+            crop_h = 15 if (old_img.height != target_h and old_img.height > 100) else 0
             old_img = ImageOps.crop(old_img, (crop_w, crop_h, crop_w, crop_h))
 
             canvas_w = min(expand_ratio * old_img.width, target_w)
@@ -174,8 +169,7 @@ class ImageExpansion(BaseTool):
 
             # Resize the generated image into the canvas size and
             # blend with the old image.
-            image = image.resize((canvas.width, canvas.height),
-                                 Image.ANTIALIAS)
+            image = image.resize((canvas.width, canvas.height), Image.ANTIALIAS)
             image = blend_gt2pt(old_img, image)
             old_img = image
 

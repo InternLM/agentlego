@@ -1,8 +1,7 @@
 import copy
 
 from transformers.tools import Tool
-from transformers.tools.agent_types import (AgentAudio, AgentImage, AgentText,
-                                            AgentType)
+from transformers.tools.agent_types import AgentAudio, AgentImage, AgentText, AgentType
 
 from agentlego.parsers import NaiveParser
 from agentlego.tools.base import BaseTool

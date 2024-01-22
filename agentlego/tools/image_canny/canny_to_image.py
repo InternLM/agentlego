@@ -46,8 +46,8 @@ class CannyTextToImage(BaseTool):
     def apply(
         self,
         image: ImageIO,
-        keywords: Annotated[
-            str, Info('A series of English keywords separated by comma.')],
+        keywords: Annotated[str,
+                            Info('A series of English keywords separated by comma.')],
     ) -> ImageIO:
         prompt = f'{keywords}, {self.a_prompt}'
         image = self.pipe(

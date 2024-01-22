@@ -14,8 +14,7 @@ def extract_all_tools(module):
 
     tools = {}
     for k, v in module.__dict__.items():
-        if (isinstance(v, type) and issubclass(v, BaseTool)
-                and (v is not BaseTool)):
+        if (isinstance(v, type) and issubclass(v, BaseTool) and (v is not BaseTool)):
             tools[k] = v
     return tools
 

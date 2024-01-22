@@ -19,10 +19,7 @@ class HumanFaceLandmark(BaseTool):
                     'human faces in an image and draw the landmarks image.')
 
     @require('mmpose')
-    def __init__(self,
-                 model: str = 'face',
-                 device: str = 'cuda',
-                 toolmeta=None):
+    def __init__(self, model: str = 'face', device: str = 'cuda', toolmeta=None):
         super().__init__(toolmeta=toolmeta)
         self.model_name = model
         self.device = device
@@ -32,9 +29,8 @@ class HumanFaceLandmark(BaseTool):
         self._inferencer = load_or_build_object(
             MMPoseInferencer, pose2d=self.model_name, device=self.device)
 
-    def apply(
-        self, image: ImageIO
-    ) -> Annotated[ImageIO, Info('The human face landmarks image.')]:
+    def apply(self, image: ImageIO
+              ) -> Annotated[ImageIO, Info('The human face landmarks image.')]:
         image = image.to_array()[:, :, ::-1]
         results = next(
             self._inferencer(

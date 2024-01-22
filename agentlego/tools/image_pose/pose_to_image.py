@@ -51,12 +51,11 @@ class PoseToImage(BaseTool):
     def apply(
         self,
         image: ImageIO,
-        keywords: Annotated[
-            str, Info('A series of English keywords separated by comma.')],
+        keywords: Annotated[str,
+                            Info('A series of English keywords separated by comma.')],
     ) -> ImageIO:
         text = f'{keywords}, {self.a_prompt}'
-        width, height = self.get_image_size(
-            image.to_pil(), canvas_size=self.canvas_size)
+        width, height = self.get_image_size(image.to_pil(), canvas_size=self.canvas_size)
         image = self.pipe(
             text,
             image=image.to_pil(),

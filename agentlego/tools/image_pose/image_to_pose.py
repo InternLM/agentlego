@@ -20,10 +20,7 @@ class HumanBodyPose(BaseTool):
                     'human in an image and draw the human pose image.')
 
     @require('mmpose')
-    def __init__(self,
-                 model: str = 'human',
-                 device: str = 'cuda',
-                 toolmeta=None):
+    def __init__(self, model: str = 'human', device: str = 'cuda', toolmeta=None):
         super().__init__(toolmeta=toolmeta)
         self.model_name = model
         self.device = device
@@ -33,9 +30,8 @@ class HumanBodyPose(BaseTool):
         self._inferencer = load_or_build_object(
             MMPoseInferencer, pose2d=self.model_name, device=self.device)
 
-    def apply(
-        self, image: ImageIO
-    ) -> Annotated[ImageIO, Info('The human pose keypoints image.')]:
+    def apply(self, image: ImageIO
+              ) -> Annotated[ImageIO, Info('The human pose keypoints image.')]:
         image = image.to_array()[:, :, ::-1]
         vis_params = self.adaptive_vis_params(*image.shape[:2])
         results = next(

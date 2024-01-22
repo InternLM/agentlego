@@ -20,11 +20,10 @@ class SemanticSegmentation(BaseTool):
                     'It focus on urban scene images.')
 
     @require('mmsegmentation')
-    def __init__(
-            self,
-            seg_model: str = 'mask2former_r50_8xb2-90k_cityscapes-512x1024',
-            device: str = 'cuda',
-            toolmeta=None):
+    def __init__(self,
+                 seg_model: str = 'mask2former_r50_8xb2-90k_cityscapes-512x1024',
+                 device: str = 'cuda',
+                 toolmeta=None):
         super().__init__(toolmeta=toolmeta)
         self.seg_model = seg_model
         self.device = device

@@ -1,6 +1,5 @@
 from agentlego.types import AudioIO
-from agentlego.utils import (apply_to, is_package_available,
-                             load_or_build_object, require)
+from agentlego.utils import apply_to, is_package_available, load_or_build_object, require
 from ..base import BaseTool
 
 if is_package_available('torch'):
@@ -12,8 +11,7 @@ if is_package_available('torchaudio'):
 
 def resampling_audio(audio: AudioIO, new_rate):
     tensor, ori_sampling_rate = audio.to_tensor(), audio.sampling_rate
-    tensor = torchaudio.functional.resample(tensor, ori_sampling_rate,
-                                            new_rate)
+    tensor = torchaudio.functional.resample(tensor, ori_sampling_rate, new_rate)
     return AudioIO(tensor, sampling_rate=new_rate)
 
 
@@ -32,17 +30,14 @@ class SpeechToText(BaseTool):
     default_desc = 'The tool can translate spoken language audio into text.'
 
     @require(('torch', 'transformers', 'torchaudio'))
-    def __init__(self,
-                 model='openai/whisper-base',
-                 device='cuda',
-                 toolmeta=None):
+    def __init__(self, model='openai/whisper-base', device='cuda', toolmeta=None):
         super().__init__(toolmeta)
         self.model_name = model
         self.device = device
 
     def setup(self) -> None:
-        from transformers.models.whisper import (
-            WhisperForConditionalGeneration, WhisperProcessor)
+        from transformers.models.whisper import (WhisperForConditionalGeneration,
+                                                 WhisperProcessor)
         self.processor = load_or_build_object(WhisperProcessor.from_pretrained,
                                               self.model_name)
         self.model = load_or_build_object(
@@ -57,11 +52,9 @@ class SpeechToText(BaseTool):
             audio.to_tensor().numpy().reshape(-1),
             return_tensors='pt',
             sampling_rate=target_sampling_rate).input_features
-        encoded_inputs = apply_to(encoded_inputs,
-                                  lambda x: isinstance(x, torch.Tensor),
+        encoded_inputs = apply_to(encoded_inputs, lambda x: isinstance(x, torch.Tensor),
                                   lambda x: x.to(self.device))
         outputs = self.model.generate(inputs=encoded_inputs)
         outputs = apply_to(outputs, lambda x: isinstance(x, torch.Tensor),
                            lambda x: x.to('cpu'))
-        return self.processor.batch_decode(
-            outputs, skip_special_tokens=True)[0]
+        return self.processor.batch_decode(outputs, skip_special_tokens=True)[0]
