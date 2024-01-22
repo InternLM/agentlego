@@ -1,7 +1,7 @@
 import base64
-import re
+import warnings
 from io import BytesIO, IOBase
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import urljoin, urlsplit
 
 import requests
@@ -9,47 +9,30 @@ import requests
 from agentlego.parsers import DefaultParser
 from agentlego.schema import Parameter, ToolMeta
 from agentlego.tools.base import BaseTool
-from agentlego.types import AudioIO, ImageIO
-from agentlego.utils import temp_path
+from agentlego.types import AudioIO, File, ImageIO
 from agentlego.utils.openapi import (PRIMITIVE_TYPES, APIOperation, APIPropertyBase,
                                      APIResponseProperty, OpenAPISpec)
 
 
-def image_to_byte_file(image: ImageIO) -> IOBase:
-    file = BytesIO()
-    image.to_pil().save(file, 'PNG')
-    file.seek(0)
-    return file
-
-
-def audio_to_byte_file(audio: AudioIO) -> IOBase:
-    try:
-        import torchaudio
-        file = BytesIO()
-        torchaudio.save(file, audio.to_tensor(), audio.sampling_rate)
-        file.seek(0)
-        return file
-    except ImportError:
-        return open(audio.to_path(), 'rb')
-
-
-def base64_to_image(encoded: str) -> ImageIO:
-    from PIL import Image
-    file = BytesIO(base64.b64decode(encoded))
-    return ImageIO(Image.open(file))
-
-
-def base64_to_audio(encoded: str) -> AudioIO:
-    try:
-        import torchaudio
-        file = BytesIO(base64.b64decode(encoded))
-        audio, sr = torchaudio.load(file)
-        return AudioIO(audio, sampling_rate=sr)
-    except ImportError:
-        filename = temp_path('audio', '.wav')
-        with open(filename, 'wb') as f:
-            f.write(base64.b64decode(encoded))
-        return AudioIO(filename)
+def prop_to_parameter(prop: APIPropertyBase) -> Parameter:
+    p_type = PRIMITIVE_TYPES.get(prop.type, prop.type)  # type: ignore
+    p = Parameter(
+        type=p_type,
+        name=prop.name if prop.name != '_null' else None,
+        description=prop.description,
+        optional=not prop.required,
+        default=prop.default,
+    )
+    if p_type is str:
+        schema_format = prop.format or ''
+        if 'image' in schema_format:
+            p.type = ImageIO
+        elif 'audio' in schema_format:
+            p.type = AudioIO
+        elif 'binary' in schema_format or 'base64' in schema_format:
+            p.type = File
+            p.filetype, _, _ = schema_format.partition(';')
+    return p
 
 
 class RemoteTool(BaseTool):
@@ -102,10 +85,8 @@ class RemoteTool(BaseTool):
             for param in self.operation.body_params:
                 if param in kwargs:
                     value = kwargs.pop(param)
-                    if isinstance(value, ImageIO):
-                        value = image_to_byte_file(value)
-                    elif isinstance(value, AudioIO):
-                        value = audio_to_byte_file(value)
+                    if isinstance(value, (ImageIO, AudioIO, File)):
+                        value = value.to_file()
                     body_params[param] = value
         return body_params
 
@@ -162,27 +143,21 @@ class RemoteTool(BaseTool):
             out_props = response_schema['200'].properties
 
         if isinstance(out_props, APIResponseProperty):
-            return self._parse_output(response, out_props)
+            return self._parse_output(response, self.outputs[0])
         elif isinstance(out_props, list):
-            return tuple(self._parse_output(out, p) for out, p in zip(response, out_props))
+            return tuple(self._parse_output(out, p) for out, p in zip(response, self.outputs))
         else:
-            return {p.name: self._parse_output(out, p) for out, p in zip(response, out_props)}
+            return {p.name: self._parse_output(out, p) for out, p in zip(response, self.outputs)}
 
     @staticmethod
-    def _parse_output(out, p: APIResponseProperty):
-        fmt_pattern = r'(\w+)(/(\w+))?(;(\w+))?'
-        schema_format = re.match(fmt_pattern, p.format or '')
-        if schema_format:
-            media_type, _, _, _, encoding = schema_format.groups()
-        else:
-            media_type, encoding = 'unknown', None
-
-        if media_type == 'image' and encoding == 'base64':
-            out = base64_to_image(out)
-        elif media_type == 'audio' and encoding == 'base64':
-            out = base64_to_audio(out)
-        else:
-            out = out
+    def _parse_output(out: Any, p: Parameter):
+        file = BytesIO(base64.b64decode(out))
+        if p.type is ImageIO:
+            out = ImageIO.from_file(file)
+        elif p.type is AudioIO:
+            out = AudioIO.from_file(file)
+        elif p.type is File:
+            out = File.from_file(file, filetype=p.filetype)
         return out
 
     @classmethod
@@ -216,10 +191,7 @@ class RemoteTool(BaseTool):
         return tools
 
     @staticmethod
-    def _get_toolmeta(
-        operation: APIOperation,
-        toolkit: Optional[str] = None,
-    ) -> Tuple[ToolMeta, List[Parameter]]:
+    def _get_toolmeta(operation: APIOperation, toolkit: Optional[str] = None) -> ToolMeta:
         name = operation.operation_id
         if toolkit is not None:
             name = toolkit + '.' + name
@@ -235,7 +207,7 @@ class RemoteTool(BaseTool):
         return toolmeta
 
     @staticmethod
-    def _get_inputs(op: APIOperation) -> List[Parameter]:
+    def _get_inputs(op: APIOperation) -> Tuple[Parameter, ...]:
         inputs = []
         properties = []
         if op.properties:
@@ -243,38 +215,29 @@ class RemoteTool(BaseTool):
         if op.request_body and op.request_body.properties:
             properties.extend(op.request_body.properties)
         for p in properties:
-            inputs.append(RemoteTool._prop_to_parameter(p))
-        return inputs
+            inputs.append(prop_to_parameter(p))
+        return tuple(inputs)
 
     @staticmethod
-    def _get_outputs(op: APIOperation) -> List[Parameter]:
+    def _get_outputs(op: APIOperation) -> Tuple[Parameter, ...]:
         if op.responses is None or op.responses.get('200') is None:
             # If not specify outputs, directly handle as a single text.
             outputs = [Parameter(type=str)]
 
-        out_props = op.responses['200'].properties
-        if isinstance(out_props, list):
-            outputs = [RemoteTool._prop_to_parameter(out) for out in out_props]
-        elif isinstance(out_props, dict):
-            outputs = [RemoteTool._prop_to_parameter(out) for out in out_props.values()]
+        response_schema = op.responses
+        if response_schema is None or response_schema.get('200') is None:
+            # Directly use string if the response schema is not specified
+            warnings.warn(f'The response of {op.operation_id} is not specified, '
+                          'assume as a string response by default.')
+            return (Parameter(type=str), )
         else:
-            outputs = [RemoteTool._prop_to_parameter(out_props)]
+            out_props = response_schema['200'].properties
 
-        return outputs
+        if isinstance(out_props, list):
+            outputs = [prop_to_parameter(out) for out in out_props]
+        elif isinstance(out_props, dict):
+            outputs = [prop_to_parameter(out) for out in out_props.values()]
+        else:
+            outputs = [prop_to_parameter(out_props)]
 
-    @staticmethod
-    def _prop_to_parameter(prop: APIPropertyBase) -> Parameter:
-        p_type = PRIMITIVE_TYPES.get(prop.type)
-        if p_type is str:
-            schema_format = prop.format or ''
-            if 'image' in schema_format:
-                p_type = ImageIO
-            elif 'audio' in schema_format:
-                p_type = AudioIO
-        return Parameter(
-            type=p_type,
-            name=prop.name if prop.name != '_null' else None,
-            description=prop.description,
-            optional=not prop.required,
-            default=prop.default,
-        )
+        return tuple(outputs)

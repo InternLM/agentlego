@@ -1,8 +1,7 @@
 import numpy as np
 from PIL import Image
 
-from agentlego.schema import Annotated, Info
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
 

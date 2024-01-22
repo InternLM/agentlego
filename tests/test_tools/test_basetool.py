@@ -1,6 +1,5 @@
-from agentlego.schema import Annotated, Info
 from agentlego.tools import BaseTool
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 
 
 class DummyTool(BaseTool):

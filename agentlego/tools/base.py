@@ -6,7 +6,7 @@ from typing import Any, Callable, Mapping, Optional, Tuple, Union
 from typing_extensions import Annotated, get_args, get_origin
 
 from agentlego.parsers import DefaultParser
-from agentlego.schema import Info, Parameter, ToolMeta
+from agentlego.schema import Parameter, ToolMeta
 from agentlego.types import CatgoryToIO
 
 
@@ -58,21 +58,21 @@ class BaseTool(metaclass=ABCMeta):
                 continue
 
             annotation = p.annotation
-            description = None
+            info = None
             if get_origin(annotation) is Annotated:
-                for info in reversed(get_args(annotation)):
-                    if isinstance(info, Info):
-                        description = info.description
-                        break
+                for item in get_args(annotation):
+                    if isinstance(item, Parameter):
+                        info = item
                 annotation = get_args(annotation)[0]
 
             input_ = Parameter(
                 name=p.name,
                 type=annotation,
-                description=description,
                 optional=p.default is not inspect._empty,
                 default=p.default if p.default is not inspect._empty else None,
             )
+            if info is not None:
+                input_.update(info)
             inputs.append(input_)
         return tuple(inputs)
 
@@ -91,17 +91,17 @@ class BaseTool(metaclass=ABCMeta):
             annotations = (return_ann, )
 
         for annotation in annotations:
-            name = None
-            description = None
+            info = None
             if get_origin(annotation) is Annotated:
-                for info in reversed(get_args(annotation)):
-                    if isinstance(info, Info):
-                        name = info.name
-                        description = info.description
+                for item in get_args(annotation):
+                    if isinstance(item, Parameter):
+                        info = item
                 annotation = get_args(annotation)[0]
 
-            output_ = Parameter(name=name, type=annotation, description=description)
-            outputs.append(output_)
+            output = Parameter(type=annotation)
+            if info is not None:
+                output.update(info)
+            outputs.append(output)
         return tuple(outputs)
 
     @classmethod

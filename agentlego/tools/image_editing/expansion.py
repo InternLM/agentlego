@@ -3,8 +3,7 @@ import math
 import numpy as np
 from PIL import Image, ImageOps
 
-from agentlego.schema import Annotated, Info
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import load_or_build_object, parse_multi_float, require
 from ..base import BaseTool
 from .replace import Inpainting

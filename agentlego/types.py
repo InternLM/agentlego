@@ -1,10 +1,13 @@
+from io import BytesIO, IOBase
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
 from PIL import Image
+from typing_extensions import Annotated
 
-from .utils import temp_path
+from .schema import Parameter
+from .utils import is_package_available, temp_path
 
 if TYPE_CHECKING:
     import torch
@@ -48,6 +51,48 @@ class IOType:
         return f'{self.__class__.__name__}(value={self.value})'
 
 
+class File(IOType):
+    support_types = {'path': str, 'bytes': bytes}
+
+    def __init__(self, value: Union[str, bytes], filetype: Optional[str] = None):
+        super().__init__(value)
+        if self.type == 'path' and not Path(self.value).exists():
+            raise FileNotFoundError(f"No such file: '{self.value}'")
+        self.filetype = filetype
+
+    def to_path(self) -> str:
+        return self.to('path')
+
+    def to_bytes(self) -> bytes:
+        return self.to('bytes')
+
+    def to_file(self) -> IOBase:
+        if self.type == 'path':
+            return open(self.value, 'rb')
+        else:
+            return BytesIO(self.value)
+
+    @classmethod
+    def from_file(cls, file: IOBase, filetype: Optional[str] = None) -> 'File':
+        return cls(file.read(), filetype=filetype)
+
+    @staticmethod
+    def _path_to_bytes(path: str) -> bytes:
+        return open(path, 'rb').read()
+
+    def _bytes_to_path(self, data: bytes) -> str:
+        if self.filetype:
+            category, _, suffix = self.filetype.partition('/')
+            suffix = '.' + suffix if suffix else ''
+        else:
+            category = 'file'
+            suffix = ''
+        path = temp_path(category, suffix)
+        with open(path, 'wb') as f:
+            f.write(data)
+        return path
+
+
 class ImageIO(IOType):
     support_types = {'path': str, 'pil': Image.Image, 'array': np.ndarray}
 
@@ -64,6 +109,20 @@ class ImageIO(IOType):
 
     def to_array(self) -> np.ndarray:
         return self.to('array')
+
+    def to_file(self) -> IOBase:
+        if self.type == 'path':
+            return open(self.value, 'rb')
+        else:
+            file = BytesIO()
+            self.to_pil().save(file, 'PNG')
+            file.seek(0)
+            return file
+
+    @classmethod
+    def from_file(cls, file: IOBase) -> 'ImageIO':
+        from PIL import Image
+        return cls(Image.open(file))
 
     @staticmethod
     def _path_to_pil(path: str) -> Image.Image:
@@ -128,6 +187,28 @@ class AudioIO(IOType):
     def to_path(self) -> str:
         return self.to('path')
 
+    def to_file(self) -> IOBase:
+        if self.type == 'path' or not is_package_available('torchaudio'):
+            return open(self.to_path(), 'rb')
+        else:
+            import torchaudio
+            file = BytesIO()
+            torchaudio.save(file, self.to_tensor(), self.sampling_rate)
+            file.seek(0)
+            return file
+
+    @classmethod
+    def from_file(cls, file: IOBase) -> 'AudioIO':
+        try:
+            import torchaudio
+            audio, sr = torchaudio.load(file)
+            return cls(audio, sampling_rate=sr)
+        except ImportError:
+            filename = temp_path('audio', '.wav')
+            with open(filename, 'wb') as f:
+                f.write(file.read())
+            return cls(filename)
+
     def _path_to_tensor(self, path: str) -> 'torch.Tensor':
         import torchaudio
         audio, sampling_rate = torchaudio.load(path)
@@ -175,6 +256,7 @@ CatgoryToIO = {
     'bool': bool,
     'int': int,
     'float': float,
+    'file': File,
 }
 
-__all__ = ['ImageIO', 'AudioIO', 'CatgoryToIO']
+__all__ = ['ImageIO', 'AudioIO', 'CatgoryToIO', 'Info', 'Annotated']

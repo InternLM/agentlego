@@ -1,5 +1,4 @@
-from agentlego.schema import Annotated, Info
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
 

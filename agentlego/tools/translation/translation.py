@@ -2,7 +2,7 @@ from urllib.parse import quote_plus
 
 import requests
 
-from agentlego.schema import Annotated, Info
+from agentlego.types import Annotated, Info
 from ..base import BaseTool
 
 LANG_CODES = {

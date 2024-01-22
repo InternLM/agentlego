@@ -1,13 +1,6 @@
 import copy
-import typing
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, Union
-
-if hasattr(typing, 'Annotated'):
-    Annotated = typing.Annotated
-else:
-    from typing_extensions import Annotated
-    Annotated = Annotated
+from typing import Any, Optional, Tuple, Type, Union
 
 
 @dataclass
@@ -22,24 +15,18 @@ class Parameter:
             Defaults to False.
         default (Any): The default value of the parameter.
     """
-    type: Optional[type] = None
+    type: Optional[Type] = None
     name: Optional[str] = None
     description: Optional[str] = None
     optional: Optional[bool] = None
     default: Optional[Any] = None
+    filetype: Optional[str] = None
 
     def update(self, other: 'Parameter'):
         other = copy.deepcopy(other)
-        if other.type is not None:
-            self.type = other.type
-        if other.name is not None:
-            self.name = other.name
-        if other.description is not None:
-            self.description = other.description
-        if other.optional is not None:
-            self.optional = other.optional
-        if other.default is not None:
-            self.default = other.default
+        for k, v in copy.deepcopy(other.__dict__).items():
+            if v is not None:
+                self.__dict__[k] = v
 
 
 @dataclass
@@ -56,10 +43,3 @@ class ToolMeta:
     description: Optional[str] = None
     inputs: Optional[Tuple[Union[str, Parameter], ...]] = None
     outputs: Optional[Tuple[Union[str, Parameter], ...]] = None
-
-
-@dataclass
-class Info:
-    """Used to add additional information of arguments and outputs."""
-    description: Optional[str] = None
-    name: Optional[str] = None

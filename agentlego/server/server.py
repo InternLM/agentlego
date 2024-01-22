@@ -10,7 +10,9 @@ from typing import List, Optional, Tuple
 from agentlego.apis.tool import extract_all_tools, list_tools, load_tool, register_all_tools
 from agentlego.parsers import NaiveParser
 from agentlego.tools.base import BaseTool
-from agentlego.types import AudioIO, ImageIO
+from agentlego.types import AudioIO
+from agentlego.types import File as FileType
+from agentlego.types import ImageIO
 from agentlego.utils import resolve_module
 
 try:
@@ -18,6 +20,7 @@ try:
     import typer
     import uvicorn
     from fastapi import APIRouter, FastAPI, File, Form, HTTPException, UploadFile
+    from fastapi.responses import RedirectResponse
     from makefun import create_function
     from pydantic import Field
     from rich.table import Table
@@ -41,6 +44,10 @@ def create_input_params(tool: BaseTool) -> List[inspect.Parameter]:
             annotation = Annotated[UploadFile, File(**field_kwargs)]
         elif p.type is AudioIO:
             field_kwargs['format'] = 'audio;binary'
+            annotation = Annotated[UploadFile, File(**field_kwargs)]
+        elif p.type is FileType:
+            filetype = p.filetype or 'file'
+            field_kwargs['format'] = f'{filetype};binary'
             annotation = Annotated[UploadFile, File(**field_kwargs)]
         else:
             annotation = Annotated[p.type, Form(**field_kwargs)]
@@ -69,6 +76,10 @@ def create_output_annotation(tool: BaseTool):
         elif p.type is AudioIO:
             annotation = str
             field_kwargs['format'] = 'audio/wav;base64'
+        elif p.type is FileType:
+            annotation = str
+            filetype = p.filetype or 'file'
+            field_kwargs['format'] = f'{filetype};base64'
         else:
             annotation = p.type
 
@@ -101,6 +112,8 @@ def add_tool(tool: BaseTool, router: APIRouter):
                 file_format = data.filename.rpartition('.')[-1] or None
                 raw, sr = torchaudio.load(data.file, format=file_format)
                 data = AudioIO(raw, sampling_rate=sr)
+            elif p.type is FileType:
+                data = FileType(data.file.read())
             elif data is None:
                 continue
             else:
@@ -122,6 +135,8 @@ def add_tool(tool: BaseTool, router: APIRouter):
                 file = BytesIO()
                 torchaudio.save(file, out.to_tensor(), out.sampling_rate, format='wav')
                 out = base64.b64encode(file.getvalue()).decode()
+            elif p.type is FileType:
+                out = base64.b64encode(out.to_bytes()).decode()
             res.append(out)
 
         if len(res) == 0:
@@ -174,6 +189,10 @@ def start(
 ):
     """Start a tool server with the specified tools."""
     app = FastAPI(title=title, openapi_url='/openapi.json', lifespan=lifespan)
+
+    @app.get('/', include_in_schema=False)
+    async def root():
+        return RedirectResponse(url='/openapi.json')
 
     if extra is not None:
         for path in extra:

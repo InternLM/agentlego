@@ -1,5 +1,4 @@
-from agentlego.schema import Annotated, Info
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import require
 from ..base import BaseTool
 from ..utils.diffusers import load_sd, load_sdxl

@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from urllib.parse import urlparse  # noqa: F401
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 from tqdm import tqdm

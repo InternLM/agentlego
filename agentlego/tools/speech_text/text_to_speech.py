@@ -3,8 +3,7 @@ from typing import Union
 
 import requests
 
-from agentlego.schema import Annotated, Info
-from agentlego.types import AudioIO
+from agentlego.types import Annotated, AudioIO, Info
 from agentlego.utils import is_package_available, require
 from ..base import BaseTool
 
