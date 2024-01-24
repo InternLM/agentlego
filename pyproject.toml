@@ -46,10 +46,10 @@ blank_line_before_nested_class_or_def = true
 split_before_expression_after_opening_paren = true
 split_penalty_import_names = 0
 split_penalty_after_opening_bracket = 800
-column_limit = 100
+column_limit = 89
 
 [tool.isort]
-line_length = 100
+line_length = 89
 multi_line_output = 0
 known_first_party = "agentlego"
 no_lines_before = ["STDLIB", "LOCALFOLDER"]

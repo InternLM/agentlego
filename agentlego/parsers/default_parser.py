@@ -97,7 +97,9 @@ class DefaultParser(BaseParser):
         else:
             outputs_desc = 'No returns.'
 
-        description = (f'{self.toolmeta.description}\n'
-                       f'{inputs_desc}\n{outputs_desc}')
+        description = ''
+        if self.toolmeta.description:
+            description += f'{self.toolmeta.description}\n'
+        description += f'{inputs_desc}\n{outputs_desc}'
 
         return description

@@ -1,153 +1,109 @@
 import base64
-import warnings
 from io import BytesIO, IOBase
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin, urlsplit
 
 import requests
 
 from agentlego.parsers import DefaultParser
-from agentlego.schema import Parameter, ToolMeta
+from agentlego.schema import Parameter
 from agentlego.tools.base import BaseTool
 from agentlego.types import AudioIO, File, ImageIO
-from agentlego.utils.openapi import (PRIMITIVE_TYPES, APIOperation, APIPropertyBase,
-                                     APIResponseProperty, OpenAPISpec)
-
-
-def prop_to_parameter(prop: APIPropertyBase) -> Parameter:
-    p_type = PRIMITIVE_TYPES.get(prop.type, prop.type)  # type: ignore
-    p = Parameter(
-        type=p_type,
-        name=prop.name if prop.name != '_null' else None,
-        description=prop.description,
-        optional=not prop.required,
-        default=prop.default,
-    )
-    if p_type is str:
-        schema_format = prop.format or ''
-        if 'image' in schema_format:
-            p.type = ImageIO
-        elif 'audio' in schema_format:
-            p.type = AudioIO
-        elif 'binary' in schema_format or 'base64' in schema_format:
-            p.type = File
-            p.filetype, _, _ = schema_format.partition(';')
-    return p
+from agentlego.utils.openapi import (APIOperation, APIResponseProperty, OpenAPISpec,
+                                     operation_toolmeta)
 
 
 class RemoteTool(BaseTool):
+    """Create a tool from an OpenAPI Specification (OAS).
+
+    It supports `OpenAPI v3.1.0 <https://spec.openapis.org/oas/latest.html#version-3-1-0>`_
+
+    Examples:
+        1. Construct a series of tools from an OAS.
+
+        .. code::python
+            from agentlego.tools import RemoteTool
+
+            tools = RemoteTool.from_openapi('http://localhost:16180/openapi.json')
+
+        In this situation, you need to provide the path or URL of an OAS, and each
+        method will be constructed as a tool.
+
+        2. Construct a single tool from URL.
+
+        .. code::python
+            from agentlego.tools import RemoteTool
+
+            tool = RemoteTool.from_url('http://localhost:16180/ImageDescription')
+
+        In this situation, you need to provide the URL of the tool endpoint.
+        By default, it will get the OAS from ``http://localhost:16180/openapi.json``,
+        and use the operation ``post`` at path ``/ImageDescription`` to construct the
+        tool.
+
+    Notice:
+        The ``RemoteTool`` works well with the ``agentlego-server``.
+    """  # noqa: E501
 
     def __init__(
         self,
-        url,
-        operation: Optional[APIOperation] = None,
-        method: str = 'post',
+        operation: APIOperation,
         headers: Optional[dict] = None,
-        auth=None,
-        parser=DefaultParser,
+        auth: Optional[tuple] = None,
+        toolkit: Optional[str] = None,
     ):
-        self.url = url
+        self.operation = operation
+        self.url = urljoin(operation.base_url, operation.path)
         self.headers = headers
         self.auth = auth
-
-        if operation is None:
-            operation = APIOperation.from_openapi_url(
-                # The default openapi file for the tool server.
-                spec_url=urljoin(url, '/openapi.json'),
-                path=urlsplit(url).path,
-                method=method,
-            )
-        self.operation = operation
-        self.toolmeta = self._get_toolmeta(operation)
-        self.set_parser(parser)
+        self.method = operation.method.name
+        self.toolmeta = operation_toolmeta(operation)
+        self.toolkit = toolkit
+        self.set_parser(DefaultParser)
         self._is_setup = False
 
     def _construct_path(self, kwargs: Dict[str, str]) -> str:
-        """Construct the path from the tool input."""
+        """Construct url according to path parameters from inputs."""
         path = self.url
         for param in self.operation.path_params:
             path = path.replace(f'{{{param}}}', str(kwargs.pop(param, '')))
         return path
 
-    def _extract_query_params(self, kwargs: Dict[str, str]) -> Dict[str, str]:
-        """Extract the query params from the tool input."""
+    def _construct_query(self, kwargs: Dict[str, str]) -> Dict[str, str]:
+        """Construct query parameters from inputs."""
         query_params = {}
         for param in self.operation.query_params:
             if param in kwargs:
                 query_params[param] = kwargs.pop(param)
         return query_params
 
-    def _extract_body_params(self, kwargs: Dict[str, str]) -> Optional[Dict[str, str]]:
-        """Extract the request body params from the tool input."""
-        body_params = None
-        if self.operation.body_params:
-            body_params = {}
-            for param in self.operation.body_params:
-                if param in kwargs:
-                    value = kwargs.pop(param)
-                    if isinstance(value, (ImageIO, AudioIO, File)):
-                        value = value.to_file()
-                    body_params[param] = value
-        return body_params
+    def _construct_body(self, kwargs: Dict[str, str]) -> Dict[str, Any]:
+        """Construct request body parameters from inputs."""
+        if not self.operation.request_body or not self.operation.body_params:
+            return {}
 
-    def apply(self, *args, **kwargs):
-        for arg, p in zip(args, self.inputs):
-            kwargs[p.name] = arg
+        media_type = self.operation.request_body.media_type
 
-        request_args = {
-            'url': self._construct_path(kwargs),
-            'params': self._extract_query_params(kwargs)
-        }
-        if self.operation.request_body:
-            media_type = self.operation.request_body.media_type
-            body = self._extract_body_params(kwargs)
-            if media_type == 'multipart/form-data':
-                request_args['files'] = {
-                    k: (k, v) if isinstance(v, IOBase) else (None, v)
-                    for k, v in body.items()
-                }
-            elif media_type == 'application/json':
-                request_args['json'] = body
-            else:
-                assert media_type == 'application/x-www-form-urlencoded'
-                request_args['data'] = body
+        body = {}
+        for param in self.operation.body_params:
+            if param in kwargs:
+                value = kwargs.pop(param)
+                if isinstance(value, (ImageIO, AudioIO, File)):
+                    value = value.to_file()
+                body[param] = value
 
-        method = getattr(requests, self.operation.method.value)
-        try:
-            response: requests.Response = method(
-                **request_args,
-                headers=self.headers,
-                auth=self.auth,
-            )
-        except requests.ConnectionError as e:
-            raise ConnectionError(f'Failed to connect the remote tool `{self.name}`.') from e
-        if response.status_code != 200:
-            if response.headers.get('Content-Type') == 'application/json':
-                content = response.json()
-            else:
-                content = response.content.decode()
-            raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
-                               f'because of {response.reason}.\nResponse: {content}')
-        try:
-            response = response.json()
-        except requests.JSONDecodeError:
-            raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
-                               'because of unknown response.\n'
-                               f'Response: {response.content.decode()}')
-
-        response_schema = self.operation.responses
-        if response_schema is None or response_schema.get('200') is None:
-            # Directly use string if the response schema is not specified
-            return str(response)
+        if media_type == 'multipart/form-data':
+            body = {
+                k: (k, v) if isinstance(v, IOBase) else (None, v)
+                for k, v in body.items()
+            }
+            return {'files': body}
+        elif media_type == 'application/json':
+            return {'json': body}
+        elif media_type == 'application/x-www-form-urlencoded':
+            return {'data': body}
         else:
-            out_props = response_schema['200'].properties
-
-        if isinstance(out_props, APIResponseProperty):
-            return self._parse_output(response, self.outputs[0])
-        elif isinstance(out_props, list):
-            return tuple(self._parse_output(out, p) for out, p in zip(response, self.outputs))
-        else:
-            return {p.name: self._parse_output(out, p) for out, p in zip(response, self.outputs)}
+            raise NotImplementedError(f'Unsupported media type `{media_type}`')
 
     @staticmethod
     def _parse_output(out: Any, p: Parameter):
@@ -160,6 +116,61 @@ class RemoteTool(BaseTool):
             out = File.from_file(file, filetype=p.filetype)
         return out
 
+    def apply(self, *args, **kwargs):
+        for arg, p in zip(args, self.inputs):
+            kwargs[p.name] = arg
+
+        request_args = {
+            'url': self._construct_path(kwargs),
+            'params': self._construct_query(kwargs),
+            **self._construct_body(kwargs)
+        }
+
+        try:
+            response = requests.request(
+                method=self.method,
+                **request_args,
+                headers=self.headers,
+                auth=self.auth,
+            )
+        except requests.ConnectionError as e:
+            raise ConnectionError(
+                f'Failed to connect the remote tool `{self.name}`.') from e
+        if response.status_code != 200:
+            if response.headers.get('Content-Type') == 'application/json':
+                content = response.json()
+            else:
+                content = response.content.decode()
+            raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
+                               f'because of {response.reason}.\nResponse: {content}')
+        try:
+            response = response.json()
+        except requests.JSONDecodeError as e:
+            raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
+                               'because of unknown response.\n'
+                               f'Response: {response.content.decode()}') from e
+
+        response_schema = self.operation.responses
+        if response_schema is None or response_schema.get('200') is None:
+            # Directly use string if the response schema is not specified
+            return str(response)
+
+        out_props = response_schema['200'].properties
+
+        if isinstance(out_props, APIResponseProperty):
+            # Single output
+            return self._parse_output(response, self.outputs[0])
+        elif isinstance(out_props, list):
+            # Multiple output
+            return tuple(
+                self._parse_output(out, p) for out, p in zip(response, self.outputs))
+        else:
+            # Dict-style output
+            return {
+                p.name: self._parse_output(out, p)
+                for out, p in zip(response, self.outputs)
+            }
+
     @classmethod
     def from_server(cls, url: str, **kwargs) -> List['RemoteTool']:
         return cls.from_openapi(url=urljoin(url, '/openapi.json'), **kwargs)
@@ -168,76 +179,65 @@ class RemoteTool(BaseTool):
     def from_openapi(
         cls,
         url: str,
-        toolkit: Union[str, bool] = False,
         **kwargs,
     ) -> List['RemoteTool']:
+        """Construct a series of remote tools from the specified OpenAPI
+        Specification.
+
+        Args:
+            url (str): The path or URL of the OpenAPI Specification file.
+            headers (str | None): The headers to send in the requests. Defaults to None.
+            auth (tuple | None): Auth tuple to enable Basic/Digest/Custom HTTP Auth.
+                Defaults to None.
+        """
         if url.startswith('http'):
             spec = OpenAPISpec.from_url(url)
         else:
             spec = OpenAPISpec.from_file(url)
 
-        if isinstance(toolkit, bool):
-            toolkit = spec.info.title.replace(' ', '_') if toolkit else None
+        toolkit = spec.info.title.replace(' ', '_')
 
         tools = []
         for path, method in spec.iter_all_method():
             operation = APIOperation.from_openapi_spec(spec, path, method)
             tool = cls(
-                url=urljoin(operation.base_url, operation.path),
                 operation=operation,
+                toolkit=toolkit,
                 **kwargs,
             )
             tools.append(tool)
         return tools
 
-    @staticmethod
-    def _get_toolmeta(operation: APIOperation, toolkit: Optional[str] = None) -> ToolMeta:
-        name = operation.operation_id
-        if toolkit is not None:
-            name = toolkit + '.' + name
-        inputs = RemoteTool._get_inputs(operation)
-        outputs = RemoteTool._get_outputs(operation)
-        toolmeta = ToolMeta(
-            name=name,
-            description=operation.description,
-            inputs=inputs,
-            outputs=outputs,
-        )
+    @classmethod
+    def from_url(cls,
+                 url: str,
+                 method: str = 'post',
+                 openapi: Optional[str] = None,
+                 path: Optional[str] = None,
+                 **kwargs) -> 'RemoteTool':
+        """Construct a remote tool from the specified URL endpoint.
 
-        return toolmeta
+        Args:
+            url (str): The URL path of the remote tool.
+            method (str): The method of the operation. Defaults to 'post',
+            openapi (str | None): The OAS path or URL. Defaults to None, which means to
+                use ``<base_url>/openapi.json``.
+            path (str | None): The path in the OAS. Defaults to None, which means to use
+                ``urlsplit(url).path``.
+            headers (str | None): The headers to send in the requests. Defaults to None.
+            auth (tuple | None): Auth tuple to enable Basic/Digest/Custom HTTP Auth.
+                Defaults to None.
+        """
+        # The default openapi file for the tool server.
+        openapi = openapi or urljoin(url, '/openapi.json')
+        path = path or urlsplit(url).path
 
-    @staticmethod
-    def _get_inputs(op: APIOperation) -> Tuple[Parameter, ...]:
-        inputs = []
-        properties = []
-        if op.properties:
-            properties.extend(op.properties)
-        if op.request_body and op.request_body.properties:
-            properties.extend(op.request_body.properties)
-        for p in properties:
-            inputs.append(prop_to_parameter(p))
-        return tuple(inputs)
-
-    @staticmethod
-    def _get_outputs(op: APIOperation) -> Tuple[Parameter, ...]:
-        if op.responses is None or op.responses.get('200') is None:
-            # If not specify outputs, directly handle as a single text.
-            outputs = [Parameter(type=str)]
-
-        response_schema = op.responses
-        if response_schema is None or response_schema.get('200') is None:
-            # Directly use string if the response schema is not specified
-            warnings.warn(f'The response of {op.operation_id} is not specified, '
-                          'assume as a string response by default.')
-            return (Parameter(type=str), )
+        if openapi.startswith('http'):
+            spec = OpenAPISpec.from_url(openapi)
         else:
-            out_props = response_schema['200'].properties
+            spec = OpenAPISpec.from_file(openapi)
 
-        if isinstance(out_props, list):
-            outputs = [prop_to_parameter(out) for out in out_props]
-        elif isinstance(out_props, dict):
-            outputs = [prop_to_parameter(out) for out in out_props.values()]
-        else:
-            outputs = [prop_to_parameter(out_props)]
+        toolkit = spec.info.title.replace(' ', '_')
 
-        return tuple(outputs)
+        operation = APIOperation.from_openapi_spec(spec, path, method)
+        return cls(operation=operation, toolkit=toolkit, **kwargs)

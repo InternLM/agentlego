@@ -1,13 +1,10 @@
 import copy
-import inspect
 from abc import ABCMeta, abstractmethod
 from typing import Any, Callable, Mapping, Optional, Tuple, Union
 
-from typing_extensions import Annotated, get_args, get_origin
-
 from agentlego.parsers import DefaultParser
 from agentlego.schema import Parameter, ToolMeta
-from agentlego.types import CatgoryToIO
+from .utils.parameters import extract_toolmeta
 
 
 class BaseTool(metaclass=ABCMeta):
@@ -51,125 +48,19 @@ class BaseTool(metaclass=ABCMeta):
         return self.toolmeta.outputs
 
     @classmethod
-    def _collect_inputs(cls) -> Tuple[Parameter, ...]:
-        inputs = []
-        for p in inspect.signature(cls.apply).parameters.values():
-            if p.name == 'self':
-                continue
-
-            annotation = p.annotation
-            info = None
-            if get_origin(annotation) is Annotated:
-                for item in get_args(annotation):
-                    if isinstance(item, Parameter):
-                        info = item
-                annotation = get_args(annotation)[0]
-
-            input_ = Parameter(
-                name=p.name,
-                type=annotation,
-                optional=p.default is not inspect._empty,
-                default=p.default if p.default is not inspect._empty else None,
-            )
-            if info is not None:
-                input_.update(info)
-            inputs.append(input_)
-        return tuple(inputs)
-
-    @classmethod
-    def _collect_outputs(cls) -> Optional[Tuple[Parameter, ...]]:
-        outputs = []
-        return_ann = inspect.signature(cls.apply).return_annotation
-        if return_ann is inspect._empty:
-            return None
-        elif get_origin(return_ann) is tuple:
-            annotations = get_args(return_ann)
-            assert len(annotations) > 1 and Ellipsis not in annotations, (
-                f'The number of outputs of `{cls.__name__}.apply` '
-                'is undefined. Please specify like `Tuple[int, int, str]`')
-        else:
-            annotations = (return_ann, )
-
-        for annotation in annotations:
-            info = None
-            if get_origin(annotation) is Annotated:
-                for item in get_args(annotation):
-                    if isinstance(item, Parameter):
-                        info = item
-                annotation = get_args(annotation)[0]
-
-            output = Parameter(type=annotation)
-            if info is not None:
-                output.update(info)
-            outputs.append(output)
-        return tuple(outputs)
-
-    @classmethod
     def get_default_toolmeta(cls, override=None) -> ToolMeta:
-        toolmeta = override or getattr(cls, 'DEFAULT_TOOLMETA', {})
-        toolmeta = copy.deepcopy(toolmeta)
-        if isinstance(toolmeta, dict):
-            toolmeta = ToolMeta(**toolmeta)
+        if isinstance(override, dict):
+            override = ToolMeta(**override)
+        override = ToolMeta() if override is None else copy.deepcopy(override)
 
-        if toolmeta.name is None:
-            toolmeta.name = getattr(cls, 'default_name', cls.__name__)
+        if override.name is None:
+            override.name = cls.__name__
 
-        if toolmeta.description is None:
-            doc = (cls.default_desc or '').strip()
-            toolmeta.description = doc.partition('\n\n')[0].replace('\n', ' ')
+        if override.description is None:
+            doc = (cls.default_desc or '').partition('\n\n')[0].replace('\n', ' ')
+            override.description = doc.strip()
 
-        supported_types = set(CatgoryToIO.values())
-
-        inputs = cls._collect_inputs()
-        new_inputs = []
-        if toolmeta.inputs is None:
-            toolmeta.inputs = inputs
-        else:
-            assert len(inputs) == len(
-                toolmeta.inputs), ('The length of `inputs` in toolmeta is different with '
-                                   f'the number of arguments of `{cls.__name__}.apply`.')
-        for i, item in enumerate(toolmeta.inputs):
-            if isinstance(item, str):
-                item = Parameter(type=CatgoryToIO[item])
-            assert isinstance(item, Parameter), \
-                ('The type of elements in inputs should be `str` '
-                 f'or `Parameter`, got `{type(item)}` instead.')
-            inputs[i].update(item)
-            new_inputs.append(inputs[i])
-            assert inputs[i].type is not inspect._empty, (
-                f'The type of input `{inputs[i].name}` of '
-                f'`{cls.__name__}` is not specified.')
-            assert inputs[i].type in supported_types, (f'The type of input `{inputs[i].name}` of '
-                                                       f'`{cls.__name__}` is not supported. '
-                                                       f'Supported types are {supported_types}')
-        toolmeta.inputs = tuple(new_inputs)
-
-        outputs = cls._collect_outputs()
-        new_outputs = []
-        if toolmeta.outputs is None:
-            assert outputs is not None, (
-                f'The type of output of `{cls.__name__}` is not specified.')
-            toolmeta.outputs = outputs
-        elif toolmeta.outputs is not None and outputs is not None:
-            assert len(outputs) == len(
-                toolmeta.outputs), ('The length of `outputs` in toolmeta is different with '
-                                    f'the type hint of return value of `{cls.__name__}.apply`.')
-        for i, item in enumerate(toolmeta.outputs):
-            if isinstance(item, str):
-                item = Parameter(type=CatgoryToIO[item])
-            assert isinstance(item, Parameter), \
-                ('The type of elements in outputs should be `str` '
-                 f'or `Parameter`, got `{type(item)}` instead.')
-            if outputs is not None:
-                outputs[i].update(item)
-                item = outputs[i]
-            new_outputs.append(item)
-            assert item.type in supported_types, (
-                f'The type of output of `{cls.__name__}` is not supported. '
-                f'Supported types are {supported_types}')
-        toolmeta.outputs = tuple(new_outputs)
-
-        return toolmeta
+        return extract_toolmeta(cls.apply, override=override)
 
     def set_parser(self, parser: Callable):
         self.parser = parser(self)

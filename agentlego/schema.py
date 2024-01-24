@@ -1,6 +1,6 @@
 import copy
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, Type, Union
+from typing import Any, Optional, Tuple, Type
 
 
 @dataclass
@@ -41,5 +41,5 @@ class ToolMeta:
     """
     name: Optional[str] = None
     description: Optional[str] = None
-    inputs: Optional[Tuple[Union[str, Parameter], ...]] = None
-    outputs: Optional[Tuple[Union[str, Parameter], ...]] = None
+    inputs: Optional[Tuple[Parameter, ...]] = None
+    outputs: Optional[Tuple[Parameter, ...]] = None
