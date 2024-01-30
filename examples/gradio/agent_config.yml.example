@@ -1,0 +1,14 @@
+gpt-3.5-turbo:
+  agent_class: langchain.StructuredChat.ChatOpenAI
+  model_name: gpt-3.5-turbo
+  openai_api_base: null
+  openai_api_key: null
+  max_tokens: 512
+  extra_stop: null
+gpt-4-turbo:
+  agent_class: langchain.StructuredChat.ChatOpenAI
+  model_name: gpt-4-1106-preview
+  openai_api_base: null
+  openai_api_key: null
+  max_tokens: 512
+  extra_stop: null
