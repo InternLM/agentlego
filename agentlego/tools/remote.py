@@ -107,12 +107,14 @@ class RemoteTool(BaseTool):
 
     @staticmethod
     def _parse_output(out: Any, p: Parameter):
-        file = BytesIO(base64.b64decode(out))
         if p.type is ImageIO:
+            file = BytesIO(base64.b64decode(out))
             out = ImageIO.from_file(file)
         elif p.type is AudioIO:
+            file = BytesIO(base64.b64decode(out))
             out = AudioIO.from_file(file)
         elif p.type is File:
+            file = BytesIO(base64.b64decode(out))
             out = File.from_file(file, filetype=p.filetype)
         return out
 

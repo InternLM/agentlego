@@ -15,7 +15,7 @@ class ImageToCanny(BaseTool):
 
     default_desc = 'This tool can extract the edge image from an image.'
 
-    @require('cv2', install='pip install opencv-python')
+    @require('opencv-python')
     def __init__(self, toolmeta=None):
         super().__init__(toolmeta=toolmeta)
         self.low_threshold = 100
