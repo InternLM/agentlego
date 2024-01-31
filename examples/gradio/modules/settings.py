@@ -19,7 +19,7 @@ def apply_agent_settings(agent):
     '''
     UI: update the state variable with the agent settings
     '''
-    state = {k: None for k in ui.agent_elements}
+    state = deepcopy(ui.agent_elements)
     if agent is None or agent == 'New Agent':
         return list(state.values())
     agent_settings = get_agent_settings(agent)

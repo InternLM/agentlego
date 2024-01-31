@@ -51,7 +51,7 @@ def create_ui():
             shared.gradio['selected_tools'] = gr.CheckboxGroup(show_label=False, choices=shared.toolkits.keys(), value=list(shared.toolkits.keys()))
 
         with gr.Row(elem_id='past-chats-row'):
-            shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], choices=chat.find_all_histories(), value=None)
+            shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], choices=chat.find_all_histories(), value=None, allow_custom_value=True)
             shared.gradio['save_chat'] = gr.Button('Save', elem_classes='refresh-button')
             delete, confirm, cancel = ui.create_confirm_cancel('🗑️', elem_classes='refresh-button')
             shared.gradio['delete_chat'] = delete
@@ -111,9 +111,8 @@ def create_event_handlers():
 
     delete_history_widgets = ('delete_chat', 'delete_chat-confirm', 'delete_chat-cancel')
     shared.gradio['delete_chat-confirm']\
-        .click(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
-        .then(chat.delete_history, gradio('unique_id'), None)\
-        .then(chat.load_latest_history, None, gradio('history'))\
+        .click(lambda: {'internal': [], 'visible': []}, None, gradio('history'))\
         .then(chat.redraw_html, gradio('history'), gradio('display'))\
-        .then(lambda: gr.update(choices=chat.find_all_histories()), None, gradio('unique_id'), show_progress=False)\
+        .then(chat.delete_history, gradio('unique_id'), None)\
+        .then(lambda: gr.update(value=None, choices=chat.find_all_histories()), None, gradio('unique_id'), show_progress=False)\
         .then(lambda: [gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)], None, gradio(delete_history_widgets))

@@ -149,7 +149,7 @@ def get_history_file_path(unique_id):
 
 
 def save_history(history, unique_id):
-    if not isinstance(unique_id, str):
+    if not unique_id:
         return
 
     p = get_history_file_path(unique_id)

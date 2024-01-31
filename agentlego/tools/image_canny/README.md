@@ -81,8 +81,7 @@ for step in ret.inner_steps[1:]:
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install -U openmim
-mim install -U mmagic
+pip install -U diffusers
 ```
 
 ## Reference

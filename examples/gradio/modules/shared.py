@@ -1,5 +1,4 @@
 import argparse
-import sys
 from collections import OrderedDict
 from pathlib import Path
 from typing import Mapping
@@ -7,11 +6,13 @@ from typing import Mapping
 import yaml
 from modules.logging import logger
 
+from agentlego.tools import BaseTool
+
 # Agent variables
 agent_name = None
 agent = None
 llm = None
-toolkits = {}
+toolkits: Mapping[str, BaseTool] = {}
 
 # Generation variables
 stop_everything = False

@@ -1,13 +1,23 @@
 import copy
-import json
-import re
-from collections import defaultdict
 
 from lagent.actions import BaseAction
 from lagent.schema import ActionReturn, ActionStatusCode
 
 from agentlego.parsers import DefaultParser
+from agentlego.types import AudioIO, File, ImageIO
 from ..base import BaseTool
+
+
+def convert_type(t):
+    if t in [str, ImageIO, AudioIO, File]:
+        return 'STRING'
+    elif t is int:
+        return 'NUMBER'
+    elif t is float:
+        return 'FLOAT'
+    elif t is bool:
+        return 'BOOLEAN'
+    return 'STRING'
 
 
 class LagentTool(BaseAction):
@@ -18,46 +28,52 @@ class LagentTool(BaseAction):
         tool.set_parser(DefaultParser)  # Use string input & output
         self.tool = tool
 
-        example_args = ', '.join(f'"{name}": xxx' for name in tool.arguments)
-        description = (f'{tool.description}\nCombine all args to one json '
-                       f'string like {{{example_args}}}')
+        parameters = []
+        required = []
+        for p in tool.inputs:
+            parameters.append(
+                dict(
+                    name=p.name,
+                    description=p.description,
+                    type=convert_type(p.type),
+                ))
+            if not p.optional:
+                required.append(p.name)
 
+        self._is_toolkit = False
         super().__init__(
-            name=tool.name.replace(' ', ''),
-            description=description,
+            description=dict(
+                name=tool.name,
+                description=tool.toolmeta.description,
+                parameters=parameters,
+                required=required,
+            ),
             enable=True,
         )
 
-    def run(self, json_args: str):
-        # load json format arguments
-        try:
-            item = next(re.finditer('{.*}', json_args, re.MULTILINE | re.DOTALL))
-            kwargs = json.loads(item.group())
-        except Exception:
-            error = ValueError('All arguments should be combined into one json string.')
-            return ActionReturn(
-                type=self.name,
-                errmsg=repr(error),
-                state=ActionStatusCode.ARGS_ERROR,
-                args={'raw_input': json_args},
-            )
+    def run(self, **kwargs) -> ActionReturn:
 
         try:
-            result = self.tool(**kwargs)
-            result_dict = defaultdict(list)
-            result_dict['text'] = str(result)
+            outputs = self.tool(**kwargs)
+            results = []
 
-            if not isinstance(result, tuple):
-                result = [result]
+            if not isinstance(outputs, tuple):
+                outputs = [outputs]
 
-            for res, out_type in zip(result, self.tool.toolmeta.outputs):
-                if out_type != 'text':
-                    result_dict[out_type].append(res)
+            for out, p in zip(outputs, self.tool.outputs):
+                if p.type is ImageIO:
+                    results.append(dict(type='image', content=out))
+                elif p.type is AudioIO:
+                    results.append(dict(type='audio', content=out))
+                elif p.type is File:
+                    results.append(dict(type='file', content=out))
+                else:
+                    results.append(dict(type='text', content=str(out)))
 
             return ActionReturn(
                 type=self.name,
                 args=kwargs,
-                result=result_dict,
+                result=results,
             )
         except Exception as e:
             return ActionReturn(

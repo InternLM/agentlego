@@ -1,8 +1,9 @@
 import argparse
 
-from langchain.agents import AgentType, initialize_agent
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.chat_models import ChatOpenAI
+from langchain import hub
+from langchain.agents import AgentExecutor, create_structured_chat_agent
+from langchain.memory import ConversationBufferMemory
+from langchain_openai import ChatOpenAI
 from prompt_toolkit import ANSI, prompt
 
 from agentlego.apis import load_tool
@@ -29,13 +30,12 @@ def main():
     llm = ChatOpenAI(temperature=0, model=args.model)
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-    agent = initialize_agent(
-        tools,
+    agent = create_structured_chat_agent(
         llm,
-        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=True,
-        memory=memory,
+        tools,
+        prompt=hub.pull('hwchase17/structured-chat-agent')
     )
+    agent_executor = AgentExecutor(agent=agent, tools=tools, memory=memory, verbose=True)
 
     while True:
         try:
@@ -45,7 +45,8 @@ def main():
             continue
         if user == 'exit':
             exit(0)
-        print(f'\033[91m{args.model}\033[0m:', agent.run(input=user))
+        res = agent_executor.invoke(dict(input=user))
+        print(f'\033[91m{args.model}\033[0m: {res["output"]}')
 
 
 if __name__ == '__main__':

@@ -1,6 +1,5 @@
 import json
 import time
-from ast import literal_eval
 from copy import deepcopy
 from queue import Queue
 from threading import Thread
@@ -20,6 +19,7 @@ from pydantic import BaseModel
 from agentlego.tools import BaseTool
 from .. import message_schema as msg
 from ..logging import logger
+from ..utils import parse_inputs, parse_outputs
 
 # modified form hub.pull("hwchase17/structured-chat-agent")
 STRUCTURED_CHAT_PROMPT = ChatPromptTemplate(
@@ -62,20 +62,16 @@ class GenerationCallback(BaseCallbackHandler):
             thought = action.log.partition('Thought:')[-1].partition('\n')[0].strip()
         else:
             thought = None
-        self.mq.put(msg.ToolInput(name=action.tool, args=action.tool_input, thought=thought))
+        tool = self.tools[action.tool]
+        args = parse_inputs(tool.toolmeta, action.tool_input)
+        self.mq.put(msg.ToolInput(name=action.tool, args=args, thought=thought))
 
     def on_tool_end(self, output: str, name: str, **kwargs):
         if name in self.tools:
             tool = self.tools[name]
             # Try to parse the outputs
-            if len(tool.outputs) > 1:
-                try:
-                    output = literal_eval(output)
-                except Exception:
-                    pass
-            if not isinstance(output, tuple):
-                output = (output, )
-            self.mq.put(msg.ToolOutput(outputs=output))
+            outputs = parse_outputs(tool.toolmeta, output)
+            self.mq.put(msg.ToolOutput(outputs=outputs))
         else:
             self.mq.put(msg.ToolOutput(error=output))
 
@@ -144,14 +140,15 @@ def langchain_style_history(history) -> ChatMessageHistory:
         for step in row[1]:
             if isinstance(step, msg.ToolInput):
                 response += f'Thought: {step.thought or ""}\n'
-                if isinstance(step.args, dict):
-                    args = json.dumps(step.args)
-                else:
-                    args = step.args
+                args = json.dumps({k: v['content'] for k, v in step.args.items()})
                 tool_str = f'{{\n  "action": "{step.name}",\n  "action_input": "{args}"\n}}'
                 response += 'Action:\n```\n' + tool_str + '\n```\n'
             elif isinstance(step, msg.ToolOutput):
-                response += f'Observation: {step.outputs}\n'
+                if step.outputs:
+                    outputs = ', '.join(out['content'] for out in step.outputs)
+                    response += f'Observation: {outputs}\n'
+                elif step.error:
+                    response += f'Observation: {step.error}\n'
             elif isinstance(step, msg.Answer):
                 response += f'Thought: {step.thought or ""}\n'
                 tool_str = f'{{\n  "action": "Final Answer",\n  "action_input": "{step.text}"\n}}'

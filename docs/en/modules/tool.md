@@ -32,16 +32,20 @@ We have already finished the tool, now you can instantiate it and use it in agen
 tool = Clock()
 
 # Use it in langchain
-from langchain.agents import initialize_agent
-from langchain.chat_models import ChatOpenAI
+from langchain import hub
+from langchain.agents import create_structured_chat_agent, AgentExecutor
+from langchain_openai import ChatOpenAI
 
 # Be attention to specify `OPENAI_API_KEY` environment variable to call ChatGPT.
-agent = initialize_agent(
-    agent='structured-chat-zero-shot-react-description',
-    llm=ChatOpenAI(temperature=0.),
+agent_executor = AgentExecutor(
+    agent=create_structured_chat_agent(
+        llm=ChatOpenAI(temperature=0.),
+        tools=[tool.to_langchain()],
+        prompt=hub.pull("hwchase17/structured-chat-agent")
+    ),
     tools=[tool.to_langchain()],
     verbose=True)
-agent.invoke("What's the time?")
+agent_executor.invoke(dict(input="What's the time?"))
 
 # Use it in lagent
 from lagent import ReAct, GPTAPI, ActionExecutor

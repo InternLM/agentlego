@@ -7,6 +7,7 @@ import yaml
 
 from agentlego.utils import is_package_available
 from ..logging import logger
+from . import lagent_agent as lagent
 from . import langchain_agent as langchain
 
 
@@ -24,6 +25,12 @@ agent_func_map: Mapping[str, AgentCallbacks] = {
         cfg_widget=langchain.cfg_chat_openai,
         generate=langchain.generate_structured,
     ),
+    'lagent.InternLM2Agent':
+    AgentCallbacks(
+        load_llm=lagent.llm_internlm2_lmdeploy,
+        cfg_widget=lagent.cfg_internlm2,
+        generate=lagent.generate_internlm2,
+    )
 }
 
 

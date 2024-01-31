@@ -36,7 +36,7 @@ def create_ui():
                             widget.visible = False
                             name = f'{agent_class}#{name}'
                             shared.gradio[name] = widget
-                            ui.agent_elements.append(name)
+                            ui.agent_elements[name] = widget.value
 
             with gr.Column(scale=1):
                 shared.gradio['agent_status'] = gr.Markdown('No agent is loaded' if shared.agent_name == 'None' else 'Ready')
@@ -58,12 +58,12 @@ def create_event_handlers():
             return f'<div class="current-agent">Current agent: {shared.agent_name}</div>'
 
     shared.gradio['agent_menu']\
-        .change(apply_agent_settings, gradio('agent_menu'), gradio(ui.agent_elements))\
+        .change(apply_agent_settings, gradio('agent_menu'), gradio(*ui.agent_elements))\
         .then(update_widgets, gradio('agent_menu'), gradio('agent_class', 'save_agent', 'save_agent_new', 'new_agent_name'), show_progress=False)\
         .then(load_agent, gradio('agent_menu'), gradio('agent_status'), show_progress=False)\
         .success(update_current_agent, None, gradio('current-agent'), show_progress=False)\
 
-    shared.gradio['agent_class'].change(make_agent_params_visible, gradio('agent_class'), gradio(ui.agent_elements), show_progress=False)
+    shared.gradio['agent_class'].change(make_agent_params_visible, gradio('agent_class'), gradio(*ui.agent_elements), show_progress=False)
 
     shared.gradio['load_agent']\
         .click(partial(load_agent, autoload=True), gradio('agent_menu'), gradio('agent_status'), show_progress=False)\

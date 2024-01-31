@@ -30,16 +30,20 @@ class Clock(BaseTool):
 tool = Clock()
 
 # 在 langchain 中使用
-from langchain.agents import initialize_agent
-from langchain.chat_models import ChatOpenAI
+from langchain import hub
+from langchain.agents import create_structured_chat_agent, AgentExecutor
+from langchain_openai import ChatOpenAI
 
 # 注意在环境变量中设定 OPENAI_API_KEY 以调用 ChatGPT
-agent = initialize_agent(
-    agent='structured-chat-zero-shot-react-description',
-    llm=ChatOpenAI(temperature=0.),
+agent_executor = AgentExecutor(
+    agent=create_structured_chat_agent(
+        llm=ChatOpenAI(temperature=0.),
+        tools=[tool.to_langchain()],
+        prompt=hub.pull("hwchase17/structured-chat-agent")
+    ),
     tools=[tool.to_langchain()],
     verbose=True)
-agent.invoke("现在几点了？")
+agent_executor.invoke(dict(input="现在几点了？"))
 
 # 在 lagent 中使用
 from lagent import ReAct, GPTAPI, ActionExecutor

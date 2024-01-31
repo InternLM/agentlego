@@ -122,8 +122,7 @@ generated/
 
 # gradio demo
 examples/gradio/logs/
-examples/gradio/custom_tools/*.py
+examples/gradio/custom_tools/
 examples/gradio/installer_files/
 examples/gradio/generated/
-examples/gradio/agent_config.yml
-examples/gradio/tool_config.yml
+examples/gradio/*.yml

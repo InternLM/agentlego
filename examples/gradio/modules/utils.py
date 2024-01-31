@@ -1,10 +1,74 @@
 import functools
 import re
+from ast import literal_eval
 from datetime import datetime
 from pathlib import Path
+from typing import Mapping, Tuple, Union
 
+from agentlego.schema import ToolMeta
+from agentlego.types import AudioIO, File, ImageIO
 from . import shared
 from .logging import logger
+
+
+def parse_inputs(toolmeta: ToolMeta, args: Union[str, tuple, dict]) -> Mapping[str, dict]:
+    if not args:
+        return {}
+    params = {p.name: p for p in toolmeta.inputs}
+
+    if len(params) > 1 and isinstance(args, str):
+        try:
+            args = literal_eval(args)
+        except Exception:
+            pass
+
+    if isinstance(args, str):
+        args = {toolmeta.inputs[0].name: args}
+    elif isinstance(args, tuple):
+        args = {name: args for name in params}
+
+    parsed_args = {}
+    for k, v in args.items():
+        p = params[k]
+        if p.type is ImageIO:
+            parsed_args[k] = dict(type='image', content=v)
+        elif p.type is AudioIO:
+            parsed_args[k] = dict(type='audio', content=v)
+        elif p.type is File:
+            parsed_args[k] = dict(type='file', content=v)
+        else:
+            parsed_args[k] = dict(type='text', content=v)
+
+    return parsed_args
+
+
+def parse_outputs(toolmeta: ToolMeta, outs: Union[str, tuple, dict]) -> Tuple[dict, ...]:
+    if not outs:
+        return ()
+
+    if len(toolmeta.outputs) > 1 and isinstance(outs, str):
+        try:
+            outs = literal_eval(outs)
+        except Exception:
+            pass
+
+    if isinstance(outs, str):
+        outs = (outs, )
+    elif isinstance(outs, dict):
+        outs = tuple(outs.values())
+
+    parsed_outs = []
+    for p, out in zip(toolmeta.outputs, outs):
+        if p.type is ImageIO:
+            parsed_outs.append(dict(type='image', content=out))
+        elif p.type is AudioIO:
+            parsed_outs.append(dict(type='audio', content=out))
+        elif p.type is File:
+            parsed_outs.append(dict(type='file', content=out))
+        else:
+            parsed_outs.append(dict(type='text', content=out))
+
+    return tuple(parsed_outs)
 
 
 # Helper function to get multiple values from shared.gradio

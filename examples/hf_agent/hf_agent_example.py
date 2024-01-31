@@ -9,7 +9,7 @@ from agentlego.apis import load_tool
 
 tools = [
     load_tool(tool_type).to_transformers_agent() for tool_type in [
-        'ImageCaption',
+        'ImageDescription',
         'TextToSpeech',
     ]
 ]

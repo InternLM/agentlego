@@ -23,7 +23,7 @@ theme = gr.themes.Default(
     background_fill_secondary='#eaeaea'
 )
 
-agent_elements = ['agent_class']
+agent_elements = {'agent_class': None}
 
 
 def list_tool_elements():
@@ -92,12 +92,9 @@ def create_refresh_button(refresh_component, refresh_method, refreshed_args, ele
 
     return refresh_button
 
-def create_confirm_cancel(value, *, input_component=None, **kwargs):
+def create_confirm_cancel(value, **kwargs):
     widget = gr.Button(value, **kwargs)
     hidden = []
-    if input_component:
-        input = input_component(visible=False)
-        hidden.append(input)
     confirm = gr.Button('Confirm', visible=False, **kwargs)
     cancel = gr.Button('Cancel', visible=False, variant='stop', **kwargs)
     hidden.extend([confirm, cancel])
@@ -105,7 +102,4 @@ def create_confirm_cancel(value, *, input_component=None, **kwargs):
     widget.click(lambda: [gr.update(visible=False)] + [gr.update(visible=True)] * len(hidden), None, [widget, *hidden], show_progress=False)
     cancel.click(lambda: [gr.update(visible=True)] + [gr.update(visible=False)] * len(hidden), None, [widget, *hidden], show_progress=False)
 
-    if input_component is not None:
-        return widget, input, confirm, cancel
-    else:
-        return widget, confirm, cancel
+    return widget, confirm, cancel

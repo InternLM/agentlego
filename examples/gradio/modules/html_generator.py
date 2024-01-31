@@ -160,29 +160,26 @@ def tool_to_html(input: msg.ToolInput,
 
     if input.args:
         args = deepcopy(input.args)
-        def replace_arg(data):
-            if isinstance(data, str) and data.endswith(IMAGE_EXTENSIONS +
-                                                       AUDIO_EXTENSIONS):
-                return '<em>path</em>'
+        def replace_arg(data: dict):
+            if data['type'] == 'text':
+                return repr(data['content'])
             else:
-                return repr(data)
+                return '<em>path</em>'
 
-        if isinstance(args, str):
-            args = replace_arg(args)
-        else:
-            args = ', '.join(f'{k}={replace_arg(v)}' for k, v in args.items())
+        args = ', '.join(f'{k}={replace_arg(v)}' for k, v in args.items())
         html += f'<div class="tool-args">Args: {args}</div>'
+
     if output and output.outputs is not None:
         text_output = ', '.join(
-            str(item) for item in output.outputs
-            if not (isinstance(item, str) and item.endswith(IMAGE_EXTENSIONS +
-                                                            AUDIO_EXTENSIONS)))
+            str(out['content']) for out in output.outputs if out['type'] == 'text')
         html += f'<div class="tool-response">Response: {text_output}'
         for out in output.outputs:
-            if isinstance(out, str) and out.endswith(IMAGE_EXTENSIONS):
-                html += re.sub(IMAGE_REGEX, sub_image_path, out)
-            elif isinstance(out, str) and out.endswith(AUDIO_EXTENSIONS):
-                html += re.sub(AUDIO_REGEX, sub_audio_path, out)
+            if out['type'] == 'image':
+                html += re.sub(IMAGE_REGEX, sub_image_path, out['content'])
+            elif out['type'] == 'audio':
+                html += re.sub(AUDIO_REGEX, sub_audio_path, out['content'])
+            elif out['type'] == 'file':
+                html += f'<div>{out["content"]}</div>'
         html += f'</div>'
     elif output and output.error is not None:
         html += f'<div class="tool-error">Error: {output.error}</div>'

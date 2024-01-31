@@ -1,6 +1,7 @@
 import os
 import platform
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -113,7 +114,7 @@ def run_cmd(cmd, assert_success=False, capture_output=False, env=None):
     if assert_success and result.returncode != 0:
         print("Command '" + cmd + "' failed with exit status code '" +
               str(result.returncode) +
-              "'.\n\nExiting now.\nTry running the start/update script again.")
+              "'.\n\nExiting now.\nTry running the script again.")
         sys.exit(1)
 
     return result
@@ -140,11 +141,21 @@ def install_demo_dependencies():
     if get_version('markdown') is None:
         run_cmd(f'python -m pip install markdown', assert_success=True)
 
+    lagent = get_version('lagent')
+    if lagent is None or lagent < digit_version('0.2.0'):
+        run_cmd(f'python -m pip install "lagent>=0.2.0"', assert_success=True)
+
 
 if __name__ == '__main__':
     # Verifies we are in a conda environment
     check_env()
     os.chdir(script_dir)
+    if not (script_dir / 'tool_config.yml').exists():
+        shutil.copy(script_dir / 'tool_config.yml.example',
+                    script_dir / 'tool_config.yml')
+    if not (script_dir / 'agent_config.yml').exists():
+        shutil.copy(script_dir / 'agent_config.yml.example',
+                    script_dir / 'agent_config.yml')
 
     # Install the current version agentlego
     install_agentlego()

@@ -24,7 +24,7 @@ pip install agentlego[optional] openmim
 mim install mmpretrain mmdet mmpose easyocr
 
 # For image generation tools.
-mim install transformers diffusers mmagic
+pip install transformers diffusers
 ```
 
 3. Some tools requires extra dependencies, check the **Set up** section in `Tool APIs` before you want to use.
@@ -77,15 +77,15 @@ efficiently build large language model(LLM) -based agents.
 Here is an example script to integrate agentlego tools to Lagent:
 
 ```python
-from agentlego.apis import load_tool
 from lagent import ReAct, GPTAPI, ActionExecutor
+from agentlego.tools import Calculator
 
 # Load the tools you want to use.
-tool = load_tool('Calculator').to_lagent()
+tools = [Calculator().to_lagent()]
 
 # Build Lagent Agent
 model = GPTAPI(temperature=0.)
-agent = ReAct(llm=model, action_executor=ActionExecutor([tool]))
+agent = ReAct(llm=model, action_executor=ActionExecutor(tools))
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
 ret = agent.chat(user_input)
@@ -106,27 +106,23 @@ users to start and customize applications.
 Here is an example script to integrate agentlego tools to LangChain:
 
 ```python
-from agentlego.apis import load_tool
-from langchain.agents import AgentType, initialize_agent
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.chat_models import ChatOpenAI
+from langchain import hub
+from langchain.agents import create_structured_chat_agent, AgentExecutor
+from langchain.memory import ConversationBufferMemory
+from langchain_openai import ChatOpenAI
+from agentlego.tools import Calculator
 
 # Load the tools you want to use.
-tool = load_tool('Calculator').to_langchain()
+tools = [Calculator().to_langchain()]
 
 # Build LangChain Agent
-model = ChatOpenAI(temperature=0.)
+llm = ChatOpenAI(temperature=0.)
 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-agent = initialize_agent(
-    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-    llm=model,
-    tools=[tool],
-    memory=memory,
-    verbose=True,
-)
+agent = create_structured_chat_agent(llm, tools, prompt=hub.pull("hwchase17/structured-chat-agent"))
+agent_executor = AgentExecutor(agent=agent, tools=tools, memory=memory, verbose=True)
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
-agent.run(input=user_input)
+agent_executor.invoke(dict(input=user_input))
 ```
 
 ### Transformers Agent
@@ -138,18 +134,18 @@ easy incorporation of additional community-developed tools.
 Here is an example script to integrate agentlego tools to Transformers agent:
 
 ```python
-from agentlego.apis import load_tool
 from transformers import HfAgent
+from agentlego.tools import Calculator
 
 # Load the tools you want to use.
-tool = load_tool('Calculator').to_transformers_agent()
+tools = [Calculator().to_transformers_agent()]
 
 # Build HuggingFace Transformers Agent
 prompt = open('examples/hf_agent/hf_demo_prompts.txt', 'r').read()
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
     chat_prompt_template=prompt,
-    additional_tools=[tool],
+    additional_tools=tools,
 )
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
@@ -163,10 +159,10 @@ tools on clients.
 
 ## Start a server
 
-We provide a script `server.py` to start a tool server. You can specify the tool names you want to use.
+We provide a command-line tool `agentlego-server` to start a tool server. You can specify the tool names you want to use.
 
 ```bash
-python server.py Calculator ImageCaption TextToImage
+agentlego-server start Calculator ImageCaption TextToImage
 ```
 
 And then, the server will setup all tools and start.
@@ -175,7 +171,7 @@ And then, the server will setup all tools and start.
 INFO:     Started server process [1741344]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:16180 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://127.0.0.1:16180 (Press CTRL+C to quit)
 ```
 
 ## Use tools in client
