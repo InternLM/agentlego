@@ -8,7 +8,7 @@ def test_load_tool():
     assert isinstance(tool, Calculator)
 
     # description will be overwrite
-    tool = load_tool('ImageCaption', description='custom')
+    tool = load_tool('ImageDescription', description='custom')
     assert 'custom' in tool.toolmeta.description
 
     # cached tool

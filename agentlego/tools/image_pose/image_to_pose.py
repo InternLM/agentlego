@@ -1,8 +1,4 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
 
@@ -11,31 +7,20 @@ class HumanBodyPose(BaseTool):
     """A tool to extract human body keypoints from an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         model (str): The model name used to inference. Which can be found
             in the ``MMPose`` repository.
             Defaults to `human`.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='HumanBodyPoseDetectionOnImage',
-        description='This tool can estimate the pose or keypoints of '
-        'human in an image and draw the human pose image',
-        inputs=['image'],
-        outputs=['image'],
-    )
+    default_desc = ('This tool can estimate the pose or keypoints of '
+                    'human in an image and draw the human pose image.')
 
     @require('mmpose')
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 model: str = 'human',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, model: str = 'human', device: str = 'cuda', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.model_name = model
         self.device = device
 
@@ -44,7 +29,8 @@ class HumanBodyPose(BaseTool):
         self._inferencer = load_or_build_object(
             MMPoseInferencer, pose2d=self.model_name, device=self.device)
 
-    def apply(self, image: ImageIO) -> ImageIO:
+    def apply(self, image: ImageIO
+              ) -> Annotated[ImageIO, Info('The human pose keypoints image.')]:
         image = image.to_array()[:, :, ::-1]
         vis_params = self.adaptive_vis_params(*image.shape[:2])
         results = next(

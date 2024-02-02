@@ -59,8 +59,7 @@ TODO
 
 def parse_args():
     parser = argparse.ArgumentParser(description=prog_description)
-    parser.add_argument(
-        'tools', type=str, nargs='+', help='The tool class to generate.')
+    parser.add_argument('tools', type=str, nargs='+', help='The tool class to generate.')
     args = parser.parse_args()
     return args
 

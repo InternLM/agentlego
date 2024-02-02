@@ -1,15 +1,10 @@
 import math
-from typing import Callable, Union
 
-import cv2
 import numpy as np
 from PIL import Image, ImageOps
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
-from agentlego.types import ImageIO
-from agentlego.utils import require
-from agentlego.utils.cache import load_or_build_object
+from agentlego.types import Annotated, ImageIO, Info
+from agentlego.utils import load_or_build_object, parse_multi_float, require
 from ..base import BaseTool
 from .replace import Inpainting
 
@@ -29,6 +24,7 @@ def blend_gt2pt(old_image, new_image, sigma=0.15, steps=100):
     Returns:
         PIL.Image.Image: The blended image.
     """
+    import cv2
     new_size = new_image.size
     old_size = old_image.size
     easy_img = np.array(new_image)
@@ -95,37 +91,24 @@ class ImageExpansion(BaseTool):
     """A tool to expand the given image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         caption_model (str): The model name used to inference. Which can be
             found in the ``MMPreTrain`` repository.
             Defaults to ``blip-base_3rdparty_caption``.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ImageExpansion',
-        description='This tool can expand the peripheral area of '
-        'an image based on its content, thus obtaining a larger image. '
-        'You need to provide the target image and the expand ratio. '
-        'The expand ratio can be a float string (for both width and '
-        'height expand ratio, like "1.25") or a string include two '
-        'float separated by comma (for width ratio and height ratio, '
-        'like "1.25, 1.0")',
-        inputs=['image', 'text'],
-        outputs=['image'],
-    )
+    default_desc = ('This tool can expand the peripheral area of an image '
+                    'based on its content, thus obtaining a larger image.')
 
     @require('mmpretrain')
     @require('diffusers')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  caption_model: str = 'blip-base_3rdparty_caption',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.caption_model_name = caption_model
         self.device = device
 
@@ -134,18 +117,21 @@ class ImageExpansion(BaseTool):
         from mmpretrain.apis import ImageCaptionInferencer
 
         self.caption_inferencer = load_or_build_object(
-            ImageCaptionInferencer,
-            model=self.caption_model_name,
-            device=self.device)
+            ImageCaptionInferencer, model=self.caption_model_name, device=self.device)
 
-        self.inpainting_inferencer = load_or_build_object(
-            Inpainting, device=self.device)
+        self.inpainting_inferencer = load_or_build_object(Inpainting, device=self.device)
 
-    def apply(self, image: ImageIO, scale: str) -> ImageIO:
+    def apply(
+        self,
+        image: ImageIO,
+        scale: Annotated[str,
+                         Info('expand ratio, can be a float number or two '
+                              'float number for width and height ratio.')],
+    ) -> ImageIO:
         old_img = image.to_pil().convert('RGB')
         expand_ratio = 4  # maximum expand ratio for a single round.
 
-        scale_w, scale_h = self.parse_scale(scale)
+        scale_w, scale_h = parse_multi_float(scale, 2)
         target_w = int(old_img.size[0] * scale_w)
         target_h = int(old_img.size[1] * scale_h)
 
@@ -153,10 +139,8 @@ class ImageExpansion(BaseTool):
             caption = self.get_caption(old_img)
 
             # crop the some border to re-generation.
-            crop_w = 15 if (old_img.width != target_w
-                            and old_img.width > 100) else 0
-            crop_h = 15 if (old_img.height != target_h
-                            and old_img.height > 100) else 0
+            crop_w = 15 if (old_img.width != target_w and old_img.width > 100) else 0
+            crop_h = 15 if (old_img.height != target_h and old_img.height > 100) else 0
             old_img = ImageOps.crop(old_img, (crop_w, crop_h, crop_w, crop_h))
 
             canvas_w = min(expand_ratio * old_img.width, target_w)
@@ -184,20 +168,11 @@ class ImageExpansion(BaseTool):
 
             # Resize the generated image into the canvas size and
             # blend with the old image.
-            image = image.resize((canvas.width, canvas.height),
-                                 Image.ANTIALIAS)
+            image = image.resize((canvas.width, canvas.height), Image.ANTIALIAS)
             image = blend_gt2pt(old_img, image)
             old_img = image
 
         return ImageIO(old_img)
-
-    @staticmethod
-    def parse_scale(scale: str):
-        if isinstance(scale, str) and ',' in scale:
-            w_scale, h_scale = scale.split(',')[:2]
-        else:
-            w_scale, h_scale = scale, scale
-        return float(w_scale), float(h_scale)
 
     def get_caption(self, image: Image.Image):
         image = np.array(image)[:, :, ::-1]

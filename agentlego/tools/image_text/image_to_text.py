@@ -1,41 +1,29 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
 from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
 
 
-class ImageCaption(BaseTool):
+class ImageDescription(BaseTool):
     """A tool to describe an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         model (str): The model name used to inference. Which can be found
             in the ``MMPreTrain`` repository.
             Defaults to ``blip-base_3rdparty_caption``.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ImageDescription',
-        description=('A useful tool that returns a brief '
-                     'description of the input image.'),
-        inputs=['image'],
-        outputs=['text'],
-    )
+    default_desc = ('A useful tool that returns a brief '
+                    'description of the input image.')
 
     @require('mmpretrain')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  model: str = 'blip-base_3rdparty_caption',
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.model = model
         self.device = device
 

@@ -30,8 +30,7 @@ def main():
         max_turn=3,
         action_executor=ActionExecutor(actions=tools),
     )
-    system = chatbot._protocol.format([], [],
-                                      chatbot._action_executor)[0]['content']
+    system = chatbot._protocol.format([], [], chatbot._action_executor)[0]['content']
     print(f'\033[92mSystem\033[0m:\n{system}')
 
     while True:

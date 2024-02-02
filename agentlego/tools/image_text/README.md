@@ -1,4 +1,4 @@
-# ImageCaption
+# ImageDescription
 
 ## Examples
 
@@ -8,7 +8,7 @@
 from agentlego.apis import load_tool
 
 # load tool
-tool = load_tool('ImageCaption', device='cuda')
+tool = load_tool('ImageDescription', device='cuda')
 
 # apply tool
 caption = tool('examples/demo.png')
@@ -23,7 +23,7 @@ from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tool = load_tool('ImageCaption', device='cuda').to_lagent()
+tool = load_tool('ImageDescription', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.
@@ -42,7 +42,7 @@ from agentlego.apis import load_tool
 from PIL import Image
 
 # load tools and build transformers agent
-tool = load_tool('ImageCaption', device='cuda').to_transformers_agent()
+tool = load_tool('ImageDescription', device='cuda').to_transformers_agent()
 agent = HfAgent('https://api-inference.huggingface.co/models/bigcode/starcoder', additional_tools=[tool])
 
 # agent running with the tool (For demo, we directly specify the tool name here.)
@@ -127,8 +127,7 @@ print(image)
 Before using the tool, please confirm you have installed the related dependencies by the below commands.
 
 ```bash
-pip install -U openmim
-mim install -U mmagic
+pip install -U diffusers
 ```
 
 ## Reference

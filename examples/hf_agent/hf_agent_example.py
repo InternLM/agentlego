@@ -9,14 +9,13 @@ from agentlego.apis import load_tool
 
 tools = [
     load_tool(tool_type).to_transformers_agent() for tool_type in [
-        'ImageCaption',
+        'ImageDescription',
         'TextToSpeech',
     ]
 ]
 agent = HfAgent(
     'https://api-inference.huggingface.co/models/bigcode/starcoder',
-    chat_prompt_template=(Path(__file__).parent /
-                          'hf_demo_prompts.txt').read_text(),
+    chat_prompt_template=(Path(__file__).parent / 'hf_demo_prompts.txt').read_text(),
     additional_tools=tools,
 )
 

@@ -1,0 +1,140 @@
+.message {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr);
+    padding-bottom: 25px;
+    font-size: 15px;
+    font-family: 'Noto Sans', Helvetica, Arial, sans-serif;
+    line-height: 22.5px !important;
+}
+
+.message-body {
+    margin-top: 3px;
+}
+
+.circle-you {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(255, 108, 108);
+    border-radius: 20%;
+}
+
+.circle-bot {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(255, 189, 69);
+    border-radius: 20%;
+}
+
+.circle-bot svg,
+.circle-you svg {
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.message-body p {
+    font-size: 15px !important;
+    line-height: 22.5px !important;
+}
+
+.message-body p, .chat .message-body ul, .chat .message-body ol {
+    margin-bottom: 10px !important;
+}
+
+.message-body p:last-child, .chat .message-body ul:last-child, .chat .message-body ol:last-child {
+    margin-bottom: 0 !important;
+}
+
+.dark .message-body p em {
+    color: rgb(138 138 138) !important;
+}
+
+.message-body p em {
+    color: rgb(110 110 110) !important;
+    font-weight: 500;
+}
+
+/* -------------------- 工具展示相关样式 -------------------- */
+/* <details> 和 <summary> 的基础样式 */
+.message-body details.tool {
+  background-color: #182029;
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: 0.3s;
+}
+
+/* 鼠标悬停在 <details> 元素上时的样式 */
+.message-body details.tool:hover {
+  background-color: #1e2c3a;
+}
+
+/* <summary> 元素的样式，这里使用了伪元素来自定义展开按钮的样式 */
+.message-body summary {
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 工具参数和回复的样式 */
+.message-body .tool-args, .tool-response, .tool-thought {
+  background-color: #111A24;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* 斜体强调的文本 */
+.message-body .tool em {
+  font-style: italic;
+}
+
+/* 最终答案模块的样式 */
+.message-body .final-answer .thought {
+  margin: 20px 0;
+}
+
+/* 图片的样式，确保它们在容器内完全显示 */
+.message-body img {
+  max-width: 500px;
+  max-height: 300px;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 2px solid #162B3D;
+}
+
+.message-body .tool img {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.message-body .error-box {
+  background-color: #6a313194;
+  color: #fff;
+  border: 1px solid #e74c3c;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.message-body .error-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.message-body .error-reason {
+  font-size: 14px;
+  opacity: 0.7;
+  line-height: 1.6;
+}

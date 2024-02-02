@@ -1,19 +1,21 @@
 import copy
-import inspect
 from abc import ABCMeta, abstractmethod
-from types import MethodType
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Mapping, Optional, Tuple, Union
 
+from agentlego.parsers import DefaultParser
 from agentlego.schema import Parameter, ToolMeta
+from .utils.parameters import extract_toolmeta
 
 
 class BaseTool(metaclass=ABCMeta):
+    default_desc: Optional[str] = None
 
-    def __init__(self, toolmeta: Union[dict, ToolMeta], parser: Callable):
-        toolmeta = copy.deepcopy(toolmeta)
-        if isinstance(toolmeta, dict):
-            toolmeta = ToolMeta(**toolmeta)
-        self.toolmeta = toolmeta
+    def __init__(
+        self,
+        toolmeta: Union[dict, ToolMeta, None] = None,
+        parser: Callable = DefaultParser,
+    ):
+        self.toolmeta = self.get_default_toolmeta(toolmeta)
         self.set_parser(parser)
         self._is_setup = False
 
@@ -32,6 +34,33 @@ class BaseTool(metaclass=ABCMeta):
     @description.setter
     def description(self, val: str):
         self.toolmeta.description = val
+
+    @property
+    def inputs(self) -> Tuple[Parameter, ...]:
+        return self.toolmeta.inputs
+
+    @property
+    def arguments(self) -> Mapping[str, Parameter]:
+        return {i.name: i for i in self.toolmeta.inputs}
+
+    @property
+    def outputs(self) -> Tuple[Parameter, ...]:
+        return self.toolmeta.outputs
+
+    @classmethod
+    def get_default_toolmeta(cls, override=None) -> ToolMeta:
+        if isinstance(override, dict):
+            override = ToolMeta(**override)
+        override = ToolMeta() if override is None else copy.deepcopy(override)
+
+        if override.name is None:
+            override.name = cls.__name__
+
+        if override.description is None:
+            doc = (cls.default_desc or '').partition('\n\n')[0].replace('\n', ' ')
+            override.description = doc.strip()
+
+        return extract_toolmeta(cls.apply, override=override)
 
     def set_parser(self, parser: Callable):
         self.parser = parser(self)
@@ -65,23 +94,6 @@ class BaseTool(metaclass=ABCMeta):
                     f'toolmeta={self.toolmeta}, '
                     f'parser={type(self.parser).__name__})')
         return repr_str
-
-    @property
-    def parameters(self) -> Dict[str, Parameter]:
-        parameters = {}
-        for category, p in zip(
-                self.toolmeta.inputs,
-                inspect.signature(self.apply).parameters.values()):
-            if isinstance(self.apply, MethodType) and p.name == 'self':
-                continue
-            parameters[p.name] = Parameter(
-                name=p.name,
-                category=category,
-                description=None,
-                optional=p.default != inspect._empty,
-                default=p.default if p.default != inspect._empty else None,
-            )
-        return parameters
 
     def __copy__(self):
         obj = object.__new__(type(self))

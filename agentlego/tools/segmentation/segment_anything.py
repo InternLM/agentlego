@@ -1,17 +1,13 @@
 import random
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Tuple
 
-import cv2
 import numpy as np
 from PIL import Image
 
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
-from agentlego.types import ImageIO
+from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import (download_checkpoint, download_url_to_file,
-                             is_package_available, load_or_build_object,
-                             require)
+                             is_package_available, load_or_build_object, require)
 from ..base import BaseTool
 
 if is_package_available('torch'):
@@ -96,8 +92,8 @@ class SamPredictor:
         # Transform the image to the form expected by the model
         input_image = self.transform.apply_image(image)
         input_image_torch = torch.as_tensor(input_image, device=self.device)
-        input_image_torch = input_image_torch.permute(
-            2, 0, 1).contiguous()[None, :, :, :]
+        input_image_torch = input_image_torch.permute(2, 0,
+                                                      1).contiguous()[None, :, :, :]
 
         return self.set_torch_image(input_image_torch, image.shape[:2])
 
@@ -116,8 +112,7 @@ class SamPredictor:
           original_image_size (tuple(int, int)): The size of the image
             before transformation, in (H, W) format.
         """
-        assert (len(transformed_image.shape) == 4
-                and transformed_image.shape[1] == 3
+        assert (len(transformed_image.shape) == 4 and transformed_image.shape[1] == 3
                 and max(*transformed_image.shape[2:])
                 == self.model.image_encoder.img_size), (
                     'set_torch_image input must be BCHW with long side'
@@ -186,21 +181,18 @@ class SamPredictor:
         coords_torch, labels_torch = None, None
         box_torch, mask_input_torch = None, None
         if point_coords is not None:
-            assert (
-                point_labels is not None
-            ), 'point_labels must be supplied if point_coords is supplied.'
-            point_coords = self.transform.apply_coords(
-                point_coords, features['original_size'])
+            assert (point_labels is not None
+                    ), 'point_labels must be supplied if point_coords is supplied.'
+            point_coords = self.transform.apply_coords(point_coords,
+                                                       features['original_size'])
             coords_torch = torch.as_tensor(
                 point_coords, dtype=torch.float, device=self.device)
             labels_torch = torch.as_tensor(
                 point_labels, dtype=torch.int, device=self.device)
-            coords_torch, labels_torch = coords_torch[
-                None, :, :], labels_torch[None, :]
+            coords_torch, labels_torch = coords_torch[None, :, :], labels_torch[None, :]
         if box is not None:
             box = self.transform.apply_boxes(box, features['original_size'])
-            box_torch = torch.as_tensor(
-                box, dtype=torch.float, device=self.device)
+            box_torch = torch.as_tensor(box, dtype=torch.float, device=self.device)
             box_torch = box_torch[None, :]
         if mask_input is not None:
             mask_input_torch = torch.as_tensor(
@@ -293,8 +285,7 @@ class SamPredictor:
         )
 
         # Upscale the masks to the original image resolution
-        masks = self.model.postprocess_masks(low_res_masks,
-                                             features['input_size'],
+        masks = self.model.postprocess_masks(low_res_masks, features['input_size'],
                                              features['original_size'])
 
         if not return_logits:
@@ -314,30 +305,23 @@ class SegmentAnything(BaseTool):
     """A tool to segment all objects on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         sam_model (str): The model name used to inference. Which can be found
             in the ``segment_anything`` repository.
             Defaults to ``sam_vit_h_4b8939.pth``.
-        device (str): The device to load the model. Defaults to 'cpu'.
+        device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='SegmentAnything',
-        description='This tool can segment all items in the image and '
-        'return a segmentation result image',
-        inputs=['image'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can segment all items in the image and '
+                    'return a segmentation result image.')
 
     @require('segment_anything')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  sam_model: str = 'sam_vit_h_4b8939.pth',
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.sam_model = sam_model
         self.device = device
 
@@ -345,19 +329,16 @@ class SegmentAnything(BaseTool):
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.sam_model, device=self.device)
 
-    def apply(self, image: ImageIO) -> ImageIO:
-        image = image.to_path()
-        annos = self.segment_anything(image)
+    def apply(self, image: ImageIO
+              ) -> Annotated[ImageIO, Info('The segmentation result image.')]:
+        annos = self.segment_anything(image.to_array())
         full_img, _ = self.show_annos(annos)
         return ImageIO(full_img)
 
-    def segment_anything(self, img_path):
+    def segment_anything(self, img):
         if not self._is_setup:
             self.setup()
             self._is_setup = True
-
-        img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         from segment_anything import SamAutomaticMaskGenerator
 
@@ -386,8 +367,8 @@ class SegmentAnything(BaseTool):
 
         return res_masks[np.argmax(scores), :, :]
 
-    def get_detection_map(self, img_path):
-        annos = self.segment_anything(img_path)
+    def get_detection_map(self, img):
+        annos = self.segment_anything(img)
         _, detection_map = self.show_anns(annos)
 
         return detection_map
@@ -433,10 +414,6 @@ class SegmentObject(BaseTool):
     """A tool to segment all objects on an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         sam_model (str): The model name used to inference. Which can be found
             in the ``segment_anything`` repository.
             Defaults to ``sam_vit_h_4b8939.pth``.
@@ -444,26 +421,23 @@ class SegmentObject(BaseTool):
             Which can be found in the ``MMDetection`` repository.
             Defaults to ``glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365``.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='SegmentSpecifiedObject',
-        description=('This tool can segment the specified kind of '
-                     'objects in the input image, and return the '
-                     'segmentation result image.'),
-        inputs=['image', 'text'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can segment the specified kind of objects in '
+                    'the input image, and return the segmentation '
+                    'result image.')
 
     @require('segment_anything')
     @require('mmdet>=3.1.0')
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 sam_model: str = 'sam_vit_h_4b8939.pth',
-                 grounding_model: str = (
-                     'glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'),
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(
+            self,
+            sam_model: str = 'sam_vit_h_4b8939.pth',
+            grounding_model: str = ('glip_atss_swin-t_a_fpn_dyhead_pretrain_obj365'),
+            device: str = 'cuda',
+            toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.sam_model = sam_model
         self.grounding_model = grounding_model
         self.device = device
@@ -477,7 +451,11 @@ class SegmentObject(BaseTool):
         self.sam, self.sam_predictor = load_sam_and_predictor(
             self.sam_model, device=self.device)
 
-    def apply(self, image: ImageIO, text: str) -> ImageIO:
+    def apply(
+        self,
+        image: ImageIO,
+        text: Annotated[str, Info('The object to segment.')],
+    ) -> Annotated[ImageIO, Info('The segmentation result image.')]:
 
         results = self.grounding(
             inputs=image.to_array()[:, :, ::-1],  # Input BGR
@@ -489,8 +467,8 @@ class SegmentObject(BaseTool):
         boxes_filt = results.bboxes
         pred_phrases = results.label_names
 
-        output_image = self.segment_image_with_boxes(image.to_array(),
-                                                     boxes_filt, pred_phrases)
+        output_image = self.segment_image_with_boxes(image.to_array(), boxes_filt,
+                                                     pred_phrases)
         return ImageIO(output_image)
 
     def get_mask_with_boxes(self, image, boxes_filt):
@@ -523,10 +501,7 @@ class SegmentObject(BaseTool):
         # draw output image
         for mask in masks:
             image = self.show_mask(
-                mask[0].cpu().numpy(),
-                image,
-                random_color=True,
-                transparency=0.3)
+                mask[0].cpu().numpy(), image, random_color=True, transparency=0.3)
 
         return image
 
@@ -546,6 +521,7 @@ class SegmentObject(BaseTool):
             visualized on top of the image.
             transparenccy: the transparency of the segmentation mask
         """
+        import cv2
 
         if random_color:
             color = np.concatenate([np.random.random(3)], axis=0)
@@ -554,8 +530,7 @@ class SegmentObject(BaseTool):
         h, w = mask.shape[-2:]
         mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1) * 255
 
-        image = cv2.addWeighted(image, 0.7, mask_image.astype('uint8'),
-                                transparency, 0)
+        image = cv2.addWeighted(image, 0.7, mask_image.astype('uint8'), transparency, 0)
         return image
 
     def show_box(self, box, ax, label):

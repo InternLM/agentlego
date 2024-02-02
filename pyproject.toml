@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 62.6"]
+requires = ["setuptools >= 62.6, < 64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -24,6 +24,9 @@ dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 Documentation = "https://agentlego.readthedocs.io"
 Repository = "https://github.com/InternLM/agentlego"
 
+[project.scripts]
+agentlego-server = "agentlego.server.server:cli"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["agentlego*"]
@@ -42,10 +45,11 @@ based_on_style = "pep8"
 blank_line_before_nested_class_or_def = true
 split_before_expression_after_opening_paren = true
 split_penalty_import_names = 0
-SPLIT_PENALTY_AFTER_OPENING_BRACKET = 800
+split_penalty_after_opening_bracket = 800
+column_limit = 89
 
 [tool.isort]
-line_length = 79
+line_length = 89
 multi_line_output = 0
 known_first_party = "agentlego"
 no_lines_before = ["STDLIB", "LOCALFOLDER"]

@@ -1,7 +1,3 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import AudioIO, ImageIO
 from agentlego.utils import is_package_available, load_or_build_object, require
 from ..base import BaseTool
@@ -36,31 +32,21 @@ class AudioToImage(BaseTool):
     """A tool to generate image from an audio.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioToImage',
-        description=('This tool can generate an image '
-                     'according to the input audio'),
-        inputs=['audio'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image '
+                    'according to the input audio.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
-        self._inferencer = load_or_build_object(
-            AnythingToImage, device=self.device)
+        self._inferencer = load_or_build_object(AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO) -> ImageIO:
         from .data import load_and_transform_audio_data
@@ -68,8 +54,7 @@ class AudioToImage(BaseTool):
 
         audio_paths = [audio.to_path()]
         audio_data = load_and_transform_audio_data(audio_paths, self.device)
-        embeddings = self._inferencer.model.forward(
-            {ModalityType.AUDIO: audio_data})
+        embeddings = self._inferencer.model.forward({ModalityType.AUDIO: audio_data})
         embeddings = embeddings[ModalityType.AUDIO]
         images = self._inferencer.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
@@ -82,41 +67,29 @@ class ThermalToImage(BaseTool):
     """A tool to generate image from an thermal image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ThermalToImage',
-        description=('This tool can generate an image '
-                     'according to the input thermal image.'),
-        inputs=['image'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image '
+                    'according to the input thermal image.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
-        self._inferencer = load_or_build_object(
-            AnythingToImage, device=self.device)
+        self._inferencer = load_or_build_object(AnythingToImage, device=self.device)
 
     def apply(self, thermal: ImageIO) -> ImageIO:
         from .data import load_and_transform_thermal_data
         from .models.imagebind_model import ModalityType
 
         thermal_paths = [thermal.to_path()]
-        thermal_data = load_and_transform_thermal_data(thermal_paths,
-                                                       self.device)
-        embeddings = self._inferencer.model.forward(
-            {ModalityType.THERMAL: thermal_data})
+        thermal_data = load_and_transform_thermal_data(thermal_paths, self.device)
+        embeddings = self._inferencer.model.forward({ModalityType.THERMAL: thermal_data})
         embeddings = embeddings[ModalityType.THERMAL]
         images = self._inferencer.pipe(
             image_embeds=embeddings.half(), width=512, height=512).images
@@ -129,50 +102,36 @@ class AudioImageToImage(BaseTool):
     """A tool to generate image from an audio and an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioImageToImage',
-        description=('This tool can generate an image according to '
-                     'the input reference image and the input audio.'),
-        inputs=['image', 'audio'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image according to '
+                    'the input reference image and the input audio.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
-        self._inferencer = load_or_build_object(
-            AnythingToImage, device=self.device)
+        self._inferencer = load_or_build_object(AnythingToImage, device=self.device)
 
     def apply(self, image: ImageIO, audio: AudioIO) -> ImageIO:
-        from .data import (load_and_transform_audio_data,
-                           load_and_transform_vision_data)
+        from .data import load_and_transform_audio_data, load_and_transform_vision_data
         from .models.imagebind_model import ModalityType
 
         # process image data
-        vision_data = load_and_transform_vision_data([image.to_path()],
-                                                     self.device)
-        embeddings = self._inferencer.model.forward(
-            {ModalityType.VISION: vision_data}, normalize=False)
+        vision_data = load_and_transform_vision_data([image.to_path()], self.device)
+        embeddings = self._inferencer.model.forward({ModalityType.VISION: vision_data},
+                                                    normalize=False)
         img_embeddings = embeddings[ModalityType.VISION]
 
         # process audio data
-        audio_data = load_and_transform_audio_data([audio.to_path()],
-                                                   self.device)
+        audio_data = load_and_transform_audio_data([audio.to_path()], self.device)
         embeddings = self._inferencer.model.forward({
-            ModalityType.AUDIO:
-            audio_data,
+            ModalityType.AUDIO: audio_data,
         })
         audio_embeddings = embeddings[ModalityType.AUDIO]
 
@@ -188,35 +147,24 @@ class AudioTextToImage(BaseTool):
     """A tool to generate image from an audio and texts.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         device (str): The device to load the model. Defaults to 'cpu'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='AudioTextToImage',
-        description=('This tool can generate an image according to '
-                     'the input audio and the input description.'),
-        inputs=['audio', 'text'],
-        outputs=['image'],
-    )
+
+    default_desc = ('This tool can generate an image according to '
+                    'the input audio and the input description.')
 
     @require(['diffusers', 'ftfy', 'iopath', 'timm', 'pytorchvideo'])
-    def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
-                 device: str = 'cpu'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+    def __init__(self, device: str = 'cpu', toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.device = device
 
     def setup(self):
-        self._inferencer = load_or_build_object(
-            AnythingToImage, device=self.device)
+        self._inferencer = load_or_build_object(AnythingToImage, device=self.device)
 
     def apply(self, audio: AudioIO, prompt: str) -> ImageIO:
-        from .data import (load_and_transform_audio_data,
-                           load_and_transform_text)
+        from .data import load_and_transform_audio_data, load_and_transform_text
         from .models.imagebind_model import ModalityType
 
         audio_paths = [audio.to_path()]
@@ -227,8 +175,7 @@ class AudioTextToImage(BaseTool):
 
         audio_data = load_and_transform_audio_data(audio_paths, self.device)
         embeddings = self._inferencer.model.forward({
-            ModalityType.AUDIO:
-            audio_data,
+            ModalityType.AUDIO: audio_data,
         })
         audio_embeddings = embeddings[ModalityType.AUDIO]
         embeddings = text_embeddings * 0.5 + audio_embeddings * 0.5

@@ -119,3 +119,10 @@ venv.bak/
 
 # generated image, audio or video files.
 generated/
+
+# gradio demo
+webui/logs/
+webui/custom_tools/
+webui/installer_files/
+webui/generated/
+webui/*.yml

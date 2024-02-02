@@ -1,10 +1,14 @@
+addict
 func_timeout
-mmengine>=0.8
 numpy
-opencv-python
+openapi-pydantic
 packaging
 Pillow
 prompt_toolkit
+pydantic>=2.0
+pyyaml
 requests
+rich
 thefuzz
 tqdm
+typing-extensions

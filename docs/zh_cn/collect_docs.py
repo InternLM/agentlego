@@ -16,12 +16,14 @@ AUTODOC_TMPL = '''
 '''
 
 DEFAULT_TOOLMETA_TMPL = '''
-## Default Tool Meta
+## 默认工具信息
 
-- **name**: {name}
-- **description**: {description}
-- **inputs**: {inputs}
-- **outputs**: {outputs}
+- **名称**: {name}
+- **描述**: {description}
+- **输入**:
+{inputs}
+- **输出**:
+{outputs}
 '''
 
 
@@ -43,14 +45,27 @@ def format_tool_readme(path):
         content = contents[start:end]
         cls_name = content[0].strip('\n# ')
         from agentlego import tools
-        toolmeta = getattr(tools, cls_name).DEFAULT_TOOLMETA
+        from agentlego.schema import ToolMeta
+        toolmeta: ToolMeta = getattr(tools, cls_name).get_default_toolmeta()
+        inputs = []
+        for p in toolmeta.inputs:
+            desc = f'  - {p.name} ({p.type.__name__})'
+            if p.description:
+                desc += f': {p.description}'
+            inputs.append(desc)
+        outputs = []
+        for p in toolmeta.outputs:
+            desc = f'  - {p.type.__name__}'
+            if p.description:
+                desc += f': {p.description}'
+            outputs.append(desc)
         content.insert(
             1,
             DEFAULT_TOOLMETA_TMPL.format(
                 name=toolmeta.name,
                 description=toolmeta.description,
-                inputs=', '.join(toolmeta.inputs),
-                outputs=', '.join(toolmeta.outputs),
+                inputs='\n'.join(inputs),
+                outputs='\n'.join(outputs),
             ))
         content.insert(1, AUTODOC_TMPL.format(cls_name=cls_name))
         target = tmp_dir / 'tools' / (cls_name + '.md')

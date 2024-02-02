@@ -8,38 +8,22 @@ First, all tools should inherit the `BaseTool` class. As an example, assume we w
 
 ```python
 from agentlego.tools import BaseTool
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 
 class Clock(BaseTool):
-    def __init__(self):
-        toolmeta = ToolMeta(
-            name='Clock',
-            description='A clock that return the current date and time.',
-            inputs=[],
-            outputs=['text'],
-        )
-        super().__init__(toolmeta=toolmeta, parser=DefaultParser)
-```
+    default_desc = 'A clock that return the current date and time.'
 
-To initialize the tool, you need to construct a `ToolMeta` to specify the name, description, input arguments
-categories and the output categories. The available categories are `text`, `image` and `audio` by now.
-
-Then, you need also to specify a default parser, it's used to handle the input & output type. And usually, you
-can directly use `DefaultParser` as the default parser.
-
-Now, you can override the `setup` and `apply` method. The `setup` method will run when the tool is called at
-the first time, and it's usually used to lazy-load some heavy modules. And the `apply` method is the core
-method to perform when the tool is called. In this example, we only need to override the `apply` method.
-
-```python
-class Clock(BaseTool):
-    ...
-
-    def apply(self):
+    def apply(self) -> str:
         from datetime import datetime
         return datetime.now().strftime('%Y/%m/%d %H:%M')
 ```
+
+In the class attribute, you need to specify a `default_desc` to specify the description of the tool.
+
+Then, you can override the `setup` and `apply` method. The `setup` method will run when the tool is called at
+the first time, and it's usually used to lazy-load some heavy modules. And the `apply` method is the core
+method to perform when the tool is called. In this example, we only need to override the `apply` method.
+
+In the `apply` method, we need to use **Type hint** to specify the type of all inputs and outputs.
 
 We have already finished the tool, now you can instantiate it and use it in agent systems.
 
@@ -48,15 +32,20 @@ We have already finished the tool, now you can instantiate it and use it in agen
 tool = Clock()
 
 # Use it in langchain
-from langchain.agents import initialize_agent
-from langchain.chat_models import ChatOpenAI
+from langchain import hub
+from langchain.agents import create_structured_chat_agent, AgentExecutor
+from langchain_openai import ChatOpenAI
 
-agent = initialize_agent(
-    agent='structured-chat-zero-shot-react-description',
-    llm=ChatOpenAI(temperature=0.),
+# Be attention to specify `OPENAI_API_KEY` environment variable to call ChatGPT.
+agent_executor = AgentExecutor(
+    agent=create_structured_chat_agent(
+        llm=ChatOpenAI(temperature=0.),
+        tools=[tool.to_langchain()],
+        prompt=hub.pull("hwchase17/structured-chat-agent")
+    ),
     tools=[tool.to_langchain()],
     verbose=True)
-agent.invoke("What's the time?")
+agent_executor.invoke(dict(input="What's the time?"))
 
 # Use it in lagent
 from lagent import ReAct, GPTAPI, ActionExecutor
@@ -79,25 +68,16 @@ systems require the raw data to display at the front-end.
 Therefore, we use agent types as the input & output types of the tool, and use a `parser` to convert to the
 destination format automatically.
 
-Assume we want a tool that can create an audio caption with the destination language on the input image.
+Assume we want a tool that can create a caption audio with the destination language on the input image.
 
 ```python
 from agentlego.tools import BaseTool
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO, AudioIO
 
 class AudioCaption(BaseTool):
-    def __init__(self):
-        toolmeta = ToolMeta(
-            name='AudioCaption',
-            description='A tool that can create an audio caption on the input image with the specified language.',
-            inputs=['image', 'text'],
-            outputs=['audio'],
-        )
-        super().__init__(toolmeta=toolmeta, parser=DefaultParser)
+    default_desc = 'A tool that can create an audio caption on the input image with the specified language.'
 
-    def apply(self, image: ImageIO, language: str):
+    def apply(self, image: ImageIO, language: str) -> AudioIO:
         # Convert the agent type to the format we need in the tool.
         image = image.to_pil()
 

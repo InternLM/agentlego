@@ -1,0 +1,9 @@
+Calculator:
+  class: Calculator
+  name: Calculator
+  description: A calculator tool. The input must be a single Python expression and
+    you cannot import packages. You can use functions in the `math` package without
+    import.
+  enable: true
+  device: null
+  args: ''

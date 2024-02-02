@@ -1,4 +1,5 @@
 fastapi
+makefun
 python-multipart
-typing-extensions
+typer>=0.9
 uvicorn[standard]

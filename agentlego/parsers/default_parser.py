@@ -1,31 +1,27 @@
 from typing import Tuple
 
-from agentlego.types import CatgoryToIO, IOType
+from agentlego.types import AudioIO, File, ImageIO, IOType
 from .base_parser import BaseParser
 
 
 class DefaultParser(BaseParser):
-    agent_cat2type = {
-        'image': 'path',
-        'text': 'string',
-        'audio': 'path',
-        'int': 'int',
-        'bool': 'bool',
-        'float': 'float',
+    agent_type2format = {
+        ImageIO: 'path',
+        AudioIO: 'path',
+        File: 'path',
     }
 
     def parse_inputs(self, *args, **kwargs) -> Tuple[tuple, dict]:
-        for arg, arg_name in zip(args, self.tool.parameters):
-            kwargs[arg_name] = arg
+        for arg, p in zip(args, self.tool.inputs):
+            kwargs[p.name] = arg
 
         parsed_kwargs = {}
         for k, v in kwargs.items():
-            if k not in self.tool.parameters:
+            p = self.tool.arguments.get(k)
+            if p is None:
                 raise TypeError(f'Got unexcepted keyword argument "{k}".')
-            p = self.tool.parameters[k]
-            tool_type = CatgoryToIO[p.category]
-            if not isinstance(v, tool_type):
-                tool_input = tool_type(v)
+            if not isinstance(v, p.type):
+                tool_input = p.type(v)
             else:
                 tool_input = v
             parsed_kwargs[k] = tool_input
@@ -35,18 +31,27 @@ class DefaultParser(BaseParser):
     def parse_outputs(self, outputs):
         if isinstance(outputs, tuple):
             assert len(outputs) == len(self.toolmeta.outputs)
+            parsed_outs = []
+            for out in outputs:
+                format = self.agent_type2format.get(type(out))
+                if isinstance(out, IOType) and format:
+                    out = out.to(format)
+                parsed_outs.append(out)
+            parsed_outs = tuple(parsed_outs)
+        elif isinstance(outputs, dict):
+            parsed_outs = {}
+            for k, out in outputs.items():
+                format = self.agent_type2format.get(type(out))
+                if isinstance(out, IOType) and format:
+                    out = out.to(format)
+                parsed_outs[k] = out
         else:
-            assert len(self.toolmeta.outputs) == 1
-            outputs = [outputs]
+            format = self.agent_type2format.get(type(outputs))
+            if isinstance(outputs, IOType) and format:
+                outputs = outputs.to(format)
+            parsed_outs = outputs
 
-        parsed_outs = []
-        for tool_output, out_category in zip(outputs, self.toolmeta.outputs):
-            agent_type = self.agent_cat2type[out_category]
-            if isinstance(tool_output, IOType):
-                tool_output = tool_output.to(agent_type)
-            parsed_outs.append(tool_output)
-
-        return parsed_outs[0] if len(parsed_outs) == 1 else tuple(parsed_outs)
+        return parsed_outs
 
     def refine_description(self) -> str:
         """Refine the tool description by replacing the input and output
@@ -61,12 +66,40 @@ class DefaultParser(BaseParser):
         """
 
         inputs_desc = []
-        for p in self.tool.parameters.values():
-            type_ = self.agent_cat2type[p.category]
-            default = f', Defaults to {p.default}' if p.optional else ''
-            inputs_desc.append(f'{p.name} ({p.category} {type_}{default})')
-        inputs_desc = 'Args: ' + ', '.join(inputs_desc)
+        for p in self.tool.inputs:
+            desc = f'{p.name}'
+            format = self.agent_type2format.get(p.type, p.type.__name__)
+            if p.description:
+                format += f', {p.description}'
+            if p.optional:
+                format += f'. Optional, Defaults to {p.default}'
+            desc += f' ({format})'
+            inputs_desc.append(desc)
+        if len(inputs_desc) > 0:
+            inputs_desc = 'Args: ' + '; '.join(inputs_desc)
+        else:
+            inputs_desc = 'No argument.'
 
-        description = f'{self.toolmeta.description} {inputs_desc}'
+        outputs_desc = []
+        for p in self.tool.outputs:
+            format = self.agent_type2format.get(p.type, p.type.__name__)
+            if p.name and p.description:
+                desc = f'{p.name} ({format}, {p.description})'
+            elif p.name:
+                desc = f'{p.name} ({format})'
+            elif p.description:
+                desc = f'{format} ({p.description})'
+            else:
+                desc = f'{format}'
+            outputs_desc.append(desc)
+        if len(outputs_desc) > 0:
+            outputs_desc = 'Returns: ' + '; '.join(outputs_desc)
+        else:
+            outputs_desc = 'No returns.'
+
+        description = ''
+        if self.toolmeta.description:
+            description += f'{self.toolmeta.description}\n'
+        description += f'{inputs_desc}\n{outputs_desc}'
 
         return description

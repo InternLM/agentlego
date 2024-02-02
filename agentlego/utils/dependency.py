@@ -114,8 +114,7 @@ def require(dep, install=None):
             msg = '{name} requires {dep}, please install by `{ins}`.'.format(
                 name=fn.__qualname__.replace('.__init__', ''),
                 dep=', '.join(dep),
-                ins=install
-                or 'pip install {}'.format(' '.join(repr(i) for i in dep)))
+                ins=install or 'pip install {}'.format(' '.join(repr(i) for i in dep)))
             raise ImportError(msg)
 
         if all(_check_dependency(item) for item in dep):

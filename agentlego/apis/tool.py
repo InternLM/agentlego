@@ -1,21 +1,30 @@
 import importlib
 import inspect
+from typing import Optional, Union
 
 import agentlego.tools
 from agentlego.tools import BaseTool
+from agentlego.tools.func import _FuncToolType
 from agentlego.utils.cache import load_or_build_object
 
 NAMES2TOOLS = {}
 
 
-def register_all_tools(module):
+def extract_all_tools(module):
     if isinstance(module, str):
         module = importlib.import_module(module)
 
+    tools = {}
     for k, v in module.__dict__.items():
-        if (isinstance(v, type) and issubclass(v, BaseTool)
-                and (v is not BaseTool)):
-            NAMES2TOOLS[k] = v
+        if (isinstance(v, type) and issubclass(v, BaseTool) and (v is not BaseTool)):
+            tools[k] = v
+        elif isinstance(v, _FuncToolType):
+            tools[k] = v
+    return tools
+
+
+def register_all_tools(module):
+    NAMES2TOOLS.update(extract_all_tools(module))
 
 
 register_all_tools(agentlego.tools)
@@ -39,15 +48,15 @@ def list_tools(with_description=False):
         ...     print(name, description)
     """
     if with_description:
-        return list((name, cls.DEFAULT_TOOLMETA.description)
+        return list((name, cls.get_default_toolmeta().description)
                     for name, cls in NAMES2TOOLS.items())
     else:
         return list(NAMES2TOOLS.keys())
 
 
 def load_tool(tool_type: str,
-              name: str = None,
-              description: str = None,
+              name: Optional[str] = None,
+              description: Optional[str] = None,
               device=None,
               **kwargs) -> BaseTool:
     """Load a configurable callable tool for different task.
@@ -56,7 +65,7 @@ def load_tool(tool_type: str,
         tool_name (str): tool name for specific task. You can find more
             description about supported tools by
             :func:`~agentlego.apis.list_tools`.
-        override_name (str | None): The name to override the default name.
+        name (str | None): The name to override the default name.
             Defaults to None.
         description (str): The description to override the default description.
             Defaults to None.
@@ -72,22 +81,19 @@ def load_tool(tool_type: str,
     Examples:
         >>> from agentlego import load_tool
         >>> # load tool with tool name
-        >>> tool, meta = load_tool('object detection')
-        >>> # load a specific model
-        >>> tool, meta = load_tool(
-        >>>     'object detection', model='rtmdet_l_8xb32-300e_coco')
+        >>> tool, meta = load_tool('GoogleSearch', with_url=True)
     """
     if tool_type not in NAMES2TOOLS:
         # Using ValueError to show error msg cross lines.
         raise ValueError(f'{tool_type} is not supported now, the available '
                          'tools are:\n' + '\n'.join(NAMES2TOOLS.keys()))
 
-    tool_type = NAMES2TOOLS[tool_type]
-    if 'device' in inspect.getfullargspec(tool_type).args:
+    constructor: Union[type, _FuncToolType] = NAMES2TOOLS[tool_type]
+    if 'device' in inspect.getfullargspec(constructor).args:
         kwargs['device'] = device
 
-    if name or description:
-        tool_obj = tool_type(**kwargs)
+    if name or description or isinstance(constructor, _FuncToolType):
+        tool_obj = constructor(**kwargs)
         if name:
             tool_obj.name = name
         if description:
@@ -95,5 +101,5 @@ def load_tool(tool_type: str,
     else:
         # Only enable cache if no overrode attribution
         # to avoid the cached tool is changed.
-        tool_obj = load_or_build_object(tool_type, **kwargs)
+        tool_obj = load_or_build_object(constructor, **kwargs)
     return tool_obj

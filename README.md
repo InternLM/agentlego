@@ -47,8 +47,8 @@ pip install agentlego
 Some tools requires extra packages, please check the readme file of the tool, and confirm all requirements are
 satisfied.
 
-For example, if we want to use the `ImageCaption` tool. We need to check the **Set up** section of
-[readme](agentlego/tools/image_text/README.md#ImageCaption) and install the requirements.
+For example, if we want to use the `ImageDescription` tool. We need to check the **Set up** section of
+[readme](agentlego/tools/image_text/README.md#ImageDescription) and install the requirements.
 
 ```bash
 pip install -U openmim
@@ -62,7 +62,7 @@ from agentlego import list_tools, load_tool
 
 print(list_tools())  # list tools in AgentLego
 
-image_caption_tool = load_tool('ImageCaption', device='cuda')
+image_caption_tool = load_tool('ImageDescription', device='cuda')
 print(image_caption_tool.description)
 image = './examples/demo.png'
 caption = image_caption_tool(image)
@@ -88,9 +88,9 @@ caption = image_caption_tool(image)
 
 **Image-processing related**
 
-- [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): Describe the input image.
+- [ImageDescription](agentlego/tools/image_text/README.md#ImageDescription): Describe the input image.
 - [OCR](agentlego/tools/ocr/README.md#OCR): Recognize the text from a photo.
-- [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): Answer the question according to the image.
+- [VQA](agentlego/tools/vqa/README.md#VQA): Answer the question according to the image.
 - [HumanBodyPose](agentlego/tools/image_pose/README.md#HumanBodyPose): Estimate the pose or keypoints of human in an image.
 - [HumanFaceLandmark](agentlego/tools/image_pose/README.md#HumanFaceLandmark): Estimate the landmark or keypoints of human faces in an image.
 - [ImageToCanny](agentlego/tools/image_canny/README.md#ImageToCanny): Extract the edge image from an image.
@@ -100,8 +100,7 @@ caption = image_caption_tool(image)
 - [TextToBbox](agentlego/tools/object_detection/README.md#TextToBbox): Detect specific objects described by the given text in the image.
 - Segment Anything series
   - [SegmentAnything](agentlego/tools/segmentation/README.md#SegmentAnything): Segment all items in the image.
-  - [SegmentClicked](agentlego/tools/segmentation/README.md#SegmentClicked): Segment the masked region in the image.
-  - [ObjectSegmenting](agentlego/tools/segmentation/README.md#ObjectSegmenting): Segment the certain objects in the image according to the given object name.
+  - [SegmentObject](agentlego/tools/segmentation/README.md#SegmentObject): Segment the certain objects in the image according to the given object name.
 
 **AIGC related**
 

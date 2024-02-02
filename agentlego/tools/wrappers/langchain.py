@@ -16,18 +16,20 @@ def construct_langchain_tool(tool: BaseTool):
 
     call_args = {}
     call_params = []
-    for p in tool.parameters.values():
+    for p in tool.inputs:
         call_args[p.name] = str
         call_params.append(
             inspect.Parameter(
                 p.name,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                annotation=str))
+                annotation=str,
+                default=p.default if p.optional else inspect._empty,
+            ))
     call.__signature__ = inspect.Signature(call_params)
     call.__annotations__ = call_args
 
     return StructuredTool.from_function(
         func=call,
         name=tool.name,
-        description=tool.toolmeta.description,
+        description=tool.description,
     )

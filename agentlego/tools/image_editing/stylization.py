@@ -1,16 +1,10 @@
-from typing import Callable, Union
-
-from agentlego.parsers import DefaultParser
-from agentlego.schema import ToolMeta
 from agentlego.types import ImageIO
-from agentlego.utils import is_package_available, load_or_build_object, require
+from agentlego.utils import load_or_build_object, require
 from ..base import BaseTool
-
-if is_package_available('torch'):
-    import torch
 
 
 def load_instruct_pix2pix(model, device):
+    import torch
     from diffusers import (EulerAncestralDiscreteScheduler,
                            StableDiffusionInstructPix2PixPipeline)
 
@@ -30,35 +24,27 @@ class ImageStylization(BaseTool):
     """A tool to stylize an image.
 
     Args:
-        toolmeta (dict | ToolMeta): The meta info of the tool. Defaults to
-            the :attr:`DEFAULT_TOOLMETA`.
-        parser (Callable): The parser constructor, Defaults to
-            :class:`DefaultParser`.
         model (str): The model name used to inference. Which can be found
             in the ``diffusers`` repository.
             Defaults to 'timbrooks/instruct-pix2pix'.
         inference_steps (int): The number of inference steps. Defaults to 20.
         device (str): The device to load the model. Defaults to 'cuda'.
+        toolmeta (None | dict | ToolMeta): The additional info of the tool.
+            Defaults to None.
     """
 
-    DEFAULT_TOOLMETA = ToolMeta(
-        name='ImageModification',
-        description='This tool can modify the input image according to the '
-        'input instruction. Here are some example instructions: '
-        '"turn him into cyborg", "add fireworks to the sky", '
-        '"make his jacket out of leather".',
-        inputs=['image', 'text'],
-        outputs=['image'],
-    )
+    default_desc = ('This tool can modify the input image according to the '
+                    'input instruction. Here are some example instructions: '
+                    '"turn him into cyborg", "add fireworks to the sky", '
+                    '"make his jacket out of leather".')
 
     @require('diffusers')
     def __init__(self,
-                 toolmeta: Union[dict, ToolMeta] = DEFAULT_TOOLMETA,
-                 parser: Callable = DefaultParser,
                  model: str = 'timbrooks/instruct-pix2pix',
                  inference_steps: int = 20,
-                 device: str = 'cuda'):
-        super().__init__(toolmeta=toolmeta, parser=parser)
+                 device: str = 'cuda',
+                 toolmeta=None):
+        super().__init__(toolmeta=toolmeta)
         self.model_name = model
         self.inference_steps = inference_steps
         self.device = device

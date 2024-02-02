@@ -1,4 +1,4 @@
-# VisualQuestionAnswering
+# VQA
 
 ## Examples
 
@@ -8,7 +8,7 @@
 from agentlego.apis import load_tool
 
 # load tool
-tool = load_tool('VisualQuestionAnswering', device='cuda')
+tool = load_tool('VQA', device='cuda')
 
 # apply tool
 answer = tool('examples/demo.png', 'What is the color of the cat?')
@@ -23,7 +23,7 @@ from agentlego.apis import load_tool
 
 # load tools and build agent
 # please set `OPENAI_API_KEY` in your environment variable.
-tool = load_tool('VisualQuestionAnswering', device='cuda').to_lagent()
+tool = load_tool('VQA', device='cuda').to_lagent()
 agent = ReAct(GPTAPI(temperature=0.), action_executor=ActionExecutor([tool]))
 
 # agent running with the tool.

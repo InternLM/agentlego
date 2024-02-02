@@ -144,7 +144,7 @@ examples = [
         user=('Please describe the above image, '
               'and draw a similar image in anime style.'),
         files=[load_image(rootdir / 'examples/demo.png')],
-        tools=['VisualQuestionAnswering', 'TextToImage'],
+        tools=['VQA', 'TextToImage'],
     )
 ]
 
@@ -222,12 +222,10 @@ def get_model(model_name):
 
 
 def init_chatbot(model_name, tools):
-    logger.info(f'Init {model_name} with: ' +
-                ', '.join([tool.name for tool in tools]))
+    logger.info(f'Init {model_name} with: ' + ', '.join([tool.name for tool in tools]))
     chatbot = ReAct(
         llm=get_model(model_name),
-        action_executor=ActionExecutor(
-            actions=[tool.to_lagent() for tool in tools]),
+        action_executor=ActionExecutor(actions=[tool.to_lagent() for tool in tools]),
         protocol=ReActProtocol(),
         max_turn=10,
     )
@@ -267,8 +265,7 @@ class StreamlitUI:
                 return
             model.keys = [state.api_key]
 
-        st.sidebar.text_input(
-            'API key', key='api_key', on_change=update_api_key)
+        st.sidebar.text_input('API key', key='api_key', on_change=update_api_key)
 
         st.sidebar.multiselect(
             'Tools',
@@ -305,8 +302,7 @@ class StreamlitUI:
             clear_session()
             files = []
             for file in example['files']:
-                from streamlit.runtime.uploaded_file_manager import \
-                    UploadedFile
+                from streamlit.runtime.uploaded_file_manager import UploadedFile
                 files.append(UploadedFile(file, None))
             state.files = files
             for tool in example['tools']:
@@ -392,10 +388,7 @@ class StreamlitUI:
                 st.markdown(process_result_text(action.result['text']))
                 for image in action.result.get('image', []):
                     w, h = Image.open(image).size
-                    st.image(
-                        image,
-                        caption='Generated Image',
-                        width=int(350 / h * w))
+                    st.image(image, caption='Generated Image', width=int(350 / h * w))
                 for audio in action.result.get('audio', []):
                     st.audio(audio)
             elif action.errmsg:
@@ -494,8 +487,7 @@ def main():
                 st.error(repr(e))
                 logger.info(f'Error: {repr(e)}')
 
-        state.history.append(
-            dict(role='assistant', content=copy.deepcopy(responses)))
+        state.history.append(dict(role='assistant', content=copy.deepcopy(responses)))
         state.disable_chat = False
         state.disable_clear = False
         st.rerun()
