@@ -6,7 +6,7 @@ from .apis.tool import list_tools
 from .utils import load_or_build_object
 
 
-def _cosine_similarity(a: np.array, b: np.array) -> list:
+def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """Calculate the cosine similarity of a and b."""
     dot_product = np.dot(b, a)
     norm_a = np.linalg.norm(a)
@@ -33,13 +33,14 @@ def _search_with_openai(query, choices, model='text-embedding-ada-002', topk=5):
         list: List of tool descriptions.
     """
     try:
-        from openai.embeddings_utils import get_embeddings
+        from openai import OpenAI
     except ModuleNotFoundError:
         raise ModuleNotFoundError(
             'please install openai to enable searching tools powered by '
             'openai')
 
-    embeddings = get_embeddings([query] + choices, engine=model)
+    client = OpenAI()
+    embeddings = client.embeddings.create(input=[query] + choices, model=model).data
     similarity = _cosine_similarity(np.array(embeddings[0]), np.array(embeddings[1:]))
 
     indices = np.argsort(-similarity)[:topk]
