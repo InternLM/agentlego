@@ -32,9 +32,9 @@ STRUCTURED_CHAT_PROMPT = ChatPromptTemplate(
     messages=[
         SystemMessagePromptTemplate(
             prompt=PromptTemplate(
-                input_variables=['tool_names', 'tools', 'meta_prompt'],
+                input_variables=['tool_names', 'tools'],
                 template=
-                '{meta_prompt}\nYou have access to the following tools:\n\n{tools}\n\nUse a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\nValid "action" values: "Final Answer" or {tool_names}\n\nProvide only ONE action per $JSON_BLOB, as shown:\n\n```\n{{\n  "action": $TOOL_NAME,\n  "action_input": $INPUT\n}}\n```\n\nFollow this format:\n\nQuestion: input question to answer\nThought: consider previous and subsequent steps\nAction:\n```\n$JSON_BLOB\n```\nObservation: action result\n... (repeat Thought/Action/Observation N times)\nThought: I know what to respond\nAction:\n```\n{{\n  "action": "Final Answer",\n  "action_input": "Final response to human"\n}}```\n\nBegin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Please use the markdown style file path link to display images and audios in the final answer. The thought and final answer should use the same language with the question. Format is Action:```$JSON_BLOB```then Observation'
+                'Respond to the human as helpfully and accurately as possible. You have access to the following tools:\n\n{tools}\n\nUse a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\nValid "action" values: "Final Answer" or {tool_names}\n\nProvide only ONE action per $JSON_BLOB, as shown:\n\n```\n{{\n  "action": $TOOL_NAME,\n  "action_input": $INPUT\n}}\n```\n\nFollow this format:\n\nQuestion: input question to answer\nThought: consider previous and subsequent steps\nAction:\n```\n$JSON_BLOB\n```\nObservation: action result\n... (repeat Thought/Action/Observation N times)\nThought: I know what to respond\nAction:\n```\n{{\n  "action": "Final Answer",\n  "action_input": "Final response to human"\n}}```\n\nBegin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Please use the markdown style file path link to display images and audios in the final answer. The thought and final answer should use the same language with the question. Format is Action:```$JSON_BLOB```then Observation'
             )),
         MessagesPlaceholder(variable_name='chat_history', optional=True),
         HumanMessagePromptTemplate(
@@ -188,7 +188,6 @@ def create_langchain_structure(llm, tools):
 def generate_structured(question, state, history) -> Iterator[List[BaseModel]]:
     from .. import shared
     cfg = shared.agents_settings[shared.agent_name]
-    meta_prompt = cfg.get('meta_prompt') or ''
     messages = []
 
     mq = Queue()
@@ -199,11 +198,13 @@ def generate_structured(question, state, history) -> Iterator[List[BaseModel]]:
     callback = GenerationCallback(mq, tools)
     agent = create_langchain_structure(shared.llm, tools)
 
-    history = langchain_style_history(history)
+    history = langchain_style_history(history).messages
+    if cfg.get('meta_prompt'):
+        history = [lc_msg.HumanMessage(content=cfg['meta_prompt'])] + history
+
     thread = Thread(
         target=agent.invoke,
-        args=(dict(input=question, chat_history=history.messages, meta_prompt=meta_prompt),
-              dict(callbacks=[callback], )))
+        args=(dict(input=question, chat_history=history), dict(callbacks=[callback], )))
     thread.start()
     while thread.is_alive() or mq.qsize() > 0:
         if mq.qsize() > 0:

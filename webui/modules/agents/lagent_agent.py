@@ -61,6 +61,7 @@ def create_internlm2_agent(llm, tools, cfg) -> internlm2_agent.Internlm2Agent:
         llm=llm,
         plugin_executor=ActionExecutor(actions=tools),
         protocol=internlm2_agent.Internlm2Protocol(
+            meta_prompt=cfg['meta_prompt'].strip(),
             plugin_prompt=cfg['plugin_prompt'].strip(),
             tool=dict(
                 begin='{start_token}{name}\n',
