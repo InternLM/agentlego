@@ -35,15 +35,15 @@ class Translation(BaseTool):
         else:
             raise NotImplementedError(f'The backend {backend} is not available.')
 
-    def apply(self, text: str, source_lang: str, target_lang: str) -> str:
-        return self._translate(text, source_lang, target_lang)
-
-    def google_translate(
+    def apply(
         self,
-        text: Annotated[str, Info('The text to translate.')],
-        target: Annotated[str, Info('The target language code.')],
-        source: Annotated[str, Info('The source language code.')] = 'auto',
+        text: Annotated[str, Info('The text to translate')],
+        target: Annotated[str, Info('The target language code')],
+        source: Annotated[str, Info('The source language code')] = 'auto',
     ) -> str:
+        return self._translate(text, target, source)
+
+    def google_translate(self, text: str, target: str, source: str = 'auto') -> str:
         text = quote_plus(text)
         url_tmpl = ('https://translate.googleapis.com/translate_a/'
                     'single?client=gtx&sl={}&tl={}&dt=at&dt=bd&dt=ex&'
