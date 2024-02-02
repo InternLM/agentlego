@@ -11,3 +11,4 @@ requests
 rich
 thefuzz
 tqdm
+typing-extensions

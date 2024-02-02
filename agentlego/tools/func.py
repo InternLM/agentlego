@@ -15,12 +15,42 @@ class _FuncTool(BaseTool):
                  toolmeta: ToolMeta,
                  parser: Callable = DefaultParser):
         self.func = func
-        self.toolmeta = toolmeta
+        self.toolmeta = deepcopy(toolmeta)
         self.set_parser(parser)
         self._is_setup = True
 
     def apply(self, *args, **kwargs):
         return self.func(*args, **kwargs)
+
+
+class _FuncToolType:
+
+    def __init__(self, func: Callable, toolmeta: ToolMeta):
+        self.func = func
+        self.toolmeta = toolmeta
+
+    def __call__(self,
+                 toolmeta: Union[dict, ToolMeta, None] = None,
+                 parser: Callable = DefaultParser):
+        return _FuncTool(self.func, self.get_default_toolmeta(toolmeta), parser=parser)
+
+    def get_default_toolmeta(self, override=None) -> ToolMeta:
+        if override is None:
+            return self.toolmeta
+
+        override = deepcopy(override)
+        override = ToolMeta(**override) if isinstance(override, dict) else override
+
+        if override.name is None:
+            override.name = self.toolmeta.name
+        if override.description is None:
+            override.description = self.toolmeta.description
+        if override.inputs is None:
+            override.inputs = self.toolmeta.inputs
+        if override.outputs is None:
+            override.outputs = self.toolmeta.outputs
+
+        return override
 
 
 def make_tool(func: Optional[Callable] = None,
@@ -65,7 +95,7 @@ def make_tool(func: Optional[Callable] = None,
                 toolmeta.description = cleandoc(func.__doc__).partition('\n\n')[0]
         else:
             toolmeta = deepcopy(override)
-        tool = _FuncTool(func, toolmeta=toolmeta)
+        tool = _FuncToolType(func, toolmeta=toolmeta)
         return tool
 
     if func is None:

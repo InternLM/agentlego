@@ -8,8 +8,9 @@ class DummyTool(BaseTool):
     def apply(
         self,
         image: ImageIO,
-        query: Annotated[str, Info('The query.')],
-    ) -> Annotated[ImageIO, Info('The result image.')]:
+        query: Annotated[str, Info('The query')],
+        option: bool = True,
+    ) -> Annotated[ImageIO, Info('The result image')]:
         return image
 
 
@@ -18,14 +19,10 @@ def test_lagent():
     tool = DummyTool().to_lagent()
     assert isinstance(tool, BaseAction)
 
-    expected_description = '''\
-This is a dummy tool.
-Args: image (path); query (str, The query.)
-Returns: path (The result image.)
-Combine all args to one json string like {"image": xxx, "query": xxx}'''
-
     assert tool.name == 'DummyTool'
-    assert tool.description == expected_description
+    assert tool.description['description'] == 'This is a dummy tool.'
+    assert tool.description['required'] == ['image', 'query']
+    assert tool.description['parameters'][1]['description'] == 'The query'
 
 
 def test_hf_agent():
@@ -35,8 +32,8 @@ def test_hf_agent():
 
     expected_description = '''\
 This is a dummy tool.
-Args: image (image); query (str, The query.)
-Returns: image (The result image.)'''
+Args: image (image); query (str, The query); option (bool. Optional, Defaults to True)
+Returns: image (The result image)'''
 
     assert tool.name == 'agentlego_dummytool'
     assert tool.description == expected_description
@@ -47,9 +44,10 @@ def test_langchain():
     tool = DummyTool().to_langchain()
     assert isinstance(tool, StructuredTool)
 
-    expected_description = (
-        'Dummy Tool(image: str, query: str) - This is a dummy tool. '
-        'It takes an image and a text as the inputs, and returns an image.')
+    expected_description = '''\
+DummyTool(image: str, query: str, option: str = True) - This is a dummy tool.
+Args: image (path); query (str, The query); option (bool. Optional, Defaults to True)
+Returns: path (The result image)'''
 
     assert tool.name == 'DummyTool'
     assert tool.description == expected_description

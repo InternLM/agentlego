@@ -1,5 +1,6 @@
 from .base import BaseTool
 from .calculator import Calculator
+from .func import make_tool
 from .image_canny import CannyTextToImage, ImageToCanny
 from .image_depth import DepthTextToImage, ImageToDepth
 from .image_editing import ImageExpansion, ImageStylization, ObjectRemove, ObjectReplace
@@ -23,5 +24,5 @@ __all__ = [
     'SegmentObject', 'SegmentAnything', 'SemanticSegmentation', 'ImageStylization',
     'AudioToImage', 'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage',
     'SpeechToText', 'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator',
-    'BaseTool'
+    'BaseTool', 'make_tool'
 ]
