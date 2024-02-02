@@ -144,7 +144,7 @@ examples = [
         user=('Please describe the above image, '
               'and draw a similar image in anime style.'),
         files=[load_image(rootdir / 'examples/demo.png')],
-        tools=['VisualQuestionAnswering', 'TextToImage'],
+        tools=['VQA', 'TextToImage'],
     )
 ]
 

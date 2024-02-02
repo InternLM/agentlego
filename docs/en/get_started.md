@@ -60,7 +60,7 @@ print(calculator_tool('cos(pi / 6)'))
 # Image or Audio input supports multiple formats
 from PIL import Image
 
-image_caption_tool = load_tool('ImageCaption', device='cuda')
+image_caption_tool = load_tool('ImageDescription', device='cuda')
 img_path = './examples/demo.png'
 img_pil = Image.open(img_path)
 print(image_caption_tool(img_path))
@@ -150,44 +150,4 @@ agent = HfAgent(
 
 user_input = 'If the side lengths of a triangle are 3cm, 4cm and 5cm, please tell me the area of the triangle.'
 agent.chat(user_input)
-```
-
-# Tool Server
-
-AgentLego provides a suit of tool server utilities to help you deploy tools on a server and use it like local
-tools on clients.
-
-## Start a server
-
-We provide a command-line tool `agentlego-server` to start a tool server. You can specify the tool names you want to use.
-
-```bash
-agentlego-server start Calculator ImageCaption TextToImage
-```
-
-And then, the server will setup all tools and start.
-
-```bash
-INFO:     Started server process [1741344]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:16180 (Press CTRL+C to quit)
-```
-
-## Use tools in client
-
-In the client, you can create a remote tool from the url of the tool server.
-
-```python
-from agentlego.tools.remote import RemoteTool
-
-# Create all remote tools from a tool server root url.
-tools = RemoteTool.from_server('http://127.0.0.1:16180')
-for tool in tools:
-    print(tool.name, tool.url)
-
-# Create single remote tool from a tool server endpoint.
-# All endpoint can be found in the docs of the tool server, like http://127.0.0.1:16180/docs
-tool = RemoteTool('http://127.0.0.1:16180/ImageDescription')
-print(tool.description)
 ```

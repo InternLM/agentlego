@@ -23,6 +23,7 @@
 
    modules/apis.md
    modules/tool.md
+   modules/tool-server.md
 
 
 .. _Tool APIs:

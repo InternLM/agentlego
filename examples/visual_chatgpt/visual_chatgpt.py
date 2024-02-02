@@ -149,11 +149,11 @@ class ConversationBot:
     def __init__(self, load_dict):
         # load_dict = {
         #     'OCRTool':'cuda:0',
-        #     'ImageCaption':'cuda:1',...}
+        #     'ImageDescription':'cuda:1',...}
         print(f'Initializing VisualChatGPT, load_dict={load_dict}')
 
-        if 'ImageCaption' not in load_dict:
-            raise ValueError('You have to load ImageCaption as a '
+        if 'ImageDescription' not in load_dict:
+            raise ValueError('You have to load ImageDescription as a '
                              'basic function for VisualChatGPT')
 
         self.models = {}
@@ -225,7 +225,7 @@ class ConversationBot:
         img = img.convert('RGB')
         img.save(image_filename, 'PNG')
         print(f'Resize image form {width}x{height} to {width_new}x{height_new}')
-        description = self.models['ImageCaption'](image_filename)
+        description = self.models['ImageDescription'](image_filename)
         if lang == 'Chinese':
             Human_prompt = (f'\nHuman: 提供一张名为 {image_filename}的图片。'
                             f'它的描述是: {description}。 '
@@ -254,7 +254,7 @@ if __name__ == '__main__':
     if not os.path.exists('checkpoints'):
         os.mkdir('checkpoints')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--load', type=str, default='ImageCaption_cuda:0')
+    parser.add_argument('--load', type=str, default='ImageDescription_cuda:0')
     args = parser.parse_args()
     load_dict = {
         e.split('_')[0].strip(): e.split('_')[1].strip()

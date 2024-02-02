@@ -59,7 +59,7 @@ print(calculator_tool('cos(pi / 6)'))
 # 图像或音频输入支持多种格式
 from PIL import Image
 
-image_caption_tool = load_tool('ImageCaption', device='cuda')
+image_caption_tool = load_tool('ImageDescription', device='cuda')
 img_path = './examples/demo.png'
 img_pil = Image.open(img_path)
 print(image_caption_tool(img_path))
@@ -143,43 +143,4 @@ agent = HfAgent(
 
 user_input = '如果三角形的边长分别为3厘米、4厘米和5厘米，请告诉我三角形的面积。'
 agent.chat(user_input)
-```
-
-# 工具服务器
-
-AgentLego 提供了一套工具服务器辅助程序，帮助您在服务器上部署工具，并在客户端上像使用本地工具一样调用这些工具。
-
-## 启动服务器
-
-我们提供了一个命令行工具 `agentlego-server` 来启动工具服务器。您可以指定要启动的工具类别。
-
-```bash
-agentlego-server start Calculator ImageCaption TextToImage
-```
-
-然后，服务器将启动所有工具。
-
-```bash
-INFO:    Started server process [1741344]
-INFO:    Waiting for application startup.
-INFO:    Application startup complete.
-INFO:    Uvicorn running on http://127.0.0.1:16180 (Press CTRL+C to quit)
-```
-
-## 在客户端使用工具
-
-在客户端，您可以使用工具服务器的 URL 创建所有远程工具。
-
-```python
-from agentlego.tools.remote import RemoteTool
-
-# 从工具服务器 URL 创建所有远程工具。
-tools = RemoteTool.from_server('http://127.0.0.1:16180')
-for tool in tools:
-   print(tool.name, tool.url)
-
-# 从工具服务器端点创建单个远程工具。
-# 所有端点都可以在工具服务器的文档中找到，例如 http://127.0.0.1:16180/docs
-tool = RemoteTool('http://127.0.0.1:16180/ImageDescription')
-print(tool.description)
 ```

@@ -46,7 +46,7 @@ pip install agentlego
 
 一些工具需要额外的软件包，请查看工具的自述文件，并确认所有要求都得到满足。
 
-例如，如果我们想要使用`ImageCaption`工具。我们需要查看工具 [readme](agentlego/tools/image_text/README.md#ImageCaption) 的 **Set up** 小节并安装所需的软件。
+例如，如果我们想要使用`ImageDescription`工具。我们需要查看工具 [readme](agentlego/tools/image_text/README.md#ImageDescription) 的 **Set up** 小节并安装所需的软件。
 
 ```bash
 pip install -U openmim
@@ -60,7 +60,7 @@ from agentlego import list_tools, load_tool
 
 print(list_tools())  # list tools in AgentLego
 
-image_caption_tool = load_tool('ImageCaption', device='cuda')
+image_caption_tool = load_tool('ImageDescription', device='cuda')
 print(image_caption_tool.description)
 image = './examples/demo.png'
 caption = image_caption_tool(image)
@@ -86,9 +86,9 @@ caption = image_caption_tool(image)
 
 **图像处理相关**
 
-- [ImageCaption](agentlego/tools/image_text/README.md#ImageCaption): 描述输入图像。
+- [ImageDescription](agentlego/tools/image_text/README.md#ImageDescription): 描述输入图像。
 - [OCR](agentlego/tools/ocr/README.md#OCR): 从照片中识别文本。
-- [VisualQuestionAnswering](agentlego/tools/vqa/README.md#VisualQuestionAnswering): 根据图片回答问题。
+- [VQA](agentlego/tools/vqa/README.md#VQA): 根据图片回答问题。
 - [HumanBodyPose](agentlego/tools/image_pose/README.md#HumanBodyPose): 估计图像中人体的姿态或关键点，并绘制人体姿态图像
 - [HumanFaceLandmark](agentlego/tools/image_pose/README.md#HumanFaceLandmark): 识别图像中人脸的关键点，并绘制带有关键点的图像。
 - [ImageToCanny](agentlego/tools/image_canny/README.md#ImageToCanny): 从图像中提取边缘图像。
@@ -98,8 +98,7 @@ caption = image_caption_tool(image)
 - [TextToBbox](agentlego/tools/object_detection/README.md#TextToBbox): 检测图像中的给定对象。
 - Segment Anything 系列工具
   - [SegmentAnything](agentlego/tools/segmentation/README.md#SegmentAnything): 分割图像中的所有物体。
-  - [SegmentClicked](agentlego/tools/segmentation/README.md#SegmentClicked): 分割图像中指定区域的物体。
-  - [ObjectSegmenting](agentlego/tools/segmentation/README.md#ObjectSegmenting): 根据给定的物体名称，在图像中分割出特定的物体。
+  - [SegmentObject](agentlego/tools/segmentation/README.md#SegmentObject): 根据给定的物体名称，在图像中分割出特定的物体。
 
 **AIGC 相关**
 
