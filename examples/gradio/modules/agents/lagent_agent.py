@@ -30,7 +30,7 @@ def cfg_internlm2():
     import gradio as gr
     widgets = {}
     widgets['url'] = gr.Textbox(label='URL', info='The internlm2 server url of LMDeploy, like `http://localhost:23333`')
-    widgets['meta_prompt'] = gr.Textbox(label='system prompt', value=internlm2_agent.META_INS)
+    widgets['meta_prompt'] = gr.Textbox(label='system prompt', value=internlm2_agent.META_CN)
     widgets['plugin_prompt'] = gr.Textbox(label='plugin prompt', value=internlm2_agent.PLUGIN_CN)
     return widgets
 
