@@ -74,7 +74,24 @@ if any((args.listen, args.share)) and not any((args.gradio_auth, args.gradio_aut
     logger.warning("You are potentially exposing the web UI to the entire internet without any access password.\nYou can create one with the \"--gradio-auth\" flag like this:\n\n--gradio-auth username:password\n\nMake sure to replace username:password with your own.")
 
 
+def download_to_tmp_file(url, suffix=None):
+    import hashlib
+    from tempfile import gettempdir
+
+    import requests
+    content = requests.get(url).content
+    path = Path(gettempdir()) / hashlib.sha256(content).hexdigest()[:8]
+    if suffix:
+        path = path.with_suffix(suffix)
+    with open(path, 'wb') as f:
+        f.write(content)
+    return str(path)
+
+
 # Load agent-specific settings
+if args.agent_config.startswith('http'):
+    args.agent_config = download_to_tmp_file(args.agent_config, suffix='.yml')
+    logger.info(f'Downloaded the specified agent config to {args.agent_config}')
 with Path(args.agent_config) as p:
     if p.exists():
         agents_settings = yaml.safe_load(open(p, 'r').read())
@@ -84,6 +101,9 @@ with Path(args.agent_config) as p:
 agents_settings = OrderedDict(agents_settings)
 
 # Load tool-specific settings
+if args.tool_config.startswith('http'):
+    args.tool_config = download_to_tmp_file(args.tool_config, suffix='.yml')
+    logger.info(f'Downloaded the specified tool config to {args.tool_config}')
 with Path(args.tool_config) as p:
     if p.exists():
         tool_settings = yaml.safe_load(open(p, 'r').read())
