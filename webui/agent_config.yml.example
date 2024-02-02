@@ -5,6 +5,8 @@ gpt-3.5-turbo:
   openai_api_key: null
   max_tokens: 512
   extra_stop: null
+  meta_prompt: Respond to the human as helpfully and accurately as possible.
+  temperature: 0.7
 gpt-4-turbo:
   agent_class: langchain.StructuredChat.ChatOpenAI
   model_name: gpt-4-1106-preview
@@ -12,3 +14,5 @@ gpt-4-turbo:
   openai_api_key: null
   max_tokens: 512
   extra_stop: null
+  temperature: 0.7
+  meta_prompt: Respond to the human as helpfully and accurately as possible.

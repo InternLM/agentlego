@@ -1,6 +1,5 @@
 import json
 import time
-from copy import deepcopy
 from queue import Queue
 from threading import Thread
 from typing import Iterator, List, Optional, Union
@@ -23,19 +22,19 @@ from ..utils import parse_inputs, parse_outputs
 
 # modified form hub.pull("hwchase17/structured-chat-agent")
 STRUCTURED_CHAT_PROMPT = ChatPromptTemplate(
-    input_variables=['agent_scratchpad', 'input', 'tool_names', 'tools'],
+    input_variables=['agent_scratchpad', 'input', 'tool_names', 'tools', 'meta_prompt'],
     input_types={
         'chat_history':
-        List[Union[lc_msg.ai.AIMessage, lc_msg.human.HumanMessage,
-                   lc_msg.chat.ChatMessage, lc_msg.system.SystemMessage,
-                   lc_msg.function.FunctionMessage, lc_msg.tool.ToolMessage]]
+        List[Union[lc_msg.AIMessage, lc_msg.HumanMessage,
+                   lc_msg.ChatMessage, lc_msg.SystemMessage,
+                   lc_msg.FunctionMessage, lc_msg.ToolMessage]],
     },
     messages=[
         SystemMessagePromptTemplate(
             prompt=PromptTemplate(
-                input_variables=['tool_names', 'tools'],
+                input_variables=['tool_names', 'tools', 'meta_prompt'],
                 template=
-                'Respond to the human as helpfully and accurately as possible. You have access to the following tools:\n\n{tools}\n\nUse a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\nValid "action" values: "Final Answer" or {tool_names}\n\nProvide only ONE action per $JSON_BLOB, as shown:\n\n```\n{{\n  "action": $TOOL_NAME,\n  "action_input": $INPUT\n}}\n```\n\nFollow this format:\n\nQuestion: input question to answer\nThought: consider previous and subsequent steps\nAction:\n```\n$JSON_BLOB\n```\nObservation: action result\n... (repeat Thought/Action/Observation N times)\nThought: I know what to respond\nAction:\n```\n{{\n  "action": "Final Answer",\n  "action_input": "Final response to human"\n}}```\n\nBegin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Please use the markdown style file path link to display images and audios in the final answer. The thought and final answer should use the same language with the question. Format is Action:```$JSON_BLOB```then Observation'
+                '{meta_prompt}\nYou have access to the following tools:\n\n{tools}\n\nUse a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\nValid "action" values: "Final Answer" or {tool_names}\n\nProvide only ONE action per $JSON_BLOB, as shown:\n\n```\n{{\n  "action": $TOOL_NAME,\n  "action_input": $INPUT\n}}\n```\n\nFollow this format:\n\nQuestion: input question to answer\nThought: consider previous and subsequent steps\nAction:\n```\n$JSON_BLOB\n```\nObservation: action result\n... (repeat Thought/Action/Observation N times)\nThought: I know what to respond\nAction:\n```\n{{\n  "action": "Final Answer",\n  "action_input": "Final response to human"\n}}```\n\nBegin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Please use the markdown style file path link to display images and audios in the final answer. The thought and final answer should use the same language with the question. Format is Action:```$JSON_BLOB```then Observation'
             )),
         MessagesPlaceholder(variable_name='chat_history', optional=True),
         HumanMessagePromptTemplate(
@@ -106,19 +105,28 @@ class ChatOpenAI(_ChatOpenAI):
             stop = self.extra_stop
         return super()._create_message_dicts(messages, stop=stop)
 
-def llm_chat_openai(model_kwargs):
+def llm_chat_openai(cfg):
 
-    model_kwargs = deepcopy(model_kwargs)
-    extra_stop = model_kwargs.pop('extra_stop', None)
+    extra_stop = cfg.get('extra_stop')
     if isinstance(extra_stop, str) and len(extra_stop) > 0:
         extra_stop = extra_stop.split(',')
     else:
         extra_stop = None
 
-    if model_kwargs.get('openai_api_base') and not model_kwargs.get('openai_api_key'):
-        model_kwargs['openai_api_key'] = 'DUMMY_API_KEY'
+    openai_api_base = cfg.get('openai_api_base')
+    openai_api_key = cfg.get('openai_api_key')
+    if openai_api_base and not openai_api_key:
+        # Set a dummy key for self-hosted LLM
+        openai_api_key = 'DUMMY_API_KEY'
 
-    llm = ChatOpenAI(**model_kwargs, extra_stop=extra_stop)
+    llm = ChatOpenAI(
+        name=cfg.get('model_name'),
+        max_tokens=cfg.get('max_tokens'),
+        base_url=openai_api_base,
+        api_key=openai_api_key,
+        temperature=cfg.get('temperature', 0.7),
+        extra_stop=extra_stop,
+    )
 
     return llm
 
@@ -128,7 +136,9 @@ def cfg_chat_openai():
     widgets['model_name'] = gr.Textbox(label='Model name')
     widgets['openai_api_base'] = gr.Textbox(label='API base url', info='If empty, use the default OpenAI api url, if you have self-hosted openai-style API server, please specify the host address here, like `http://localhost:8099/v1`')
     widgets['openai_api_key'] = gr.Textbox(label='API key', info="If set `ENV`, will use the `OPENAI_API_KEY` environment variable. Leave empty if you don't need pass key.")
-    widgets['max_tokens'] = gr.Slider(label='Max number of tokens', minimum=0, maximum=8192, step=256, info='The maximum number of tokens to generate for one response.')
+    widgets['max_tokens'] = gr.Slider(label='Max number of tokens', minimum=0, maximum=8192, step=256, value=512, info='The maximum number of tokens to generate for one response.')
+    widgets['temperature'] = gr.Slider(label='Temperature', minimum=0., maximum=1., step=0.1, value=0.7, info='What sampling temperature to use.')
+    widgets['meta_prompt'] = gr.Textbox(label='Meta prompt', info='The extra meta prompt to the agent.', value='Respond to the human as helpfully and accurately as possible.')
     widgets['extra_stop'] = gr.Textbox(label='Extra stop words', info='Comma-separated list of stop words. Example: <|im_end|>,Response')
     return widgets
 
@@ -177,6 +187,8 @@ def create_langchain_structure(llm, tools):
 
 def generate_structured(question, state, history) -> Iterator[List[BaseModel]]:
     from .. import shared
+    cfg = shared.agents_settings[shared.agent_name]
+    meta_prompt = cfg.get('meta_prompt') or ''
     messages = []
 
     mq = Queue()
@@ -190,7 +202,7 @@ def generate_structured(question, state, history) -> Iterator[List[BaseModel]]:
     history = langchain_style_history(history)
     thread = Thread(
         target=agent.invoke,
-        args=(dict(input=question, chat_history=history.messages),
+        args=(dict(input=question, chat_history=history.messages, meta_prompt=meta_prompt),
               dict(callbacks=[callback], )))
     thread.start()
     while thread.is_alive() or mq.qsize() > 0:
