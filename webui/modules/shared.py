@@ -6,7 +6,10 @@ from typing import Mapping
 import yaml
 from modules.logging import logger
 
+from agentlego.apis.tool import NAMES2TOOLS, extract_all_tools
 from agentlego.tools import BaseTool
+from agentlego.tools.remote import RemoteTool
+from agentlego.utils import resolve_module
 
 # Agent variables
 agent_name = None
@@ -87,11 +90,6 @@ with Path(args.tool_config) as p:
     else:
         tool_settings = {}
 
-# Load all available tool classes
-from agentlego.apis.tool import NAMES2TOOLS, extract_all_tools
-from agentlego.tools.remote import RemoteTool
-from agentlego.utils import resolve_module
-
 tool_classes: Mapping[str, type] = NAMES2TOOLS.copy()
 tool_classes['RemoteTool'] = RemoteTool
 custom_tools_dir = Path(__file__).absolute().parents[1] / 'custom_tools'
@@ -105,5 +103,5 @@ for source_file in custom_tools_dir.glob('*.py'):
             toolkit + '.' + k: v
             for k, v in extract_all_tools(module).items()
         })
-    except Exception as e:
+    except Exception:
         logger.exception('Traceback')

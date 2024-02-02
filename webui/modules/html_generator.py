@@ -180,7 +180,7 @@ def tool_to_html(input: msg.ToolInput,
                 html += re.sub(AUDIO_REGEX, sub_audio_path, out['content'])
             elif out['type'] == 'file':
                 html += f'<div>{out["content"]}</div>'
-        html += f'</div>'
+        html += '</div>'
     elif output and output.error is not None:
         html += f'<div class="tool-error">Error: {output.error}</div>'
 

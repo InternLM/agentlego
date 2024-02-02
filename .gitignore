@@ -121,8 +121,8 @@ venv.bak/
 generated/
 
 # gradio demo
-examples/gradio/logs/
-examples/gradio/custom_tools/
-examples/gradio/installer_files/
-examples/gradio/generated/
-examples/gradio/*.yml
+webui/logs/
+webui/custom_tools/
+webui/installer_files/
+webui/generated/
+webui/*.yml

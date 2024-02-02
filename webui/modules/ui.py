@@ -1,8 +1,6 @@
 from pathlib import Path
-from typing import Mapping
 
 import gradio as gr
-from gradio.components import Component
 
 with open(Path(__file__).resolve().parent / '../css/main.css', 'r') as f:
     css = f.read()

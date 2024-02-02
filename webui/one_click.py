@@ -10,7 +10,7 @@ from pathlib import Path
 
 script_dir = Path(__file__).absolute().parent
 conda_env_path = os.path.join(script_dir, 'installer_files', 'env')
-agentlego_root = script_dir.parents[1]
+agentlego_root = script_dir.parent
 
 # Remove the '# ' from the following lines as needed for your AMD GPU on Linux
 # os.environ["ROCM_PATH"] = '/opt/rocm'
@@ -45,7 +45,7 @@ def cpu_has_avx2():
             return True
         else:
             return False
-    except:
+    except Exception:
         return True
 
 
@@ -58,7 +58,7 @@ def cpu_has_amx():
             return True
         else:
             return False
-    except:
+    except Exception:
         return True
 
 
