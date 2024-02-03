@@ -51,7 +51,7 @@ def save_agent_settings(name, *args):
 
     p = Path(shared.args.agent_config)
     if p.exists():
-        settings = yaml.safe_load(open(p, 'r').read())
+        settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         settings = {}
 
@@ -66,7 +66,7 @@ def save_agent_settings(name, *args):
     shared.agents_settings = settings
 
     output = yaml.dump(settings, sort_keys=False, allow_unicode=True)
-    with open(p, 'w') as f:
+    with open(p, 'w', encoding='utf-8') as f:
         f.write(output)
 
     return f'Settings for `{name}` saved to `{p}`.'
@@ -80,7 +80,7 @@ def save_tool_settings(tool_class, name, desc, enable, device, args, old_name=No
 
     p = Path(shared.args.tool_config)
     if p.exists():
-        settings = yaml.safe_load(open(p, 'r').read())
+        settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         settings = {}
 
@@ -100,7 +100,7 @@ def save_tool_settings(tool_class, name, desc, enable, device, args, old_name=No
     shared.tool_settings = settings
 
     output = yaml.dump(settings, sort_keys=False, allow_unicode=True)
-    with open(p, 'w') as f:
+    with open(p, 'w', encoding='utf-8') as f:
         f.write(output)
 
     return f'Settings for `{name}` saved to `{p}`.'

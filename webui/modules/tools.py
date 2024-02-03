@@ -72,7 +72,7 @@ def delete_tool(name):
 
     p = Path(shared.args.tool_config)
     if p.exists():
-        settings = yaml.safe_load(open(p, 'r').read())
+        settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         settings = {}
 
@@ -81,7 +81,7 @@ def delete_tool(name):
     shared.toolkits.pop(name, None)
 
     output = yaml.dump(settings, sort_keys=False, allow_unicode=True)
-    with open(p, 'w') as f:
+    with open(p, 'w', encoding='utf-8') as f:
         f.write(output)
 
     return f'`{name}` is deleted from `{p}`.'

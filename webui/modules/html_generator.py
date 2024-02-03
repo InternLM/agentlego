@@ -17,7 +17,7 @@ AUDIO_REGEX = r'(?P<path>[/\.\w-]+\.(wav|mp3))'
 # `sandbox:` and `file://` are common prefix of ChatGPT output.
 LINK_REGEX = r'`*\!?\[(?P<alt>.+)\]\((sandbox:)?(file://)?{}\)`*'
 
-with open(Path(__file__).resolve().parent / '../css/chat.css', 'r') as f:
+with open(Path(__file__).resolve().parent / '../css/chat.css', 'r', encoding='utf-8') as f:
     chat_css = f.read()
 
 def fix_newlines(string):
@@ -129,20 +129,25 @@ def chat_html_wrapper(history):
     return output
 
 
-def sub_image_path(match_obj: re.Match):
-    path = Path(match_obj.groupdict()['path'])
-    path = path.absolute().relative_to(Path.cwd())
+def display_image(path):
+    path = Path(path).absolute().relative_to(Path.cwd())
     return f'<div><img src="file/{str(path)}" alt="Image"></div>'
 
-def sub_audio_path(match_obj: re.Match):
-    path = Path(match_obj.groupdict()['path'])
-    path = path.absolute().relative_to(Path.cwd())
+
+def display_audio(path):
+    path = Path(path).absolute().relative_to(Path.cwd())
     return f'<div><audio controls="controls"><source src="file/{str(path)}"></audio></div>'
 
 
+def sub_image_path(match_obj: re.Match):
+    return display_image(match_obj.groupdict()['path'])
 
-def tool_to_html(input: msg.ToolInput,
-                 output: Optional[msg.ToolOutput] = None):
+
+def sub_audio_path(match_obj: re.Match):
+    return display_audio(match_obj.groupdict()['path'])
+
+
+def tool_to_html(input: msg.ToolInput, output: Optional[msg.ToolOutput] = None):
     tool = input.name
 
     if input.thought:
@@ -169,22 +174,25 @@ def tool_to_html(input: msg.ToolInput,
         args = ', '.join(f'{k}={replace_arg(v)}' for k, v in args.items())
         html += f'<div class="tool-args">Args: {args}</div>'
 
+    display = ''
     if output and output.outputs is not None:
         text_output = ', '.join(
-            str(out['content']) for out in output.outputs if out['type'] == 'text')
+            str(out['content']) if out['type'] == 'text' else f'<em>{out["type"]}</em>'
+            for out in output.outputs)
         html += f'<div class="tool-response">Response: {text_output}'
         for out in output.outputs:
             if out['type'] == 'image':
-                html += re.sub(IMAGE_REGEX, sub_image_path, out['content'])
+                display += display_image(out['content'])
             elif out['type'] == 'audio':
-                html += re.sub(AUDIO_REGEX, sub_audio_path, out['content'])
+                display += display_audio(out['content'])
             elif out['type'] == 'file':
-                html += f'<div>{out["content"]}</div>'
+                display += f'<div>{out["content"]}</div>'
         html += '</div>'
     elif output and output.error is not None:
         html += f'<div class="tool-error">Error: {output.error}</div>'
 
     html += '</details>'
+    html += display
     return html
 
 def reply_to_html(steps: List[BaseModel]) -> str:

@@ -1,15 +1,98 @@
 import copy
-from typing import Iterator, List
+import json
+from typing import Any, Iterator, List, Union
 
+import requests
 from lagent.actions import ActionExecutor
 from lagent.agents import internlm2_agent
-from lagent.llms.lmdepoly_wrapper import LMDeployClient
+from lagent.llms.base_llm import BaseModel
 from lagent.llms.meta_template import INTERNLM2_META
-from lagent.schema import AgentStatusCode
+from lagent.schema import AgentStatusCode, ModelStatusCode
+from lagent.utils.util import filter_suffix
 
 from .. import message_schema as msg
 from ..logging import logger
 from ..utils import parse_inputs
+
+
+class LMDeployClient(BaseModel):
+    """An LMDeploy client without lmdeploy dependency."""
+    def __init__(self, url: str, model_name: str, **kwargs):
+        BaseModel.__init__(self, path=url, **kwargs)
+        self.completions_v1_url = f'{url}/v1/completions'
+        self.model_name = model_name
+
+    def stream_chat(self,
+                    inputs: List[dict],
+                    session_id=0,
+                    sequence_start: bool = True,
+                    sequence_end: bool = True,
+                    ignore_eos: bool = False,
+                    timeout: int = 30,
+                    **kwargs):
+        gen_params = self.update_gen_params(**kwargs)
+        prompt = self.template_parser(inputs)
+
+        resp = ''
+        finished = False
+        stop_words = self.gen_params.get('stop_words')
+        for text in self.stream_completions(
+                model=self.model_name,
+                prompt=prompt,
+                session_id=session_id,
+                sequence_start=sequence_start,
+                sequence_end=sequence_end,
+                ignore_eos=ignore_eos,
+                timeout=timeout,
+                **gen_params):
+            resp += text['choices'][0]['text']
+            if not resp:
+                continue
+            # remove stop_words
+            for sw in stop_words:
+                if sw in resp:
+                    resp = filter_suffix(resp, stop_words)
+                    finished = True
+                    break
+            yield ModelStatusCode.STREAM_ING, resp, None
+            if finished:
+                break
+        yield ModelStatusCode.END, resp, None
+
+    def stream_completions(self, model: str, prompt: Union[str, List[Any]], **kwargs):
+        payload = {
+            'model': model,
+            'prompt': prompt,
+            'suffix': None,
+            'temperature': 0.7,
+            'n': 1,
+            'max_tokens': 16,
+            'stop': None,
+            'top_p': 1.0,
+            'top_k': 40,
+            'user': None,
+            'repetition_penalty': 1.0,
+            'session_id': -1,
+            'ignore_eos': False,
+            'stream': True,
+            **kwargs,
+        }
+        headers = {'content-type': 'application/json'}
+        response = requests.post(
+            self.completions_v1_url, headers=headers, json=payload, stream=True)
+        for chunk in response.iter_lines(
+                chunk_size=8192, decode_unicode=False, delimiter=b'\n'):
+            if chunk:
+                decoded = chunk.decode('utf-8')
+                if decoded == 'data: [DONE]':
+                    continue
+                if decoded[:6] == 'data: ':
+                    decoded = decoded[6:]
+                try:
+                    output = json.loads(decoded)
+                    yield output
+                except json.JSONDecodeError:
+                    logger.warning(f'weird json content {decoded}')
 
 
 def llm_internlm2_lmdeploy(cfg):
@@ -30,8 +113,9 @@ def cfg_internlm2():
     import gradio as gr
     widgets = {}
     widgets['url'] = gr.Textbox(label='URL', info='The internlm2 server url of LMDeploy, like `http://localhost:23333`')
-    widgets['meta_prompt'] = gr.Textbox(label='system prompt', value=internlm2_agent.META_CN)
-    widgets['plugin_prompt'] = gr.Textbox(label='plugin prompt', value=internlm2_agent.PLUGIN_CN)
+    widgets['max_turn'] = gr.Slider(label='Max number of turns', value=6, minimum=1, maximum=12, step=1)
+    widgets['meta_prompt'] = gr.Textbox(label='System prompt', value=internlm2_agent.META_CN)
+    widgets['plugin_prompt'] = gr.Textbox(label='Plugin prompt', value=internlm2_agent.PLUGIN_CN)
     return widgets
 
 
@@ -71,7 +155,7 @@ def create_internlm2_agent(llm, tools, cfg) -> internlm2_agent.Internlm2Agent:
                 end='<|action_end|>\n',
             ),
         ),
-        max_turn=6,
+        max_turn=cfg.get('max_turn', 6),
     )
     return agent
 

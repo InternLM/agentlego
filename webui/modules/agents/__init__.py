@@ -69,7 +69,7 @@ def delete_agent(name):
 
     p = Path(shared.args.agent_config)
     if p.exists():
-        settings = yaml.safe_load(open(p, 'r').read())
+        settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         settings = {}
 
@@ -77,7 +77,7 @@ def delete_agent(name):
     shared.agent_settings = settings
 
     output = yaml.dump(settings, sort_keys=False, allow_unicode=True)
-    with open(p, 'w') as f:
+    with open(p, 'w', encoding='utf-8') as f:
         f.write(output)
 
     return f'`{name}` is deleted from `{p}`.'

@@ -2,9 +2,9 @@ from pathlib import Path
 
 import gradio as gr
 
-with open(Path(__file__).resolve().parent / '../css/main.css', 'r') as f:
+with open(Path(__file__).resolve().parent / '../css/main.css', 'r', encoding='utf-8') as f:
     css = f.read()
-with open(Path(__file__).resolve().parent / '../js/main.js', 'r') as f:
+with open(Path(__file__).resolve().parent / '../js/main.js', 'r', encoding='utf-8') as f:
     js = f.read()
 
 refresh_symbol = '🔄'

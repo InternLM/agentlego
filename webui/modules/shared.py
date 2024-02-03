@@ -94,7 +94,7 @@ if args.agent_config.startswith('http'):
     logger.info(f'Downloaded the specified agent config to {args.agent_config}')
 with Path(args.agent_config) as p:
     if p.exists():
-        agents_settings = yaml.safe_load(open(p, 'r').read())
+        agents_settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         agents_settings = {}
 
@@ -106,7 +106,7 @@ if args.tool_config.startswith('http'):
     logger.info(f'Downloaded the specified tool config to {args.tool_config}')
 with Path(args.tool_config) as p:
     if p.exists():
-        tool_settings = yaml.safe_load(open(p, 'r').read())
+        tool_settings = yaml.safe_load(open(p, 'r', encoding='utf-8').read())
     else:
         tool_settings = {}
 
