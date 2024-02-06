@@ -12,7 +12,10 @@ from lagent.utils.util import filter_suffix
 
 from .. import message_schema as msg
 from ..logging import logger
+from ..ui import get_translator
 from ..utils import parse_inputs
+
+i18n = get_translator(__file__)
 
 
 class LMDeployClient(BaseModel):
@@ -103,7 +106,7 @@ def llm_internlm2_lmdeploy(cfg):
         meta_template=INTERNLM2_META,
         top_p=0.8,
         top_k=100,
-        temperature=0,
+        temperature=cfg.get('temperature', 0.7),
         repetition_penalty=1.0,
         stop_words=['<|im_end|>'])
     return llm
@@ -112,10 +115,11 @@ def llm_internlm2_lmdeploy(cfg):
 def cfg_internlm2():
     import gradio as gr
     widgets = {}
-    widgets['url'] = gr.Textbox(label='URL', info='The internlm2 server url of LMDeploy, like `http://localhost:23333`')
-    widgets['max_turn'] = gr.Slider(label='Max number of turns', value=6, minimum=1, maximum=12, step=1)
-    widgets['meta_prompt'] = gr.Textbox(label='System prompt', value=internlm2_agent.META_CN)
-    widgets['plugin_prompt'] = gr.Textbox(label='Plugin prompt', value=internlm2_agent.PLUGIN_CN)
+    widgets['url'] = gr.Textbox(label='URL', info=i18n('url'))
+    widgets['max_turn'] = gr.Slider(label=i18n('max_turn'), value=6, minimum=1, maximum=12, step=1)
+    widgets['temperature'] = gr.Slider(label='Temperature', minimum=0., maximum=1., step=0.1, value=0.7, info=i18n('temperature'))
+    widgets['meta_prompt'] = gr.Textbox(label='System prompt', value=internlm2_agent.META_CN, lines=5)
+    widgets['plugin_prompt'] = gr.Textbox(label='Plugin prompt', value=internlm2_agent.PLUGIN_CN, lines=5)
     return widgets
 
 

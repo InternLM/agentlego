@@ -43,8 +43,10 @@ def create_interface():
         ui_agent.create_event_handlers()
         ui_tools.create_event_handlers()
 
+        shared.gradio['interface'].load(lambda: None, None, None, js="() => document.getElementsByTagName('body')[0].classList.add('dark')")
         shared.gradio['interface'].load(lambda: None, None, None, js=f'() => {{{ui.js}}}')
         shared.gradio['interface'].load(lambda: shared.agent_name, None, gradio('agent_menu'), show_progress=False)
+        shared.gradio['interface'].load(lambda: gr.update(choices=chat.find_all_histories()), None, gradio('unique_id'), show_progress=False)
         shared.gradio['interface'].load(chat.redraw_html, gradio('history'), gradio('display'))
 
     # Launch the interface

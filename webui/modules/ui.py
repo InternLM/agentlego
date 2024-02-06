@@ -1,11 +1,21 @@
+import locale
 from pathlib import Path
 
 import gradio as gr
+import yaml
 
 with open(Path(__file__).resolve().parent / '../css/main.css', 'r', encoding='utf-8') as f:
     css = f.read()
 with open(Path(__file__).resolve().parent / '../js/main.js', 'r', encoding='utf-8') as f:
     js = f.read()
+with open(Path(__file__).resolve().parent / 'i18n.yml', 'r', encoding='utf-8') as f:
+    translation = yaml.safe_load(f)
+
+lang = locale.getlocale()[0]
+if lang and ('zh_CN' in lang or 'Chinese' in lang):
+    lang = 'zh'
+else:
+    lang = 'en'
 
 refresh_symbol = '🔄'
 delete_symbol = '🗑️'
@@ -101,3 +111,11 @@ def create_confirm_cancel(value, **kwargs):
     cancel.click(lambda: [gr.update(visible=True)] + [gr.update(visible=False)] * len(hidden), None, [widget, *hidden], show_progress=False)
 
     return widget, confirm, cancel
+
+
+def get_translator(file_path):
+    items = translation.get(Path(file_path).stem, {})
+    def trans(key, *args, **kwargs):
+        item = items[key].get(lang, 'en')
+        return item.format(*args, **kwargs)
+    return trans

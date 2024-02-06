@@ -9,6 +9,8 @@ from .settings import (apply_agent_settings, make_agent_params_visible,
                        save_agent_settings)
 from .utils import gradio
 
+i18n = ui.get_translator(__file__)
+
 
 def create_ui():
 
@@ -39,7 +41,7 @@ def create_ui():
                             ui.agent_elements[name] = widget.value
 
             with gr.Column(scale=1):
-                shared.gradio['agent_status'] = gr.Markdown('No agent is loaded' if shared.agent_name == 'None' else 'Ready')
+                shared.gradio['agent_status'] = gr.Markdown(i18n('agent_warn') if shared.agent_name is None else 'Ready')
 
 
 def create_event_handlers():
@@ -53,9 +55,9 @@ def create_event_handlers():
 
     def update_current_agent():
         if shared.agent_name is None:
-            return '<div class="current-agent-warn">No agent is loaded, please select in the Agent tab.</div>'
+            return f'<div class="current-agent-warn">{i18n("agent_warn")}</div>'
         else:
-            return f'<div class="current-agent">Current agent: {shared.agent_name}</div>'
+            return f'<div class="current-agent">{i18n("select_agent", shared.agent_name)}</div>'
 
     shared.gradio['agent_menu']\
         .change(apply_agent_settings, gradio('agent_menu'), gradio(*ui.agent_elements))\
@@ -86,28 +88,28 @@ def create_event_handlers():
 
 def load_agent(selected_agent, autoload=False):
     if selected_agent is None:
-        yield 'No agent selected'
+        yield i18n('msg_no_select')
     elif selected_agent == 'New Agent':
-        yield 'Please save the new agent before load it.'
+        yield i18n('msg_ask_save')
     elif not autoload:
         if shared.agent_name is None:
-            yield f"Click on \"Load\" to load `{selected_agent}`."
+            yield i18n('msg_ask_load', selected_agent)
         elif shared.agent_name != selected_agent:
-            yield f"The current agent is `{shared.agent_name}`.\n\nClick on \"Load\" to load `{selected_agent}`."
+            yield i18n('msg_ask_load_other', shared.agent_name, selected_agent)
         else:
-            yield f'The agent `{shared.agent_name}` is loaded.'
+            yield i18n('msg_loaded', shared.agent_name)
         return
     else:
         try:
-            yield f'Loading `{selected_agent}`...'
+            yield i18n('msg_loading', selected_agent)
             unload_agent()
             shared.agent_name = selected_agent
             shared.llm = load_llm(selected_agent)
 
             if shared.llm is not None:
-                yield f'Successfully loaded `{selected_agent}`.'
+                yield i18n('msg_success', selected_agent)
             else:
-                yield f'Failed to load `{selected_agent}`.'
+                yield i18n('msg_fail', selected_agent)
         except:
             logger.exception('Traceback')
-            raise gr.Error(f'Failed to load the agent `{selected_agent}`.')
+            raise gr.Error(i18n('msg_fail', selected_agent))

@@ -18,7 +18,10 @@ from pydantic import BaseModel
 from agentlego.tools import BaseTool
 from .. import message_schema as msg
 from ..logging import logger
+from ..ui import get_translator
 from ..utils import parse_inputs, parse_outputs
+
+i18n = get_translator(__file__)
 
 # modified form hub.pull("hwchase17/structured-chat-agent")
 STRUCTURED_CHAT_PROMPT = ChatPromptTemplate(
@@ -120,7 +123,7 @@ def llm_chat_openai(cfg):
         openai_api_key = 'DUMMY_API_KEY'
 
     llm = ChatOpenAI(
-        name=cfg.get('model_name'),
+        model=cfg.get('model_name'),
         max_tokens=cfg.get('max_tokens'),
         base_url=openai_api_base,
         api_key=openai_api_key,
@@ -134,12 +137,12 @@ def cfg_chat_openai():
     import gradio as gr
     widgets = {}
     widgets['model_name'] = gr.Textbox(label='Model name')
-    widgets['openai_api_base'] = gr.Textbox(label='API base url', info='If empty, use the default OpenAI api url, if you have self-hosted openai-style API server, please specify the host address here, like `http://localhost:8099/v1`')
-    widgets['openai_api_key'] = gr.Textbox(label='API key', info="If set `ENV`, will use the `OPENAI_API_KEY` environment variable. Leave empty if you don't need pass key.")
-    widgets['max_tokens'] = gr.Slider(label='Max number of tokens', minimum=0, maximum=8192, step=256, value=512, info='The maximum number of tokens to generate for one response.')
-    widgets['temperature'] = gr.Slider(label='Temperature', minimum=0., maximum=1., step=0.1, value=0.7, info='What sampling temperature to use.')
-    widgets['meta_prompt'] = gr.Textbox(label='Meta prompt', info='The extra meta prompt to the agent.', value='Respond to the human as helpfully and accurately as possible.')
-    widgets['extra_stop'] = gr.Textbox(label='Extra stop words', info='Comma-separated list of stop words. Example: <|im_end|>,Response')
+    widgets['openai_api_base'] = gr.Textbox(label='API base url', info=i18n('openai_api_base'))
+    widgets['openai_api_key'] = gr.Textbox(label='API key', info=i18n('openai_api_key'))
+    widgets['max_tokens'] = gr.Slider(label='Max number of tokens', minimum=0, maximum=8192, step=256, value=512, info=i18n('max_tokens'))
+    widgets['temperature'] = gr.Slider(label='Temperature', minimum=0., maximum=1., step=0.1, value=0.7, info=i18n('temperature'))
+    widgets['extra_stop'] = gr.Textbox(label='Extra stop words', info=i18n('extra_stop'))
+    widgets['meta_prompt'] = gr.Textbox(label='Meta prompt', info=i18n('meta_prompt'), value='Respond to the human as helpfully and accurately as possible.', lines=5)
     return widgets
 
 
@@ -150,8 +153,8 @@ def langchain_style_history(history) -> ChatMessageHistory:
         for step in row[1]:
             if isinstance(step, msg.ToolInput):
                 response += f'Thought: {step.thought or ""}\n'
-                args = json.dumps({k: v['content'] for k, v in step.args.items()})
-                tool_str = f'{{\n  "action": "{step.name}",\n  "action_input": "{args}"\n}}'
+                args = json.dumps({k: v['content'] for k, v in step.args.items()}, ensure_ascii=False)
+                tool_str = f'{{\n  "action": "{step.name}",\n  "action_input": {args}\n}}'
                 response += 'Action:\n```\n' + tool_str + '\n```\n'
             elif isinstance(step, msg.ToolOutput):
                 if step.outputs:

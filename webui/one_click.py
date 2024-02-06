@@ -130,21 +130,23 @@ def install_agentlego():
 
 def install_demo_dependencies():
     gradio = get_version('gradio')
+    install = []
     if gradio is None or gradio < digit_version('4.13.0'):
-        run_cmd(f'python -m pip install "gradio>=4.13.0"', assert_success=True)
+        install.append("'gradio>=4.13.0'")
 
     if get_version('langchain') is None:
-        run_cmd(f'python -m pip install langchain', assert_success=True)
+        install.append('langchain')
     if get_version('langchain-openai') is None:
-        run_cmd(f'python -m pip install langchain-openai', assert_success=True)
-
+        install.append('langchain-openai')
     if get_version('markdown') is None:
-        run_cmd(f'python -m pip install markdown', assert_success=True)
+        install.append('markdown')
 
     lagent = get_version('lagent')
     if lagent is None or lagent < digit_version('0.2.0'):
-        run_cmd(f'python -m pip install "lagent>=0.2.0"', assert_success=True)
+        install.append("'git+https://github.com/mzr1996/lagent@lite'")
 
+    if install:
+        run_cmd('python -m pip install ' + ' '.join(install), assert_success=True)
 
 if __name__ == '__main__':
     # Verifies we are in a conda environment

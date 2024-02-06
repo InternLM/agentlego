@@ -2,11 +2,13 @@ from datetime import datetime
 from functools import partial
 
 import gradio as gr
-from modules import chat, shared, ui
-from modules.html_generator import chat_html_wrapper
-from modules.text_generation import stop_everything_event
-from modules.utils import gradio
 
+from . import chat, shared, ui
+from .html_generator import chat_html_wrapper
+from .text_generation import stop_everything_event
+from .utils import gradio
+
+i18n = ui.get_translator(__file__)
 
 def create_ui():
     shared.gradio['Chat input'] = gr.State()
@@ -17,7 +19,7 @@ def create_ui():
         with gr.Row():
             with gr.Column(elem_id='chat-col'):
                 # Display history
-                shared.gradio['current-agent'] = gr.HTML(value='<div class="current-agent-warn">No agent is loaded, please select in the Agent tab.</div>')
+                shared.gradio['current-agent'] = gr.HTML(value=f'<div class="current-agent-warn">{i18n("agent_warn")}</div>')
                 shared.gradio['display'] = gr.HTML(value=chat_html_wrapper({'internal': [], 'visible': []}))
 
                 # Chat input area
@@ -26,7 +28,7 @@ def create_ui():
                         gr.HTML(value='<div class="hover-element" onclick="void(0)"><span style="width: 100px; display: block" id="hover-element-button">&#9776;</span><div class="hover-menu" id="hover-menu"></div>', elem_id='gr-hover')
 
                     with gr.Column(scale=10, elem_id='chat-input-container'):
-                        shared.gradio['textbox'] = gr.Textbox(label='', placeholder='Send a message', elem_id='chat-input', elem_classes=['add_scrollbar'])
+                        shared.gradio['textbox'] = gr.Textbox(label='', placeholder=i18n('placeholder'), elem_id='chat-input', elem_classes=['add_scrollbar'])
                         shared.gradio['typing-dots'] = gr.HTML(value='<div class="typing"><span></span><span class="dot1"></span><span class="dot2"></span></div>', label='typing', elem_id='typing-container')
 
                     with gr.Column(scale=1, elem_id='upload-container'):
@@ -34,24 +36,25 @@ def create_ui():
 
                     with gr.Column(scale=1, elem_id='generate-stop-container'):
                         with gr.Row():
-                            shared.gradio['Stop'] = gr.Button('Stop', elem_id='stop', visible=False)
-                            shared.gradio['Generate'] = gr.Button('Generate', elem_id='Generate', variant='primary')
+                            shared.gradio['Stop'] = gr.Button(i18n('stop'), elem_id='stop', visible=False)
+                            shared.gradio['Generate'] = gr.Button(i18n('generate'), elem_id='Generate', variant='primary')
 
         # Hover menu buttons
         with gr.Column(elem_id='chat-buttons'):
             with gr.Row():
-                shared.gradio['Regenerate'] = gr.Button('Regenerate', elem_id='Regenerate')
-                shared.gradio['Start new chat'] = gr.Button('Start new chat')
+                shared.gradio['Regenerate'] = gr.Button(i18n('regenerate'), elem_id='Regenerate')
+                shared.gradio['Modify last'] = gr.Button(i18n('modify_last'), elem_id='Modify-last')
+                shared.gradio['Start new chat'] = gr.Button(i18n('start_new_chat'))
 
         with gr.Group():
-            gr.HTML('<div style="text-align:center;font-weight:bold;padding:6px">Select tools</div>')
+            gr.HTML(f'<div style="text-align:center;font-weight:bold;padding:6px">{i18n("select_tools")}</div>')
             with gr.Row():
                 shared.gradio['select_all_tools'] = gr.Button('All', size='sm')
                 shared.gradio['select_no_tools'] = gr.Button('None', size='sm')
             shared.gradio['selected_tools'] = gr.CheckboxGroup(show_label=False, choices=shared.toolkits.keys(), value=list(shared.toolkits.keys()))
 
         with gr.Row(elem_id='past-chats-row'):
-            shared.gradio['unique_id'] = gr.Dropdown(label='Past chats', elem_classes=['slim-dropdown'], choices=chat.find_all_histories(), value=None, allow_custom_value=True)
+            shared.gradio['unique_id'] = gr.Dropdown(label=i18n('past_chat'), elem_classes=['slim-dropdown'], choices=chat.find_all_histories(), value=None, allow_custom_value=True)
             shared.gradio['save_chat'] = gr.Button('Save', elem_classes='refresh-button')
             delete, confirm, cancel = ui.create_confirm_cancel('🗑️', elem_classes='refresh-button')
             shared.gradio['delete_chat'] = delete
@@ -67,16 +70,14 @@ def create_event_handlers():
         .then(lambda x: (x, ''), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False)\
         .then(chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False)\
         .then(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
-        .then(lambda: [], None, gradio('uploaded-files'), show_progress=False)\
-        .then(chat.save_history, gradio('history', 'unique_id'), None)
+        .then(lambda: [], None, gradio('uploaded-files'), show_progress=False)
 
     shared.gradio['textbox']\
         .submit(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
         .then(lambda x: (x, ''), gradio('textbox'), gradio('Chat input', 'textbox'), show_progress=False)\
         .then(chat.generate_chat_reply_wrapper, gradio(inputs), gradio('display', 'history'), show_progress=False)\
         .then(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
-        .then(lambda: [], None, gradio('uploaded-files'), show_progress=False)\
-        .then(chat.save_history, gradio('history', 'unique_id'), None)
+        .then(lambda: [], None, gradio('uploaded-files'), show_progress=False)
 
     shared.gradio['upload-file']\
         .upload(chat.upload_file, gradio('upload-file', 'uploaded-files', 'history'), gradio('uploaded-files', 'display'), show_progress=False)\
@@ -101,8 +102,12 @@ def create_event_handlers():
     shared.gradio['Regenerate']\
         .click(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
         .then(partial(chat.generate_chat_reply_wrapper, regenerate=True), gradio(inputs), gradio('display', 'history'), show_progress=False)\
-        .then(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
-        .then(chat.save_history, gradio('history', 'unique_id'), None)
+        .then(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))
+
+    shared.gradio['Modify last']\
+        .click(ui.gather_interface_values, gradio(shared.input_elements), gradio('interface_state'))\
+        .then(chat.modify_last_message, gradio('history'), gradio('textbox', 'history'), show_progress=False)\
+        .then(chat.redraw_html, gradio('history'), gradio('display'))
 
     shared.gradio['save_chat']\
         .click(lambda unique_id: unique_id or datetime.now().strftime('%Y%m%d-%H-%M-%S'), gradio('unique_id'), gradio('unique_id'))\

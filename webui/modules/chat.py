@@ -134,6 +134,16 @@ def redraw_html(history):
     return chat_html_wrapper(history)
 
 
+def modify_last_message(history):
+    if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
+        last = history['internal'].pop()
+        history['visible'].pop()
+    else:
+        last = ['', '']
+
+    return last[0], history
+
+
 def start_new_chat():
     history = {'internal': [], 'visible': []}
 

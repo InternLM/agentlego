@@ -5,6 +5,7 @@ import modules.shared as shared
 
 from .agents import agent_func_map, clear_cache
 from .logging import logger
+from .message_schema import Error
 
 
 def generate_reply(*args, **kwargs):
@@ -30,10 +31,12 @@ def _generate_reply(question, state, history):
 
     shared.stop_everything = False
     clear_cache()
+    t0 = time.time()
 
     try:
-        t0 = time.time()
         yield from generate_func(question, state, history)
+    except Exception as e:
+        yield Error(type=type(e).__name__, reason=str(e))
     finally:
         t1 = time.time()
         logger.info(f'Output generated in {(t1-t0):.2f} seconds.')

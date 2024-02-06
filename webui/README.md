@@ -77,10 +77,12 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 
 ## Setup WebUI
 
-You can use the `start_linux.sh` to create a standalone environment from scratch, or use `one_click.py` to
+You can use the `start_linux.sh` or `start_windows.bat` to create a standalone environment from scratch, or use `one_click.py` to
 setup the environment on your own environment.
 
 ```bash
+# On Windows, from scratch
+
 bash startup_linux.sh
 # OR
 python one_click.py

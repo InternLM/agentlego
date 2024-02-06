@@ -1,0 +1,95 @@
+# ui_chat.py
+ui_chat:
+  agent_warn:
+    en: "No agent is loaded, please select in the Agent tab."
+    zh: "没有加载 Agent，请在 Agent 页面选择 Agent"
+  past_chat:
+    en: "Past chats"
+    zh: "历史聊天"
+  regenerate:
+    en: "Regenerate"
+    zh: "重新生成"
+  modify_last:
+    en: 'Modify last message'
+    zh: '修改上一条输入'
+  start_new_chat:
+    en: 'Start new chat'
+    zh: '开始新聊天'
+  generate:
+    en: 'Generate'
+    zh: '发送'
+  stop:
+    en: 'Stop'
+    zh: '停止'
+  placeholder:
+    en: 'Send a message'
+    zh: '输入消息'
+  select_tools:
+    en: 'Select tools'
+    zh: '选择工具'
+
+# ui_agent.py
+ui_agent:
+  agent_warn:
+    en: "No agent is loaded, please select in the Agent tab."
+    zh: "没有加载 Agent，请在 Agent 页面选择 Agent"
+  select_agent:
+    en: "Current agent: {}"
+    zh: "已加载 Agent：{}"
+  msg_no_select:
+    en: "No agent selected"
+    zh: "没有选择 Agent"
+  msg_ask_save:
+    en: "Please save the new agent before load it."
+    zh: "请在加载新的 Agent 之前，点击 `Save to` 保存"
+  msg_ask_load:
+    en: "Click on \"Load\" to load `{}`."
+    zh: "请点击 `Load` 加载 `{}`"
+  msg_ask_load_other:
+    en: "The current agent is `{}`.\n\nClick on \"Load\" to load `{}`."
+    zh: "目前加载的 Agent 是 `{}`\n\n请点击 `Load` 加载 `{}`"
+  msg_loaded:
+    en: "The agent `{}` is loaded."
+    zh: "Agent `{}` 已完成加载"
+  msg_loading:
+    en: "Loading `{}`..."
+    zh: "加载 `{}` 中..."
+  msg_success:
+    en: "Successfully loaded `{}`."
+    zh: "成功加载 Agent `{}`"
+  msg_fail:
+    en: "Failed to load agent `{}`."
+    zh: "加载 Agnet `{}` 失败"
+
+# agents/langchain_agent.py
+langchain_agent:
+  openai_api_base:
+    en: "If empty, use the default OpenAI api url, if you have self-hosted openai-style API server, please specify the host address here, like `http://127.0.0.1:8099/v1`"
+    zh: "OpenAI API 地址。如果没有设置，则使用 OpenAI 默认地址。如果你使用了自己部署的 OpenAI API 格式 LLM 服务器（如 vLLM、LMDeploy、kobold 等），请在这里设置服务器地址，格式如 `http://127.0.0.1:8099/v1`"
+  openai_api_key:
+    en: "If set `ENV`, will use the `OPENAI_API_KEY` environment variable. Leave empty if you don't need pass key."
+    zh: "OpenAI API key。如果没有设置，会从环境变量读取 `OPENAI_API_KEY`；如果使用自己部署的 LLM 服务器，则不需要设置此项。"
+  max_tokens:
+    en: "The maximum number of tokens to generate for one response."
+    zh: "单轮回复的最大子词(token)数"
+  temperature:
+    en: "What sampling temperature to use."
+    zh: "生成使用的采样温度"
+  extra_stop:
+    en: "Comma-separated list of stop words. Example: <|im_end|>,Response"
+    zh: "额外的停止词，使用半角逗号分割多个停止词，如 <|im_end|>,Response"
+  meta_prompt:
+    en: "The extra meta prompt to the agent."
+    zh: "额外的系统提示词"
+
+# agents/lagent_agent.py
+lagent_agent:
+  url:
+    en: "The internlm2 server url of LMDeploy, like `http://127.0.0.1:23333`"
+    zh: "使用 LMDeploy 部署的 InternLM2 服务器地址，格式如 `http://127.0.0.1:23333`"
+  max_turn:
+    en: "Max number of turns"
+    zh: "最大工具调用轮次（避免无限调用工具）"
+  temperature:
+    en: 'What sampling temperature to use.'
+    zh: "生成使用的采样温度"
