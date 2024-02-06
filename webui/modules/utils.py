@@ -29,12 +29,13 @@ def parse_inputs(toolmeta: ToolMeta, args: Union[str, tuple, dict]) -> Mapping[s
 
     parsed_args = {}
     for k, v in args.items():
-        p = params[k]
-        if p.type is ImageIO:
+        if k not in params:
+            parsed_args[k] = dict(type='text', content=v)
+        elif params[k].type is ImageIO:
             parsed_args[k] = dict(type='image', content=v)
-        elif p.type is AudioIO:
+        elif params[k].type is AudioIO:
             parsed_args[k] = dict(type='audio', content=v)
-        elif p.type is File:
+        elif params[k].type is File:
             parsed_args[k] = dict(type='file', content=v)
         else:
             parsed_args[k] = dict(type='text', content=v)

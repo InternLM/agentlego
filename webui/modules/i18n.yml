@@ -81,6 +81,9 @@ langchain_agent:
   meta_prompt:
     en: "The extra meta prompt to the agent."
     zh: "额外的系统提示词"
+  greeting:
+    en: "If set, use the message as the first generated message when start a new chat."
+    zh: "如果设置，在开始新聊天时，使用此消息作为生成的第一条消息。"
 
 # agents/lagent_agent.py
 lagent_agent:

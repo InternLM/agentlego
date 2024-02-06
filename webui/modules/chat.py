@@ -135,7 +135,7 @@ def redraw_html(history):
 
 
 def modify_last_message(history):
-    if len(history['visible']) > 0 and history['internal'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
+    if len(history['visible']) > 0 and history['visible'][-1][0] != '<|BEGIN-VISIBLE-CHAT|>':
         last = history['internal'].pop()
         history['visible'].pop()
     else:
@@ -147,8 +147,14 @@ def modify_last_message(history):
 def start_new_chat():
     history = {'internal': [], 'visible': []}
 
-    unique_id = datetime.now().strftime('%Y%m%d-%H-%M-%S')
-    save_history(history, unique_id)
+    from .message_schema import Answer
+    from .settings import get_agent_settings
+    if shared.agent_name:
+        agent_settings = get_agent_settings(shared.agent_name)
+        greeting = agent_settings.get('greeting', None)
+        if greeting:
+            history['internal'] += [['', [Answer(text=greeting)]]]
+            history['visible'] += [['<|BEGIN-VISIBLE-CHAT|>', greeting]]
 
     return history
 

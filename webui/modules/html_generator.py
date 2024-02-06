@@ -38,6 +38,8 @@ def replace_blockquote(m):
 
 
 def convert_to_markdown(string):
+    if string == '<|BEGIN-VISIBLE-CHAT|>':
+        return ''
 
     # Blockquote
     string = re.sub(r'(^|[\n])&gt;', r'\1>', string)

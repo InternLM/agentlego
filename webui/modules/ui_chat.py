@@ -95,7 +95,7 @@ def create_event_handlers():
         .then(chat.redraw_html, gradio('history'), gradio('display'))
 
     shared.gradio['Start new chat']\
-        .click(lambda: {'internal': [], 'visible': []}, None, gradio('history'))\
+        .click(chat.start_new_chat, None, gradio('history'))\
         .then(chat.redraw_html, gradio('history'), gradio('display'))\
         .then(lambda: gr.update(value=None), None, gradio('unique_id'))
 

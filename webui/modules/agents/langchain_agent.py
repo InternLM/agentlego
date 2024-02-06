@@ -143,6 +143,7 @@ def cfg_chat_openai():
     widgets['temperature'] = gr.Slider(label='Temperature', minimum=0., maximum=1., step=0.1, value=0.7, info=i18n('temperature'))
     widgets['extra_stop'] = gr.Textbox(label='Extra stop words', info=i18n('extra_stop'))
     widgets['meta_prompt'] = gr.Textbox(label='Meta prompt', info=i18n('meta_prompt'), value='Respond to the human as helpfully and accurately as possible.', lines=5)
+    widgets['greeting'] = gr.Textbox(label='Greeting', info=i18n('greeting'), value=None, lines=5)
     return widgets
 
 
@@ -150,9 +151,12 @@ def langchain_style_history(history) -> ChatMessageHistory:
     memory = ChatMessageHistory()
     for row in history['internal']:
         response = ''
+        if row[0]:
+            memory.add_user_message(row[0])
         for step in row[1]:
             if isinstance(step, msg.ToolInput):
-                response += f'Thought: {step.thought or ""}\n'
+                if step.thought:
+                    response += f'Thought: {step.thought}\n'
                 args = json.dumps({k: v['content'] for k, v in step.args.items()}, ensure_ascii=False)
                 tool_str = f'{{\n  "action": "{step.name}",\n  "action_input": {args}\n}}'
                 response += 'Action:\n```\n' + tool_str + '\n```\n'
@@ -166,7 +170,6 @@ def langchain_style_history(history) -> ChatMessageHistory:
                 response += f'Thought: {step.thought or ""}\n'
                 tool_str = f'{{\n  "action": "Final Answer",\n  "action_input": "{step.text}"\n}}'
                 response += 'Action:\n```\n' + tool_str + '\n```\n'
-        memory.add_user_message(row[0])
         memory.add_ai_message(response)
     return memory
 
