@@ -2,6 +2,7 @@ import copy
 import hashlib
 import html
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -29,7 +30,7 @@ def persist_file(path):
         new_path.mkdir(parents=True, exist_ok=True)
         new_path = new_path / filename
     if not new_path.exists():
-        path.rename(new_path)
+        shutil.move(path, new_path)
     return new_path
 
 
@@ -117,6 +118,7 @@ def generate_chat_reply_wrapper(text, state, file=None, regenerate=False):
     for i, history in enumerate(generate_chat_reply(text, state, file, regenerate, loading_message=True)):
         yield chat_html_wrapper(history), history
 
+
 def upload_file(file, uploaded, history):
     if not file:
         return gr.update()
@@ -129,6 +131,7 @@ def upload_file(file, uploaded, history):
         visible += add_file(file)[1]
     output['visible'] = output['visible'] + [[visible, '']]
     return uploaded, chat_html_wrapper(output)
+
 
 def redraw_html(history):
     return chat_html_wrapper(history)
@@ -211,6 +214,7 @@ def load_latest_history():
 
     return history
 
+
 def recover_message(data):
     from . import message_schema as msg
 
@@ -223,6 +227,7 @@ def recover_message(data):
         return type(data)([recover_message(item) for item in data])
     else:
         return data
+
 
 def load_history(unique_id):
     p = get_history_file_path(unique_id)
