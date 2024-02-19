@@ -8,7 +8,7 @@ from .image_pose import HumanBodyPose, HumanFaceLandmark, PoseToImage
 from .image_scribble import ImageToScribble, ScribbleTextToImage
 from .image_text import ImageDescription, TextToImage, ImageRegionDescription
 from .imagebind import AudioImageToImage, AudioTextToImage, AudioToImage, ThermalToImage
-from .object_detection import ObjectDetection, TextToBbox, CountGivenObject
+from .object_detection import ObjectDetection, TextToBbox, CountGivenObject, CelebrityRecognition
 from .ocr import OCR, MathOCR
 from .search import GoogleSearch
 from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
@@ -25,5 +25,5 @@ __all__ = [
     'SegmentObject', 'SegmentAnything', 'SemanticSegmentation', 'ImageStylization',
     'AudioToImage', 'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage',
     'SpeechToText', 'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator',
-    'BaseTool', 'make_tool', 'AddText', 'DrawBox', 'ImageRegionDescription', 'CountGivenObject', 'ReplaceBackgroundOrForeground', 'MathOCR', 'PythonInterpreter', 'Plot', 'Solver'
+    'BaseTool', 'make_tool', 'AddText', 'DrawBox', 'ImageRegionDescription', 'CountGivenObject', 'ReplaceBackgroundOrForeground', 'MathOCR', 'PythonInterpreter', 'Plot', 'Solver', 'CelebrityRecognition'
 ]
