@@ -1,5 +1,5 @@
-from agentlego.types import ImageIO
-from agentlego.utils import load_or_build_object, require
+from agentlego.types import Annotated, ImageIO, Info
+from agentlego.utils import load_or_build_object, parse_multi_float, require
 from ..base import BaseTool
 
 
@@ -15,7 +15,7 @@ class ImageRegionDescription(BaseTool):
             Defaults to None.
     """
 
-    default_desc = ('A tool to describe a certain part of the input image.')
+    default_desc = 'A tool to describe a certain part of the input image.'
 
     @require('mmpretrain')
     def __init__(self,
@@ -36,12 +36,12 @@ class ImageRegionDescription(BaseTool):
                 device=self.device,
             )
 
-    def apply(self, image: ImageIO, region: str) -> str:
-        """ 
-        region: (x1, y1, x2, y2)  
-        x1, y1: upper left
-        x2, y2: lower right
-        """
-        cropped_image = ImageIO(image.to_pil().crop(eval(region)))
-        cropped_image = cropped_image.to_array()[:, :, ::-1]
+    def apply(
+        self,
+        image: ImageIO,
+        bbox: Annotated[str,
+                        Info('The bbox coordinate in the format of `(x1, y1, x2, y2)`')],
+    ) -> str:
+        x1, y1, x2, y2 = (int(item) for item in parse_multi_float(bbox))
+        cropped_image = image.to_array()[y1:y2, x1:x2, ::-1]
         return self._inferencer(cropped_image)[0]['pred_caption']

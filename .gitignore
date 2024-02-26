@@ -109,6 +109,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# pyright
+pyrightconfig.json
 
 # Pytorch
 *.pth

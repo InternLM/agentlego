@@ -1,28 +1,31 @@
-import copy
-import io
-from contextlib import redirect_stdout
-from typing import Any, Optional, Type
+from func_timeout import func_set_timeout
+
+from agentlego.types import Annotated, Info
+from agentlego.utils import require
 from ..base import BaseTool
+from .python_interpreter import GenericRuntime
 
+DESC_EN = '''\
+This tool can execute Python code to solve math equations. The code should include a function named 'solution'. You should use the `sympy` library in your code to solve the equations. The function should return its answer in str format. Avoid printing the answer. The code instance format is as follows:
 
-class GenericRuntime:
-    GLOBAL_DICT = {}
-    LOCAL_DICT = None
-    HEADERS = []
+```python
+# import packages
+from sympy import symbols, Eq, solve
+def solution():
+    # Define symbols
+    x, y = symbols('x y')
 
-    def __init__(self):
-        self._global_vars = copy.copy(self.GLOBAL_DICT)
-        self._local_vars = copy.copy(
-            self.LOCAL_DICT) if self.LOCAL_DICT else None
+    # Define equations
+    equation1 = Eq(x**2 + y**2, 20)
+    equation2 = Eq(x**2 - 5*x*y + 6*y**2, 0)
 
-        for c in self.HEADERS:
-            self.exec_code(c)
+    # Solve the system of equations
+    solutions = solve((equation1, equation2), (x, y), dict=True)
 
-    def exec_code(self, code_piece: str) -> None:
-        exec(code_piece, self._global_vars)
-
-    def eval_code(self, expr: str) -> Any:
-        return eval(expr, self._global_vars)
+    # Return solutions as strings
+    return str(solutions)
+```
+'''  # noqa: E501
 
 
 class Solver(BaseTool):
@@ -37,69 +40,25 @@ class Solver(BaseTool):
             Defaults to None.
     """
 
-    default_desc = (
-        """ This tool can execute Python code to solve math equations. The code must be a function, the function name must be 'solution', and the code corresponds to your thinking process. You should use SymPy library in your code to solve the given math equations. The solution function should return its answer in the string format. Avoid printing the answer. A code instance example is as follows:
+    default_desc = DESC_EN
+    answer_expr = 'solution()'
 
-        ```python
-        # import packages
-        from sympy import symbols, Eq, solve
-        def solution():
-            # Define symbols
-            x, y = symbols('x y')
-
-            # Define equations
-            equation1 = Eq(x**2 + y**2, 20)
-            equation2 = Eq(x**2 - 5*x*y + 6*y**2, 0)
-
-            # Solve the system of equations
-            solutions = solve((equation1, equation2), (x, y))
-
-            # Convert solutions to strings
-            solutions_str = [f"x = {sol[0]}, y = {sol[1]}" for sol in solutions]
-
-            # Return solutions as strings
-            return solutions_str
-        ```
-
-        Args:
-            command (:class:`str`): Python code snippet
-        """
-    )
-
-    def __init__(self, 
-                 answer_expr: Optional[str] = 'solution()',
-                 timeout: int = 20,
-                 toolmeta=None):
+    @require('sympy')
+    def __init__(self, timeout: int = 20, toolmeta=None):
         super().__init__(toolmeta=toolmeta)
-        self.answer_expr = answer_expr
         self.timeout = timeout
 
-    def apply(self, command: str) -> str:
-        from func_timeout import FunctionTimedOut, func_set_timeout
-        self.runtime = GenericRuntime()
-        try:
-            res = func_set_timeout(self.timeout)(self._call)(command)
-        except FunctionTimedOut as e:
-            print(f'{type(e)}: {str(e)}')
-            return repr(e)  # ?
-        return res
-    
-    def _call(self, command: str) -> str:
-        try:
-            if '```python' in command:
-                command = command.split('```python')[1].split('```')[0]
-            elif '```' in command:
-                command = command.split('```')[1].split('```')[0]
-            command = command.split('\n')
+    def apply(self, command: Annotated[str, Info('Markdown format Python code')]) -> str:
 
-            self.runtime.exec_code('\n'.join(command))
-            res = self.runtime.eval_code(self.answer_expr)
-        except Exception as e:
-            print(f'{type(e)}: {str(e)}')
-            return repr(e)
-        try:
-            res = str(res)
-        except Exception as e:
-            print(f'{type(e)}: {str(e)}')
-            return repr(e)
-        return res
+        if '```python' in command:
+            command = command.split('```python')[1].split('```')[0]
+        elif '```' in command:
+            command = command.split('```')[1].split('```')[0]
+
+        res = func_set_timeout(self.timeout)(self._call)(command)
+        return str(res)
+
+    def _call(self, command: str) -> str:
+        runtime = GenericRuntime(headers=['from sympy import symbols, Eq, solve'])
+        runtime.exec_code('\n'.join(command))
+        return runtime.eval_code(self.answer_expr)

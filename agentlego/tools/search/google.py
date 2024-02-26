@@ -3,6 +3,7 @@ from typing import List, Tuple, Union
 
 import requests
 
+from agentlego.types import Annotated, Info
 from ..base import BaseTool
 
 
@@ -29,8 +30,6 @@ class GoogleSearch(BaseTool):
             Defaults to 1500.
         with_url (bool): Whether to include the url of search results.
             Defaults to False.
-        k (int): select first k results in the search results as response.
-            Defaults to 10.
         toolmeta (None | dict | ToolMeta): The additional info of the tool.
             Defaults to None.
     """
@@ -46,39 +45,39 @@ class GoogleSearch(BaseTool):
                     'and return the related results.')
 
     def __init__(self,
-                 api_key: str = 'env',
+                 api_key: str = 'ENV',
                  timeout: int = 5,
                  search_type: str = 'search',
                  max_out_len: int = 1500,
                  with_url: bool = False,
-                 k: int = 10,
                  toolmeta=None) -> None:
         super().__init__(toolmeta=toolmeta)
 
-        if api_key == 'env':
-            api_key = os.environ.get('SERPER_API_KEY', None)
+        if api_key == 'ENV':
+            api_key = os.getenv('SERPER_API_KEY', None)
         if not api_key:
             raise ValueError('Please set Serper API key either in the environment '
                              ' as SERPER_API_KEY or pass it as `api_key` parameter.')
 
         self.api_key = api_key
         self.timeout = timeout
-        self.search_type = search_type
-        self.k = k
         self.max_out_len = max_out_len
+        self.search_type = search_type
         self.with_url = with_url
 
-    def apply(self, query: str) -> str:
-        status_code, results = self._search(
-            query, search_type=self.search_type, k=self.k)
+    def apply(self,
+              query: str,
+              k: Annotated[int, Info('Select the first k results')] = 10) -> str:
+        status_code, results = self._search(query, search_type=self.search_type, k=k)
+
         # convert search results to ToolReturn format
         if status_code == 200:
-            results = self._parse_results(results)
+            results = self._parse_results(results, k)
             return str(results)
         else:
             raise ConnectionError(f'Error {status_code}: {results}')
 
-    def _parse_results(self, results: dict) -> Union[str, List[str]]:
+    def _parse_results(self, results: dict, k: int) -> Union[str, List[str]]:
         """Parse the search results from Serper API.
 
         Args:
@@ -116,7 +115,7 @@ class GoogleSearch(BaseTool):
                 content += f'({attributes})'
             snippets.append(content)
 
-        for item in results[self.result_key_for_type[self.search_type]][:self.k]:
+        for item in results[self.result_key_for_type[self.search_type]][:k]:
             content = ''
             if item.get('title'):
                 content += item['title'] + ': '
@@ -145,7 +144,7 @@ class GoogleSearch(BaseTool):
     def _search(self,
                 query: str,
                 search_type: str = 'search',
-                **kwargs) -> Tuple[int, Union[dict, str]]:
+                **kwargs) -> Tuple[int, dict]:
         """HTTP requests to Serper API.
 
         Args:
@@ -166,12 +165,9 @@ class GoogleSearch(BaseTool):
         params = {k: v for k, v in kwargs.items() if v is not None}
         params['q'] = query
 
-        try:
-            response = requests.post(
-                f'https://google.serper.dev/{search_type}',
-                headers=headers,
-                params=params,
-                timeout=self.timeout)
-        except Exception as e:
-            return -1, str(e)
+        response = requests.post(
+            f'https://google.serper.dev/{search_type}',
+            headers=headers,
+            params=params,
+            timeout=self.timeout)
         return response.status_code, response.json()

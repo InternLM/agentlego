@@ -1,4 +1,5 @@
 import numpy as np
+
 from agentlego.types import Annotated, ImageIO, Info
 from agentlego.utils import require
 from ..base import BaseTool
@@ -16,9 +17,10 @@ class ReplaceBackgroundOrForeground(BaseTool):
             Defaults to None.
     """
 
-    default_desc = ('The tool can replace the image background or foreground with a new one depicted with some keywords.')
+    default_desc = ('The tool can replace the image background or foreground'
+                    'with a new one depicted with some keywords.')
 
-    @require('diffusers')
+    @require(['diffusers', 'opencv-python'])
     def __init__(self, model: str = 'sd', device: str = 'cuda', toolmeta=None):
         super().__init__(toolmeta=toolmeta)
         self.low_threshold = 100
@@ -47,17 +49,17 @@ class ReplaceBackgroundOrForeground(BaseTool):
     def apply(
         self,
         image: ImageIO,
-        background_keywords: Annotated[str,
-                            Info('A series of English keywords separated by comma describing the new background.')],
-        foreground_keywords: Annotated[str,
-                            Info('A series of English keywords separated by comma describing the foreground.')],
+        background: Annotated[str, Info('description of the background')],
+        foreground: Annotated[str, Info('description of the foreground')],
     ) -> ImageIO:
         import cv2
         canny = cv2.Canny(image.to_array(), self.low_threshold,
                           self.high_threshold)[:, :, None]
         canny = np.concatenate([canny] * 3, axis=2)
 
-        prompt = f'The image background is {background_keywords}, the image foreground is {foreground_keywords}, {self.a_prompt}'
+        prompt = (f'background is {background}, '
+                  f'foreground is {foreground}, '
+                  '{self.a_prompt}')
         image = self.pipe(
             prompt,
             image=ImageIO(canny).to_pil(),

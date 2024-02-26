@@ -20,7 +20,7 @@ class TextToBbox(BaseTool):
 
     @require('mmdet>=3.1.0')
     def __init__(self,
-                 model: str = 'glip_atss_swin-t_b_fpn_dyhead_pretrain_obj365',
+                 model: str = 'glip_atss_swin-l_fpn_dyhead_pretrain_mixeddata',
                  device: str = 'cuda',
                  toolmeta=None):
         super().__init__(toolmeta=toolmeta)
@@ -50,8 +50,8 @@ class TextToBbox(BaseTool):
             texts=text,
             return_datasamples=True,
         )
-        data_sample = results['predictions'][0]
-        preds: DetDataSample = data_sample.pred_instances
+        data_sample: DetDataSample = results['predictions'][0]
+        preds = data_sample.pred_instances
 
         if len(preds) == 0:
             return 'No object found.'

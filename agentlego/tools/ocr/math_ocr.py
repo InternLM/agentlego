@@ -1,6 +1,10 @@
-from ..base import BaseTool
-import requests
 import json
+import os
+
+import requests
+
+from agentlego.types import ImageIO
+from ..base import BaseTool
 
 
 class MathOCR(BaseTool):
@@ -11,30 +15,44 @@ class MathOCR(BaseTool):
             Defaults to None.
     """
 
-    default_desc = ('This tool can recognize math expressions from an image.')
+    default_desc = ('This tool can recognize math expressions from an '
+                    'image and return the latex style expression.')
 
-    def __init__(self, toolmeta=None):
+    def __init__(self, app_id: str = 'ENV', app_key: str = 'ENV', toolmeta=None):
         super().__init__(toolmeta=toolmeta)
 
-    def apply(self, path: str) -> str:
+        if app_id == 'ENV':
+            app_id = os.getenv('MATHPIX_APP_ID', None)
+        if app_key == 'ENV':
+            app_key = os.getenv('MATHPIX_APP_KEY', None)
+        if not app_key or not app_id:
+            raise ValueError('Please set Mathpix app id and key or use `MATHPIX_APP_ID` '
+                             'and `MATHPIX_APP_KEY` environment variables.')
+        self.app_id = app_id
+        self.app_key = app_key
+
+    def apply(self, image: ImageIO) -> str:
+        exception = RuntimeError('Failed to recognize math expression.')
         for _ in range(3):
             try:
-                r = requests.post("https://api.mathpix.com/v3/text",
-                    files={"file": open(path,"rb")},
+                response = requests.post(
+                    'https://api.mathpix.com/v3/text',
+                    files={'file': open(image.to_path(), 'rb')},
                     data={
-                        "options_json": json.dumps({
-                            "math_inline_delimiters": ["$", "$"],
-                            "rm_spaces": True
-                            })
-                        },
-                    headers={
-                        "app_id": "APP_ID",
-                        "app_key": "APP_KEY"
+                        'options_json':
+                        json.dumps({
+                            'math_inline_delimiters': ['$', '$'],
+                            'rm_spaces': True
+                        })
                     },
-                    timeout=60
+                    headers={
+                        'app_id': self.app_id,
+                        'app_key': self.app_key,
+                    },
+                    timeout=60,
                 )
-                return r["text"]
+                return response.text
             except Exception as e:
-                print(f'{type(e)}: {str(e)}')
-                time.sleep(1)
+                exception = e
                 continue
+        raise exception
