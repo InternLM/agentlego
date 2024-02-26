@@ -180,7 +180,9 @@ class RemoteTool(BaseTool):
     @classmethod
     def from_openapi(
         cls,
-        url: str,
+        url: Optional[str] = None,
+        text: Optional[str] = None,
+        spec_dict: Optional[dict] = None,
         **kwargs,
     ) -> List['RemoteTool']:
         """Construct a series of remote tools from the specified OpenAPI
@@ -192,10 +194,15 @@ class RemoteTool(BaseTool):
             auth (tuple | None): Auth tuple to enable Basic/Digest/Custom HTTP Auth.
                 Defaults to None.
         """
-        if url.startswith('http'):
+        if url is not None and url.startswith('http'):
             spec = OpenAPISpec.from_url(url)
-        else:
+        elif url is not None:
             spec = OpenAPISpec.from_file(url)
+        elif text is not None:
+            spec = OpenAPISpec.from_text(text)
+        else:
+            assert spec_dict is not None
+            spec = OpenAPISpec.from_spec_dict(spec_dict)
 
         toolkit = spec.info.title.replace(' ', '_')
 
