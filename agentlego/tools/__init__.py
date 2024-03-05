@@ -10,7 +10,8 @@ from .image_text import ImageDescription, TextToImage
 from .imagebind import AudioImageToImage, AudioTextToImage, AudioToImage, ThermalToImage
 from .object_detection import ObjectDetection, TextToBbox
 from .ocr import OCR
-from .search import GoogleSearch
+from .scholar import *  # noqa: F401, F403
+from .search import BingSearch, GoogleSearch
 from .segmentation import SegmentAnything, SegmentObject, SemanticSegmentation
 from .speech_text import SpeechToText, TextToSpeech
 from .translation import Translation
@@ -24,5 +25,5 @@ __all__ = [
     'SegmentObject', 'SegmentAnything', 'SemanticSegmentation', 'ImageStylization',
     'AudioToImage', 'ThermalToImage', 'AudioImageToImage', 'AudioTextToImage',
     'SpeechToText', 'TextToSpeech', 'Translation', 'GoogleSearch', 'Calculator',
-    'BaseTool', 'make_tool'
+    'BaseTool', 'make_tool', 'BingSearch',
 ]

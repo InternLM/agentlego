@@ -117,6 +117,9 @@ venv.bak/
 # custom
 .vscode
 
+# fasttext or other models
+*.bin
+
 # generated image, audio or video files.
 generated/
 
