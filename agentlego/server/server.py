@@ -1,6 +1,7 @@
 import base64
 import inspect
 import logging
+import socket
 import sys
 from contextlib import asynccontextmanager
 from io import BytesIO
@@ -32,6 +33,23 @@ except ImportError:
     sys.exit(1)
 
 cli = typer.Typer(add_completion=False, no_args_is_help=True)
+
+
+def get_host_ip(host: str):
+    if host in ['127.0.0.1', 'localhost']:
+        return '127.0.0.1'
+    elif host != '0.0.0.0':
+        return host
+    else:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0)
+        try:
+            s.connect(('10.254.254.254', 1))  # Try to connect a virtual ip
+            return s.getsockname()[0]
+        except Exception:
+            return '127.0.0.1'
+        finally:
+            s.close()
 
 
 def create_input_params(tool: BaseTool) -> List[inspect.Parameter]:
@@ -193,7 +211,7 @@ def start(
         title=title,
         openapi_url='/openapi.json',
         lifespan=lifespan,
-        servers=[{'url': f'http://{host}:{port}'}],
+        servers=[{'url': f'http://{get_host_ip(host)}:{port}'}],
     )
 
     @app.get('/', include_in_schema=False)
