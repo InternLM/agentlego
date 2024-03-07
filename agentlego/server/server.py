@@ -189,7 +189,12 @@ def start(
         title: str = typer.Option('AgentLego', help='The title of the tool collection.'),
 ):
     """Start a tool server with the specified tools."""
-    app = FastAPI(title=title, openapi_url='/openapi.json', lifespan=lifespan)
+    app = FastAPI(
+        title=title,
+        openapi_url='/openapi.json',
+        lifespan=lifespan,
+        servers=[{'url': f'http://{host}:{port}'}],
+    )
 
     @app.get('/', include_in_schema=False)
     async def root():
