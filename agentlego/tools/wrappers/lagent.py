@@ -72,12 +72,14 @@ class LagentTool(BaseAction):
 
             return ActionReturn(
                 type=self.name,
+                url=getattr(self.tool, 'url', None),
                 args=kwargs,
                 result=results,
             )
         except Exception as e:
             return ActionReturn(
                 type=self.name,
+                url=getattr(self.tool, 'url', None),
                 errmsg=repr(e),
                 args=kwargs,
                 state=ActionStatusCode.API_ERROR,
