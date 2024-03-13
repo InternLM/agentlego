@@ -498,8 +498,11 @@ class APIResponse(BaseModel):
         return properties
 
     @classmethod
-    def from_response(cls, response: Response, spec: OpenAPISpec) -> 'APIResponse':
+    def from_response(cls, response: Response,
+                      spec: OpenAPISpec) -> Optional['APIResponse']:
         """Instantiate from an OpenAPI Response."""
+        if response.content is None:
+            return None
         # Only handle one potential response payload style.
         media_type = next(
             (k for k in response.content if k in _SUPPORTED_RESPONSE_MEDIA_TYPES), None)
@@ -545,7 +548,7 @@ class APIOperation(BaseModel):
     request_body: Optional[APIRequestBody] = Field(alias='request_body')
     """The request body of the operation."""
 
-    responses: Optional[Dict[str, APIResponse]] = Field(alias='responses')
+    responses: Optional[Dict[str, Optional[APIResponse]]] = Field(alias='responses')
 
     @staticmethod
     def _get_properties_from_parameters(parameters: List[Parameter],

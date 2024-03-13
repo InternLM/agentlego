@@ -145,17 +145,18 @@ class RemoteTool(BaseTool):
                 content = response.content.decode()
             raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
                                f'because of {response.reason}.\nResponse: {content}')
+
+        response_schema = self.operation.responses
+        if response_schema is None or response_schema.get('200') is None:
+            # Directly use string if the response schema is not specified
+            return response.text
+
         try:
             response = response.json()
         except requests.JSONDecodeError as e:
             raise RuntimeError(f'Failed to call the remote tool `{self.name}` '
                                'because of unknown response.\n'
                                f'Response: {response.content.decode()}') from e
-
-        response_schema = self.operation.responses
-        if response_schema is None or response_schema.get('200') is None:
-            # Directly use string if the response schema is not specified
-            return str(response)
 
         out_props = response_schema['200'].properties
 
