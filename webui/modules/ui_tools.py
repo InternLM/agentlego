@@ -1,4 +1,5 @@
 import inspect
+import os.path as osp
 from functools import partial
 
 import gradio as gr
@@ -96,9 +97,11 @@ def setup_tools(*args):
 
 
 def import_remote_tools(server: str):
-    if not server.startswith('http'):
-        server = 'http://' + server
-    tools = RemoteTool.from_server(server)
+    if osp.isfile(server):
+        tools = RemoteTool.from_openapi(server)
+    else:
+        server = server if server.startswith('http') else f'http://{server}'
+        tools = RemoteTool.from_openapi(server)
     msg = ''
     for tool in tools:
         if tool.name in shared.tool_settings:
