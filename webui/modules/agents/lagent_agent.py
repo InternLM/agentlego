@@ -69,7 +69,7 @@ class LMDeployClient(BaseModel):
             'suffix': None,
             'temperature': 0.7,
             'n': 1,
-            'max_tokens': 16,
+            'max_tokens': 1024,
             'stop': None,
             'top_p': 1.0,
             'top_k': 40,
@@ -78,6 +78,7 @@ class LMDeployClient(BaseModel):
             'session_id': -1,
             'ignore_eos': False,
             'stream': True,
+            'skip_special_tokens': False,
             **kwargs,
         }
         headers = {'content-type': 'application/json'}
